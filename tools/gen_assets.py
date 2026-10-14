@@ -158,6 +158,26 @@ GROUND4 = [(19, 12), (2, 12), (2, 9), (17, 9), (17, 6), (8, 6), (8, 2), (6, 2)]
 AIR4 = [(19, 12), (16, 12), (6, 2)]
 SACKS4 = [(5, 1), (5, 3), (1, 4), (3, 4), (5, 4)]
 
+MAP5 = [
+    "T..T..TKKKKKK..T...T",
+    "..C....KKKKKK.....Y.",
+    "Y......KKKKKK..Y...T",
+    "T.....PPPPPPPP.....T",
+    "..T...PPPPPPPP...Y.T",
+    "T..WWW....C.........",
+    "T.................TY",
+    "....G.....T.....C..T",
+    "T..WWWW.......WWW..T",
+    "Y..................T",
+    "T...C.....T.........",
+    "..T....G.....WWWW..T",
+    "..................YT",
+    "T.T..Y..T..T.C..T..T",
+]
+GROUND5 = [(0, 12), (17, 12), (17, 9), (2, 9), (2, 6), (16, 6), (16, 3), (14, 3)]
+AIR5 = [(0, 12), (5, 12), (14, 3)]
+SACKS5 = [(6, 4), (8, 4), (10, 4), (12, 4), (13, 4)]
+
 
 def carve_path(grid, wps):
     grid = [r.ljust(MW, '.')[:MW] for r in grid]
@@ -340,6 +360,19 @@ MAYOR = [
     ".kkkkk.",
     ".kk.kk.",
     ".rr.rr.",
+]
+TEACHER = [
+    "..rrr..",
+    ".rrrrr.",
+    ".rsssr.",
+    "..kWk..",
+    "..sss..",
+    ".BBBBB.",
+    "sBBBBBs",
+    ".BBBBB.",
+    ".BBBBB.",
+    "..s.s..",
+    "..k.k..",
 ]
 TABLE = [
     ".rrr.",
@@ -863,6 +896,95 @@ def bakery_base(cv, with_sacks):
 STAGES_FLAG4 = (1, 1)
 
 
+# school of Stage 05: cells 7-12 x 0-2; the yard is 6-13 x 3-4
+SC_X0, SC_X1, SC_Y1 = 7 * TW, 13 * TW - 1, 3 * TH - 1
+YARD5_X0, YARD5_X1, YARD5_Y0, YARD5_Y1 = 6 * TW, 14 * TW - 1, 3 * TH, 5 * TH - 1
+
+
+def school(cv):
+    K, Wh, E, B, C, O, r, R, G = (art.CH[k] for k in "kWeBcorRg")
+    x0, x1, y1 = SC_X0, SC_X1, SC_Y1
+    # red tiled roof
+    for y in range(0, 17):
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, r if y % 3 == 2 else R)
+    for x in range(x0, x1 + 1):
+        cv.set(x, 16, K)
+    # whitewashed front with blue shutters and the door
+    cv.rect(x0, 17, x1, y1, Wh)
+    for x in range(x0 + 3, x1 - 3, 8):
+        if abs(x - (x0 + x1) // 2) < 5:
+            continue
+        cv.rect(x, 28, x + 4, 34, K)
+        cv.rect(x + 1, 29, x + 3, 33, C)
+        cv.set(x + 2, 29, B)
+        cv.set(x + 2, 31, B)
+        cv.set(x + 2, 33, B)
+    mx = (x0 + x1) // 2
+    cv.rect(mx - 3, 28, mx + 3, y1, K)
+    cv.rect(mx - 2, 29, mx + 2, y1, r)
+    cv.set(mx + 1, 32, O)
+    # sign
+    cv.rect(x0 + 7, 17, x1 - 7, 27, K)
+    cv.rect(x0 + 8, 18, x1 - 8, 26, B)
+    cv.text("ΣΧΟΛΕΙΟ", x0 + 10, 19, Wh)
+    for y in range(0, y1 + 1):
+        cv.set(x0, y, K)
+        cv.set(x1, y, K)
+
+
+def schoolyard(cv, with_sacks):
+    K, Wh, E, O, r, Y, B = (art.CH[k] for k in "kWeoryB")
+    x0, x1, y0, y1 = YARD5_X0, YARD5_X1, YARD5_Y0, YARD5_Y1
+    cv.rect(x0, y0, x1, y1, E)
+    for (x, y) in ((x0 + 9, y0 + 3), (x0 + 37, y0 + 18), (x0 + 50, y0 + 6), (x0 + 22, y0 + 20)):
+        cv.set(x, y, K)
+    # a basketball court painted on the asphalt
+    cx0, cx1, cy0, cy1 = x0 + 10, x0 + 47, y0 + 1, y0 + 12
+    for x in range(cx0, cx1 + 1):
+        cv.set(x, cy0, Wh)
+        cv.set(x, cy1, Wh)
+    for y in range(cy0, cy1 + 1):
+        cv.set(cx0, y, Wh)
+        cv.set(cx1, y, Wh)
+    mx, my = (cx0 + cx1) // 2, (cy0 + cy1) / 2
+    for y in range(cy0, cy1 + 1):
+        cv.set(mx, y, Wh)
+        for x in range(mx - 4, mx + 5):
+            if 3.5 <= math.hypot((x - mx) * 2, y - my) < 4.8:
+                cv.set(x, y, Wh)
+    for hx, d in ((cx0, 1), (cx1, -1)):          # backboards and hoops
+        cv.rect(hx - d, int(my) - 3, hx, int(my) + 3, Wh)
+        cv.rect(min(hx + d, hx + 3 * d), int(my) - 1, max(hx + d, hx + 3 * d), int(my) + 1, O)
+        cv.set(hx + 2 * d, int(my), E)
+    cv.blit([".oo.", "oroo", "oooo", ".oo."], cx0 + 8, cy0 + 6)   # the ball
+    # the teacher
+    cv.blit(TEACHER, x0 + 1, y0)
+    # flagpole (the cloth is the animated flag sprite)
+    fx, fy = STAGES_FLAG5[0] * 2, STAGES_FLAG5[1]
+    for y in range(fy, fy + 15):
+        cv.set(fx, y, K if y == fy + 14 else r)
+    # the yard's edge
+    for x in range(x0, x1 + 1):
+        cv.set(x, y1, K)
+    for y in range(y0, y1 + 1):
+        cv.set(x0, y, K)
+        cv.set(x1, y, K)
+    if with_sacks:
+        for (c, r_) in SACKS5:
+            sx, sy = c * TW, r_ * TH
+            cv.blit(SACK, sx, sy + 1)
+            cv.blit(SACK, sx + 4, sy + 2)
+
+
+def school_base(cv, with_sacks):
+    school(cv)
+    schoolyard(cv, with_sacks)
+
+
+STAGES_FLAG5 = (53, 36)
+
+
 class Stage:
     def __init__(self, **kw):
         self.__dict__.update(kw)
@@ -898,8 +1020,16 @@ STAGES = [
           flag=STAGES_FLAG4, waves="WAVES4",
           strings={
               "B_STAGE": ("STAGE 04: THE BAKERY", "ΠΙΣΤΑ 04: Ο ΦΟΥΡΝΟΣ"),
-              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_WIN": ("BAKERY SAVED! NOW, TO THE SCHOOL!",
+                        "Ο ΦΟΥΡΝΟΣ ΣΩΘΗΚΕ! ΣΤΟ ΣΧΟΛΕΙΟ!"),
               "B_LOSE": ("THE BAKERY HAS FALLEN!", "Ο ΦΟΥΡΝΟΣ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP5, ground=GROUND5, air=AIR5, sacks=SACKS5, base=school_base,
+          flag=STAGES_FLAG5, waves="WAVES5",
+          strings={
+              "B_STAGE": ("STAGE 05: THE SCHOOL", "ΠΙΣΤΑ 05: ΤΟ ΣΧΟΛΕΙΟ"),
+              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_LOSE": ("THE SCHOOL HAS FALLEN!", "ΤΟ ΣΧΟΛΕΙΟ ΕΠΕΣΕ!"),
           }),
 ]
 STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
@@ -1066,6 +1196,19 @@ WAVES4 = [
     [(3, 9, 32), (2, 16, 14), (1, 16, 10)],
     [(1, 24, 9), (2, 17, 13), (3, 9, 28)],
     [(2, 20, 11), (1, 22, 8), (3, 16, 20)],
+]
+# the school, the very last stand
+WAVES5 = [
+    [(2, 10, 32)],
+    [(1, 15, 18), (2, 5, 28)],
+    [(2, 12, 24), (1, 11, 16)],
+    [(2, 12, 20), (3, 5, 48)],
+    [(1, 20, 12), (2, 11, 18)],
+    [(2, 16, 15), (3, 6, 38)],
+    [(1, 22, 10), (2, 15, 14), (3, 5, 32)],
+    [(3, 10, 28), (2, 17, 12), (1, 18, 9)],
+    [(1, 26, 8), (2, 18, 11), (3, 10, 24)],
+    [(2, 22, 9), (1, 24, 7), (3, 18, 16)],
 ]
 
 # stage files are loaded at STAGE_AREA, just below #4000; their layout is fixed
@@ -1449,9 +1592,12 @@ def main():
         elif k == 2:
             placed = [(art.CRETAN, 4, 3), (art.YIAYIA, 4, 9), (art.BRIDE, 8, 6),
                       (art.PSSSST, 12, 6), (art.CAULDRON, 8, 10), (art.BAKER, 14, 4)]
-        else:
+        elif k == 3:
             placed = [(art.CRETAN, 7, 4), (art.YIAYIA, 5, 10), (art.BRIDE, 12, 7),
                       (art.PSSSST, 16, 2), (art.CAULDRON, 10, 10), (art.BAKER, 3, 7)]
+        else:
+            placed = [(art.CRETAN, 4, 7), (art.YIAYIA, 9, 10), (art.BRIDE, 12, 7),
+                      (art.PSSSST, 15, 4), (art.CAULDRON, 6, 10), (art.BAKER, 8, 5)]
         for rows, c, r in placed:
             demo.blit(rows, c * TW, r * TH)
         gp = path_steps(st.ground)
