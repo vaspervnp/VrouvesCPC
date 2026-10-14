@@ -164,8 +164,6 @@ both_fn:    defs 2
 spr_src:    defs 2
 spr_h:      defs 1
 rr_h:       defs 1
-rr_w:       defs 1
-rr_step:    defs 1
 dl_cur_base: defs 2
 dl_cur_ptr: defs 2
 dl_oth_base: defs 2
@@ -240,9 +238,8 @@ sp_pflag:   defs 1
 end_wait:   defs 1
 es_base:    defs 2
 stamp:      defs 1
-mr_c0:      defs 1
-mr_c1:      defs 1
 STAMPMAP:   defs 110
+        assert hi(STAMPMAP) == hi(STAMPMAP+109)
 tr_budget:  defs 1
 ticks_due:  defs 1
 frame_acc:  defs 1
@@ -253,6 +250,7 @@ bss_end:
         assert bss_end <= #4000
         assert (DLIST0 & #ff) == 0
         assert ENT_END <= #BF00
+        assert lo(enemies) == 0 && EN_SZ*MAX_EN == 256 && lo(projs) == 0
 
         print "code+data end: ",{hex}code_end,"  bss end: ",{hex}bss_end,"  free: ",#4000-bss_end
 

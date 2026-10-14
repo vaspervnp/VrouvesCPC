@@ -114,7 +114,9 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 * Per 25 Hz tick at most four towers look for a target; input handling is skipped when no key
   is down; a cauldron draws at most two clouds per throw; up to eight effects at a time. Music and effects on the AY are driven from the 50 Hz interrupt.
 * Rendering: sprites step down screen lines arithmetically and use an unrolled, width-indexed
-  inner loop; background restores use unrolled `LDI`; row counters live in a shadow register;
+  inner loop; background restores copy rows of up to 8 bytes with unrolled `LDI` (C = 255 so
+  `LDI` never touches the row counter in B, line steps patched in, wider rectangles in 8-byte
+  strips), and stamping the cell map is a short page-local loop; row counters live in a shadow register;
   HUD text changes are written to the back screen only, spreading the cost over two frames.
 * Enemies have their own 8×12 routine: each row is drawn by a handler for its kind (all
   opaque, middle opaque, middle opaque with empty edges, masked), opaque bytes are copied with

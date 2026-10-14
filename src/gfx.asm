@@ -311,11 +311,17 @@ restore_dirty:
         ret
 
 ; D,E,C,B = x,y,w,h : stamp the 16x16 cells the rectangle covers (STAMPMAP,
-; 10 x 11 cells) so enemies underneath know they must be redrawn
+; 10 x 11 cells, within one 256-byte page) so enemies underneath know they
+; must be redrawn.  Preserves B,C,D,E.
 mark_rect:
-        push hl
         push bc
         push de
+        ld a,d
+        rrca
+        rrca
+        rrca
+        and 31
+        ld l,a                  ; first column
         ld a,d
         add a,c
         dec a
@@ -323,79 +329,81 @@ mark_rect:
         rrca
         rrca
         and 31
-        ld (mr_c1),a
-        ld a,d
-        rrca
-        rrca
-        rrca
-        and 31
-        ld (mr_c0),a
+        sub l
+        inc a
+        ld d,a                  ; columns
         ld a,e
         add a,b
         dec a
-        rrca
-        rrca
-        rrca
-        rrca
-        and 15
-        ld b,a
+        and #f0
+        ld c,a                  ; last row * 16
         ld a,e
-        rrca
-        rrca
-        rrca
-        rrca
-        and 15
-        ld e,a
-        ld a,b
+        and #f0
+        ld e,a                  ; first row * 16
+        ld a,c
         sub e
+        rrca
+        rrca
+        rrca
+        rrca
         inc a
         ld b,a                  ; rows
         ld a,e
-        add a,a
-        ld c,a
-        add a,a
-        add a,a
+        rrca
+        ld c,a                  ; first row * 8
+        rrca
+        rrca
         add a,c                 ; first row * 10
+        add a,l
+        add a,lo(STAMPMAP)
         ld l,a
-        ld h,0
-        ld de,STAMPMAP
-        add hl,de
-.r:     push hl
-        ld a,(mr_c0)
-        ld e,a
-        ld d,0
-        add hl,de
-        ld a,(mr_c1)
-        sub e
-        inc a
-        ld c,a                  ; columns
+        ld h,hi(STAMPMAP)
+        ld a,10
+        sub d
+        ld e,a                  ; skip to the next row
         ld a,(stamp)
-.c:     ld (hl),a
-        inc hl
-        dec c
+        ld c,a
+.r:     ld a,d
+.c:     ld (hl),c
+        inc l
+        dec a
         jr nz,.c
-        pop hl
-        ld de,10
-        add hl,de
+        ld a,l
+        add a,e
+        ld l,a
         djnz .r
         pop de
         pop bc
-        pop hl
         ret
 
-; D,E,C,B = x,y,w,h : background -> back buffer
+; D,E,C,B = x,y,w,h : background -> back buffer.  Rows of up to 8 bytes are
+; copied by unrolled LDIs; with C = 255 and at most 255 bytes per call they
+; never touch B, which counts the rows.  The steps to the next line are
+; patched in.  Wider rectangles go in 8-byte strips.
 restore_rect:
-        ld a,b
-        exx
-        ld b,a                  ; B' = rows left
-        exx
-        ld a,80                 ; background step after a row
-        sub c
-        ld (rr_step),a
-        ld a,c                  ; widths up to 8: unrolled LDI, else LDIR
+        ld a,c
         cp 9
-        ld hl,.wide
-        jr nc,.e
+        jr c,.narrow
+        push bc
+        push de
+        ld a,8
+        ld c,a
+        call .narrow
+        pop de
+        pop bc
+        ld a,d
+        add a,8
+        ld d,a
+        ld a,c
+        sub 8
+        ld c,a
+        jr restore_rect
+.narrow:
+        neg
+        ld (.sstep+1),a         ; screen: back w bytes (and +#800 below)
+        add a,80
+        ld (.bstep+1),a         ; background: 80-w
+        ld a,c
         neg
         add a,8
         add a,a                 ; LDI is 2 bytes
@@ -404,9 +412,8 @@ restore_rect:
         ld l,a
         jr nc,.e
         inc h
-.e:     ld (.jp+1),hl
-        ld a,c
-        ld (rr_w),a
+.e:     ld (.loop+1),hl
+        ld c,255
         ld l,e
         ld h,hi(TAB_PF)
         ld a,(hl)
@@ -430,38 +437,33 @@ restore_rect:
         jr nc,.n2
         inc h
 .n2:    pop de                  ; DE = screen, HL = background
-.row:   push de
-.jp:    jp .ldi8
-.wide:  ld a,(rr_w)
-        ld c,a
-        ld b,0
-        ldir
-        jr .done
+.loop:  jp .ldi8
 .ldi8:  repeat 8
         ldi
         rend
-.done:  ld a,(rr_step)          ; background: next line
-        add a,l
+        ld a,l                  ; background: next line
+.bstep: add a,0
         ld l,a
-        jr nc,.b1
-        inc h
-.b1:    pop de                  ; screen: next line
+        adc a,h
+        sub l
+        ld h,a
+        ld a,e                  ; screen: next line
+.sstep: add a,0
+        ld e,a
         ld a,d
-        add a,8
+        adc a,7
         ld d,a
         and #38
-        jr nz,.ok
-        ld a,e
+        jr z,.wrap
+.next:  djnz .loop
+        ret
+.wrap:  ld a,e
         add a,80
         ld e,a
         ld a,d
         adc a,#c0
         ld d,a
-.ok:    exx
-        dec b
-        exx
-        jr nz,.row
-        ret
+        jr .next
 
 ; whole background -> both screens
 bg_to_screens:

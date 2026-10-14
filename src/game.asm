@@ -328,6 +328,15 @@ dbg_show:                       ; frames per game tick, top right
 
 ; win or lose: banner, then wait for fire
 end_game:
+        ld hl,enemies           ; no walkers, shots or effects on top of the
+        xor a                   ; banner: their old places are restored
+.c1:    ld (hl),a
+        inc l
+        jr nz,.c1
+        ld h,hi(projs)          ; projectiles and effects: #BE00-#BEFF
+.c2:    ld (hl),a
+        inc l
+        jr nz,.c2
         call kbd_update
         ld a,(game_over)
         cp 1
@@ -341,7 +350,7 @@ end_game:
         ld a,40
         ld (end_wait),a
 .l:     call kbd_update
-        call update_fx
+        call hud_refresh        ; the last changes reach both screens
         call render
         call flip
         ld a,(end_wait)
@@ -2356,6 +2365,9 @@ draw_flag:
         jp draw_sprite
 
 draw_cursor:
+        ld a,(game_over)        ; not over the end banner
+        or a
+        ret nz
         call cur_cell
         bit 7,(hl)
         jr nz,.ok
