@@ -76,9 +76,11 @@ FX_POOF  equ 4
 FX_BOOM  equ 5
 FX_ZAP   equ 6
 
-HUDF_STATS  equ 1
+HUDF_WAVE   equ 1
 HUDF_INFO   equ 2
 HUDF_STATUS equ 4
+HUDF_FUNDS  equ 8
+HUDF_HP     equ 16
 
         if DEBUG
 START_FUNDS equ 3000
@@ -583,7 +585,7 @@ try_build:
         call redraw_cell
         ld a,SFX_BUILD
         call sfx_play
-        ld a,HUDF_STATS+HUDF_INFO
+        ld a,HUDF_FUNDS+HUDF_INFO
         jp hud_set
 
 try_sell:
@@ -614,7 +616,7 @@ try_sell:
         call redraw_cell
         ld a,SFX_SELL
         call sfx_play
-        ld a,HUDF_STATS+HUDF_INFO
+        ld a,HUDF_FUNDS+HUDF_INFO
         jp hud_set
 
 call_wave_now:
@@ -907,7 +909,7 @@ wave_update:
         ld hl,(funds)
         add hl,bc
         ld (funds),hl
-        ld a,HUDF_STATS+HUDF_STATUS+HUDF_INFO
+        ld a,HUDF_FUNDS+HUDF_STATUS
         call hud_set
         ld a,(wave_num)
         cp NUM_WAVES
@@ -961,7 +963,7 @@ start_wave:
 .nf:    call banner_clear
 .s:     ld a,SFX_WAVE
         call sfx_play
-        ld a,HUDF_STATS+HUDF_STATUS
+        ld a,HUDF_WAVE+HUDF_STATUS
         jp hud_set
 
 load_group:
@@ -1190,7 +1192,7 @@ base_hit:
         jr nc,.ok
         xor a
 .ok:    ld (hp),a
-        ld a,HUDF_STATS
+        ld a,HUDF_HP
         call hud_set
         ld a,SFX_HURT
         call sfx_play
@@ -1276,7 +1278,7 @@ kill_enemy:
         call spawn_fx
         ld a,SFX_DIE
         call sfx_play
-        ld a,HUDF_STATS+HUDF_INFO
+        ld a,HUDF_FUNDS
         jp hud_set
 
 ; tanks dent cauldrons next to the road
@@ -2172,30 +2174,67 @@ hud_full:
 
 hud_all:
         call hud_top
-        call hud_stats
+        call hud_wave
+        call hud_funds
+        call hud_hp
         call hud_info
         jp hud_status
 
 hud_refresh:
         ld a,(hud_flags)
-        or a
-        ret z
-        bit 0,a
-        jr z,.k1
-        ld hl,hud_stats
-        call both_screens
-.k1:     ld a,(hud_flags)
-        bit 1,a
+        bit 3,a                 ; funds changed: did the selection become (un)affordable?
+        jr z,.k0
+        call sel_affordable
+        ld hl,hud_aff
+        cp (hl)
+        jr z,.k0
+        ld a,HUDF_INFO
+        call hud_set
+.k0:    ld hl,hud_jobs
+        ld b,5
+.k1:    ld a,(hud_flags)
+        and (hl)
+        inc hl
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
         jr z,.k2
-        ld hl,hud_info
+        push hl
+        push bc
+        ex de,hl
         call both_screens
-.k2:     ld a,(hud_flags)
-        bit 2,a
-        jr z,.k3
-        ld hl,hud_status
-        call both_screens
-.k3:     xor a
+        pop bc
+        pop hl
+.k2:    djnz .k1
+        xor a
         ld (hud_flags),a
+        ret
+
+hud_jobs:
+        db HUDF_WAVE
+        dw hud_wave
+        db HUDF_FUNDS
+        dw hud_funds
+        db HUDF_HP
+        dw hud_hp
+        db HUDF_INFO
+        dw hud_info
+        db HUDF_STATUS
+        dw hud_status
+
+; A = 1 if the selected defender can be paid for
+sel_affordable:
+        ld a,(sel_type)
+        call ttype_ptr
+        ld c,(hl)
+        ld b,0
+        ld hl,(funds)
+        or a
+        sbc hl,bc
+        ld a,0
+        ccf
+        rla
         ret
 
 hud_top:
@@ -2234,9 +2273,9 @@ hud_top:
 HUD_Y1 equ 184
 HUD_Y2 equ 192
 
-hud_stats:
+hud_wave:
         ld de,HUD_Y1
-        ld bc,8*256+66
+        ld bc,8*256+22
         xor a
         call fill_rect
         call text_normal
@@ -2264,6 +2303,14 @@ hud_stats:
         call print_num
         xor a
         ld (pn_zero),a
+        ret
+
+hud_funds:
+        ld de,11*2*256+HUD_Y1
+        ld bc,8*256+24
+        xor a
+        call fill_rect
+        call text_normal
         ld bc,#0500
         call set_colors
         ld de,12*256+HUD_Y1
@@ -2276,7 +2323,14 @@ hud_stats:
         call set_at
         ld hl,(funds)
         ld a,4
-        call print_num
+        jp print_num
+
+hud_hp:
+        ld de,23*2*256+HUD_Y1
+        ld bc,8*256+20
+        xor a
+        call fill_rect
+        call text_normal
         ld bc,#0500
         call set_colors
         ld de,24*256+HUD_Y1
@@ -2370,15 +2424,11 @@ hud_info:
         ld h,0
         ld a,3
         jp print_num
-.build: ld a,(sel_type)
-        call ttype_ptr
-        ld c,(hl)
-        ld b,0
-        ld hl,(funds)
+.build: call sel_affordable
+        ld (hud_aff),a
         or a
-        sbc hl,bc
         ld bc,#0800
-        jr nc,.aff
+        jr nz,.aff
         ld bc,#0400
 .aff:   call set_colors
         ld a,(sel_type)

@@ -199,6 +199,7 @@ cur_r:      defs 1
 sel_type:   defs 1
 rep_t:      defs 1
 hud_flags:  defs 1
+hud_aff:    defs 1
 ban_on:     defs 1
 ban_id1:    defs 1
 ban_id2:    defs 1

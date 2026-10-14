@@ -500,6 +500,7 @@ put_glyph:
         ld e,a
         ld a,(txt_x)
         ld d,a
+        call line_addr          ; HL = first line, stepped down from here
         ld a,(txt_dh)
         or a
         jr nz,.tall
@@ -507,10 +508,10 @@ put_glyph:
         call glyph_line
         ld b,6
 .g:     push bc
-        ld hl,(gl_ptr)
-        ld a,(hl)
-        inc hl
-        ld (gl_ptr),hl
+        ld de,(gl_ptr)
+        ld a,(de)
+        inc de
+        ld (gl_ptr),de
         call glyph_line
         pop bc
         djnz .g
@@ -523,10 +524,10 @@ put_glyph:
         call glyph_line
         ld b,6
 .t:     push bc
-        ld hl,(gl_ptr)
-        ld a,(hl)
-        inc hl
-        ld (gl_ptr),hl
+        ld de,(gl_ptr)
+        ld a,(de)
+        inc de
+        ld (gl_ptr),de
         push af
         call glyph_line
         pop af
@@ -546,10 +547,10 @@ put_glyph:
         ld (txt_x),a
         ret
 
-; A = 3 pixel bits ; D,E = x,y ; E advances
+; A = 3 pixel bits ; HL = line address, moved to the next line
 glyph_line:
         ld c,a
-        call line_addr
+        push hl
         ld a,(txt_dw)
         or a
         jr nz,.wide
@@ -563,8 +564,7 @@ glyph_line:
         add a,a
         call pair_byte
         ld (hl),a
-        inc e
-        ret
+        jr next_line_pop
 .wide:  ld b,3
 .w:     ld a,c
         and 4
@@ -579,7 +579,30 @@ glyph_line:
         xor a
         call pair_byte
         ld (hl),a
-        inc e
+next_line_pop:
+        pop hl
+; HL -> same column on the next line of the current target
+next_line:
+        ld a,(tgt_tab)
+        cp hi(TAB_BG)
+        jr z,.bg
+        ld a,h
+        add a,8
+        ld h,a
+        and #38
+        ret nz
+        ld a,l
+        add a,80
+        ld l,a
+        ld a,h
+        adc a,#c0
+        ld h,a
+        ret
+.bg:    ld a,l
+        add a,80
+        ld l,a
+        ret nc
+        inc h
         ret
 
 pair_byte:

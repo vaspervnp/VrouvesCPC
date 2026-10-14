@@ -257,10 +257,11 @@ SACK = [
 SACK = [r.ljust(4, '.') for r in SACK]
 
 
-def grass_cell(cv, c, r):
+def grass_cell(cv, c, r, v=None):
     x0, y0 = c * TW, r * TH
     cv.rect(x0, y0, x0 + TW - 1, y0 + TH - 1, art.CH['g'])
-    v = (c * 7 + r * 13 + (c * r) % 3) % 5
+    if v is None:
+        v = (c * 7 + r * 13 + (c * r) % 3) % 5
 
     def tuft(x, y):
         cv.set(x0 + x, y0 + y, art.CH['t'])
@@ -306,7 +307,7 @@ def path_cell(cv, grid, c, r):
 
 
 def wall_cell(cv, grid, c, r):
-    grass_cell(cv, c, r)
+    grass_cell(cv, c, r, 3)
     x0, y0 = c * TW, r * TH
 
     def w(cc, rr):
@@ -471,7 +472,7 @@ def render_background(grid, with_sacks=True):
             elif t in 'KP':
                 pass
             else:
-                grass_cell(cv, c, r)
+                grass_cell(cv, c, r, None if t == '.' else 3)
                 if t == 'T':
                     cv.blit(TREE if (c + r) % 3 else TREE2, c * TW, r * TH)
                 elif t == 'C':
