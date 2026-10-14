@@ -492,14 +492,10 @@ SPRITES = [
     ("spr_drone_b", DRONE_B),
     ("spr_guard_a", GUARD_A),
     ("spr_guard_b", GUARD_B),
-    ("spr_guard_la", mirror(GUARD_A)),
-    ("spr_guard_lb", mirror(GUARD_B)),
     ("spr_tank_va", TANK_V_A),
     ("spr_tank_vb", TANK_V_B),
     ("spr_tank_la", TANK_L_A),
     ("spr_tank_lb", TANK_L_B),
-    ("spr_tank_ra", mirror(TANK_L_A)),
-    ("spr_tank_rb", mirror(TANK_L_B)),
     ("spr_bullet", BULLET),
     ("spr_pistol", PISTOL),
     ("spr_pistol_crit", PISTOL_CRIT),
@@ -521,4 +517,22 @@ SPRITES = [
     ("spr_cursor_bad", CURSOR_BAD),
     ("spr_flag_a", FLAG_A),
     ("spr_flag_b", FLAG_B),
+]
+
+
+# mirrored enemy sprites, built by the game into the unused tail of each 2K
+# block of the #C000 screen (never displayed)
+MIRRORS = [("spr_guard_a", 0xC7D0), ("spr_guard_b", 0xCFD0),
+           ("spr_tank_la", 0xD7D0), ("spr_tank_lb", 0xDFD0)]
+# per enemy type, per direction (down, left, right), two frames: (sprite, mirrored)
+ENEMY_FRAMES = [
+    ("spr_drone_a", DRONE_A, None), ("spr_drone_b", DRONE_B, None),
+    ("spr_drone_a", DRONE_A, None), ("spr_drone_b", DRONE_B, None),
+    ("spr_drone_a", DRONE_A, None), ("spr_drone_b", DRONE_B, None),
+    ("spr_guard_a", GUARD_A, None), ("spr_guard_b", GUARD_B, None),
+    ("spr_guard_a", GUARD_A, 0xC7D0), ("spr_guard_b", GUARD_B, 0xCFD0),
+    ("spr_guard_a", GUARD_A, None), ("spr_guard_b", GUARD_B, None),
+    ("spr_tank_va", TANK_V_A, None), ("spr_tank_vb", TANK_V_B, None),
+    ("spr_tank_la", TANK_L_A, None), ("spr_tank_lb", TANK_L_B, None),
+    ("spr_tank_la", TANK_L_A, 0xD7D0), ("spr_tank_lb", TANK_L_B, 0xDFD0),
 ]

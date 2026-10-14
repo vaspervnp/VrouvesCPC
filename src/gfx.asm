@@ -520,14 +520,6 @@ clear_screen_a:
         ldir
         ret
 
-clear_screen_b:
-        ld hl,#4000
-        ld de,#4001
-        ld bc,#3fff
-        ld (hl),0
-        ldir
-        ret
-
 ;------------------------------------------------------------------------------
 ; text: 3x6 glyphs in 4x8 cells (or 8x16 when double width/height)
 ;------------------------------------------------------------------------------

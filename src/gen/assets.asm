@@ -331,16 +331,6 @@ spr_guard_b:
     db #74,#AA,#00,#BA,#75,#00,#5F,#FF,#FF,#AF,#5F,#FF,#FF,#AF,#55,#FF
     db #FF,#BA,#55,#FF,#FF,#10,#55,#AA,#FF,#10,#55,#00,#FF,#10,#55,#00
     db #FF,#30
-spr_guard_la:
-    db #04,#0C,#00,#FF,#FF,#00,#55,#FF,#FF,#AA,#55,#30,#30,#AA,#55,#B8
-    db #74,#AA,#00,#BA,#75,#00,#5F,#FF,#FF,#AF,#5F,#FF,#FF,#AF,#75,#FF
-    db #FF,#AA,#20,#FF,#FF,#AA,#20,#FF,#55,#AA,#20,#AA,#55,#AA,#30,#AA
-    db #00,#FF
-spr_guard_lb:
-    db #04,#0C,#00,#FF,#FF,#00,#55,#FF,#FF,#AA,#55,#30,#30,#AA,#55,#B8
-    db #74,#AA,#00,#BA,#75,#00,#5F,#FF,#FF,#AF,#5F,#FF,#FF,#AF,#75,#FF
-    db #FF,#AA,#20,#FF,#FF,#AA,#20,#FF,#55,#AA,#20,#FF,#00,#AA,#30,#FF
-    db #00,#AA
 spr_tank_va:
     db #04,#0C,#BA,#3F,#3F,#75,#75,#3F,#3F,#BA,#BA,#FF,#FF,#75,#75,#BF
     db #7F,#BA,#BA,#BF,#7F,#75,#75,#BF,#7F,#BA,#BA,#FF,#FF,#75,#75,#7F
@@ -361,16 +351,6 @@ spr_tank_lb:
     db #FF,#BF,#3F,#BF,#3F,#BF,#FF,#BF,#3F,#BF,#30,#BF,#3F,#BF,#3F,#BF
     db #3F,#BF,#3F,#7F,#FF,#BF,#3F,#3F,#3F,#3F,#BA,#BA,#BA,#BA,#75,#75
     db #75,#75
-spr_tank_ra:
-    db #04,#0C,#BA,#BA,#BA,#BA,#75,#75,#75,#75,#3F,#3F,#3F,#3F,#7F,#FF
-    db #BF,#3F,#7F,#3F,#7F,#3F,#7F,#3F,#7F,#FF,#7F,#3F,#7F,#30,#7F,#3F
-    db #7F,#3F,#7F,#FF,#BF,#3F,#3F,#3F,#3F,#3F,#BA,#BA,#BA,#BA,#75,#75
-    db #75,#75
-spr_tank_rb:
-    db #04,#0C,#75,#75,#75,#75,#BA,#BA,#BA,#BA,#3F,#3F,#3F,#3F,#7F,#FF
-    db #BF,#3F,#7F,#3F,#7F,#3F,#7F,#3F,#7F,#FF,#7F,#3F,#7F,#30,#7F,#3F
-    db #7F,#3F,#7F,#FF,#BF,#3F,#3F,#3F,#3F,#3F,#75,#75,#75,#75,#BA,#BA
-    db #BA,#BA
 spr_bullet:
     db #01,#02,#52,#A1
 spr_pistol:
@@ -453,6 +433,39 @@ spr_flag_b:
     db #04,#08,#88,#78,#3C,#3C,#9C,#F0,#F0,#F0,#D8,#78,#3C,#3C,#9C,#F0
     db #F0,#F0,#D8,#3C,#3C,#3C,#88,#F0,#F0,#F0,#88,#00,#00,#00,#88,#00
     db #00,#00
+
+mirror_tab:
+    dw spr_guard_a+2,#C7D0
+    dw spr_guard_b+2,#CFD0
+    dw spr_tank_la+2,#D7D0
+    dw spr_tank_lb+2,#DFD0
+enemy_sprites:
+    dw spr_drone_a+2
+    dw spr_drone_b+2
+    dw spr_drone_a+2
+    dw spr_drone_b+2
+    dw spr_drone_a+2
+    dw spr_drone_b+2
+    dw spr_guard_a+2
+    dw spr_guard_b+2
+    dw #C7D0
+    dw #CFD0
+    dw spr_guard_a+2
+    dw spr_guard_b+2
+    dw spr_tank_va+2
+    dw spr_tank_vb+2
+    dw spr_tank_la+2
+    dw spr_tank_lb+2
+    dw #D7D0
+    dw #DFD0
+DISP_COUNT equ 4
+enemy_disp:
+    db #47,#47,#47,#47,#47,#47,#4F,#4F,#4F,#4F,#4F,#4F,#57,#57,#5F,#5F,#5F,#5F
+disp_cls:
+    db #03,#9B,#00
+    db #EA,#D6,#80
+    db #55,#55,#50
+    db #55,#55,#55
 
 S_TITLE equ 0
 S_LANGHINT equ 1

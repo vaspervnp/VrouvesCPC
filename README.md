@@ -116,3 +116,9 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 * Rendering: sprites step down screen lines arithmetically and use an unrolled, width-indexed
   inner loop; background restores use unrolled `LDI`; row counters live in a shadow register;
   HUD text changes are written to the back screen only, spreading the cost over two frames.
+* Enemies have their own 8×12 routine: each row is drawn by a handler for its kind (all
+  opaque, middle opaque, middle opaque with empty edges, masked), opaque bytes are copied with
+  `LDI`, and for every pattern of rows the game writes a list of 12 `CALL`s into the hidden tail
+  of a `#4000` screen block, so nothing is decoded while drawing. Left-facing frames are
+  mirrored at start-up into the hidden tails of the `#C000` screen. A guard takes about 2900 T
+  states instead of 4080, a tank 2050–2300.

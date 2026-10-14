@@ -2,6 +2,30 @@
 ; game.asm - Stage 01: The Kafenio
 ;==============================================================================
 
+        macro MASKED_BYTE
+        ld a,(de)
+        inc de
+        ld c,a
+        ld a,(bc)
+        and (hl)
+        or c
+        ld (hl),a
+        inc hl
+        mend
+
+        macro MASKED_SWAP        ; HL = picture, DE = screen
+        ld a,(hl)
+        inc hl
+        ld c,a
+        ld a,(bc)
+        ex de,hl
+        and (hl)
+        or c
+        ld (hl),a
+        ex de,hl
+        inc de
+        mend
+
 ; enemy record (16 bytes)
 E_TYPE  equ 0
 E_HP    equ 1
@@ -120,11 +144,6 @@ ttype_tab:
 tower_sprites:
         dw spr_cretan,spr_yiayia,spr_bride,spr_psssst,spr_cauldron,spr_baker
 
-; per enemy type, per direction (down, left, right), two frames
-enemy_sprites:
-        dw spr_drone_a,spr_drone_b,spr_drone_a,spr_drone_b,spr_drone_a,spr_drone_b
-        dw spr_guard_a,spr_guard_b,spr_guard_la,spr_guard_lb,spr_guard_a,spr_guard_b
-        dw spr_tank_va,spr_tank_vb,spr_tank_la,spr_tank_lb,spr_tank_ra,spr_tank_rb
 
 proj_sprites:
         dw spr_bullet,spr_pistol,spr_laser,spr_dakos
@@ -236,6 +255,8 @@ game_init:
         ld bc,ENT_END-ENT_START-1
         ld (hl),0
         ldir
+        call make_mirrors
+        call make_dispatch
         ld hl,ESTATE0           ; nothing drawn yet on either screen
         ld de,ESTATE0+1
         ld bc,ESTATE_SIZE*2-1
@@ -2042,9 +2063,14 @@ draw_enemies:
         call enemy_touched
         jr nc,.n
 .draw:  ld a,(iy+3)
-        add a,a
         ld l,a
         ld h,0
+        ld de,enemy_disp
+        add hl,de
+        ld c,(hl)               ; its row dispatch block
+        ld l,a
+        ld h,0
+        add hl,hl
         ld de,enemy_sprites
         add hl,de
         ld a,(hl)
@@ -2053,13 +2079,163 @@ draw_enemies:
         ld l,a
         ld d,(ix+E_X)
         ld e,(ix+E_Y)
-        call draw_sprite_raw
+        ld a,c
+        call draw_enemy_spr
 .n:     ld de,EN_SZ
         add ix,de
         ld de,4
         add iy,de
         pop bc
         djnz .l
+        ret
+
+; mirrored enemy frames into the hidden tails of the #C000 screen blocks
+make_mirrors:
+        ld hl,mirror_tab
+        ld b,4
+.s:     push bc
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ld c,(hl)
+        inc hl
+        ld a,(hl)
+        inc hl
+        push hl
+        ld h,a
+        ld l,c
+        inc hl
+        inc hl
+        inc hl
+        ex de,hl                ; HL = source, DE = end of the first row
+        ld b,12
+.r:     push bc
+        ld b,4
+.c:     ld a,(hl)               ; swap the two pixels of the byte
+        rrca
+        and #55
+        ld c,a
+        ld a,(hl)
+        rlca
+        and #aa
+        or c
+        inc hl
+        ld (de),a
+        dec de
+        djnz .c
+        ex de,hl
+        ld bc,8
+        add hl,bc
+        ex de,hl
+        pop bc
+        djnz .r
+        pop hl
+        pop bc
+        djnz .s
+        ret
+
+; Enemy frames are drawn row by row by small handlers, one per kind of row.
+; For each pattern of row kinds make_dispatch writes 12 CALLs and a RET into
+; the hidden tail of a #4000 screen block (#47D0, #4FD0, ...), so drawing a
+; frame does no decoding at all.
+make_dispatch:
+        ld hl,disp_cls
+        ld d,#47
+.p:     ld e,#d0
+        ld b,12
+.r:     ld a,b
+        and 3
+        jr nz,.k
+        ld c,(hl)               ; 2 bits per row, MSB first
+        inc hl
+.k:     rlc c
+        rlc c
+        ld a,c
+        and 3
+        add a,a
+        push hl
+        ld hl,row_handlers
+        add a,l
+        ld l,a
+        jr nc,.n
+        inc h
+.n:     ld a,#cd                ; CALL handler
+        ld (de),a
+        inc de
+        ld a,(hl)
+        ld (de),a
+        inc de
+        inc hl
+        ld a,(hl)
+        ld (de),a
+        inc de
+        pop hl
+        djnz .r
+        ld a,#c9                ; RET
+        ld (de),a
+        ld a,d
+        add a,8
+        ld d,a
+        cp #47+DISP_COUNT*8
+        jr nz,.p
+        ret
+
+row_handlers:
+        dw er_m4,er_f4,er_mid,er_z
+
+; HL = 48 bytes of 8x12 enemy picture, D,E = x,y on the back buffer,
+; A = high byte of its dispatch block
+draw_enemy_spr:
+        ld (.go+2),a
+        push hl
+        call line_addr
+        ex de,hl                ; DE = screen
+        pop hl                  ; HL = picture
+.go:    jp #47d0
+
+; the row handlers: HL = picture, DE = screen, opaque bytes copied with LDI
+er_mid: ld b,hi(MASKTAB)        ; masked, two opaque, masked
+        MASKED_SWAP
+        ldi
+        ldi
+        ld b,hi(MASKTAB)
+        MASKED_SWAP
+        jr er_next
+er_z:   inc de                  ; empty, two opaque, empty
+        inc hl
+        ldi
+        ldi
+        inc de
+        inc hl
+        jr er_next
+er_f4:  ldi                     ; four opaque
+        ldi
+        ldi
+        ldi
+        jr er_next
+er_m4:  ld b,hi(MASKTAB)        ; four masked
+        ex de,hl
+        MASKED_BYTE
+        MASKED_BYTE
+        MASKED_BYTE
+        MASKED_BYTE
+        ex de,hl
+er_next:
+        ld a,e                  ; DE += #800-4: next line, row start
+        add a,#fc
+        ld e,a
+        ld a,d
+        adc a,7
+        ld d,a
+        and #38
+        ret nz
+        ld a,e
+        add a,80
+        ld e,a
+        ld a,d
+        adc a,#c0
+        ld d,a
         ret
 
 ; IX = enemy -> carry if any of its cells was restored this frame

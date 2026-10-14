@@ -695,6 +695,39 @@ def main():
         A.extend(db_lines(sprite_bytes(rows), 16))
     emit()
 
+    # enemy frames for the dedicated 8x12 routine: data pointers (no header), and
+    # per frame which row pattern it has; a pattern is a 2-bit kind per row:
+    # 1 = all four bytes opaque, 2 = middle two opaque, 3 = middle two opaque
+    # and outer two empty, 0 = anything else (masked)
+    emit("mirror_tab:")
+    for name, addr in art.MIRRORS:
+        emit("    dw %s+2,#%04X" % (name, addr))
+    emit("enemy_sprites:")
+    for name, rows, mirrored in art.ENEMY_FRAMES:
+        emit("    dw " + ("#%04X" % mirrored if mirrored else name + "+2"))
+    pats = []
+    disp = []
+    for name, rows, mirrored in art.ENEMY_FRAMES:
+        assert len(rows) == 12 and len(rows[0]) == 8
+        bits = 0
+        for r in rows:
+            full = ['.' not in r[x:x + 2] for x in range(0, 8, 2)]
+            empty = [r[x:x + 2] == '..' for x in range(0, 8, 2)]
+            cls = (1 if all(full) else 3 if full[1] and full[2] and empty[0] and empty[3]
+                   else 2 if full[1] and full[2] else 0)
+            bits = bits << 2 | cls
+        if bits not in pats:
+            pats.append(bits)
+        disp.append(0x47 + 8 * pats.index(bits))
+    assert len(pats) <= 8           # one per hidden tail of the #4000 screen
+    emit("DISP_COUNT equ %d" % len(pats))
+    emit("enemy_disp:")
+    emit("    db " + ",".join("#%02X" % d for d in disp))
+    emit("disp_cls:")
+    for bits in pats:
+        emit("    db #%02X,#%02X,#%02X" % (bits >> 16, (bits >> 8) & 255, bits & 255))
+    emit()
+
     # strings
     ids = []
     en_lines, gr_lines = [], []

@@ -57,7 +57,7 @@ def check():
             sy = y + row + 16
             a = back + (sy >> 3) * 80 + (sy & 7) * 0x800
             for col in range(4):
-                d = mem[spr + 2 + row * 4 + col]
+                d = mem[spr + row * 4 + col]
                 for mask in (0xAA, 0x55):
                     if d & mask == 0:
                         continue      # transparent pixel
