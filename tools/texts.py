@@ -2,9 +2,7 @@
 Lines are printed in a 40 column, 3x6 font."""
 
 STRINGS = [
-    ("S_TITLE_EN", "LET'S GO FOR VROUVES", None),
-    ("S_TITLE_SL", " / ", None),
-    ("S_TITLE_GR", "ΠΑΜΕ ΓΙΑ ΒΡΟΥΒΕΣ", None),
+    ("S_TITLE", "LET'S GO FOR VROUVES", "ΠΑΜΕ ΓΙΑ ΒΡΟΥΒΕΣ"),
     ("S_LANGHINT", "PRESS 'L' FOR GREEK", "ΠΑΤΗΣΤΕ 'L' ΓΙΑ ΑΓΓΛΙΚΑ"),
     ("S_AMSTRAD", "AMSTRAD 64K", None),
     ("S_WAVE", "WAVE", "ΚΥΜΑ"),

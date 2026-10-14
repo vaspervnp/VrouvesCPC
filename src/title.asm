@@ -76,13 +76,8 @@ title_static:
         call text_big
         ld bc,#0800
         call set_colors
-        ld a,S_TITLE_EN
-        ld e,1
-        call print_id_centered
-        ld bc,#0900
-        call set_colors
-        ld a,S_TITLE_GR
-        ld e,18
+        ld a,S_TITLE             ; in the active language only
+        ld e,10
         call print_id_centered
         call text_normal
         ld bc,#0800

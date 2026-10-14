@@ -2330,15 +2330,7 @@ hud_top:
         call set_colors
         ld de,0
         call set_at
-        ld a,S_TITLE_EN
-        call print_id
-        ld bc,#0500
-        call set_colors
-        ld a,S_TITLE_SL
-        call print_id
-        ld bc,#0900
-        call set_colors
-        ld a,S_TITLE_GR
+        ld a,S_TITLE
         call print_id
         ld bc,#0500
         call set_colors
