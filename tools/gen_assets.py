@@ -638,7 +638,7 @@ def main():
         for c in range(MW):
             tilemap.append(tile_index(cell_bytes(cv_full, c, r)))
             t = grid[r][c]
-            celltype.append(0 if t == '.' else (1 if t == '#' else 2))
+            celltype.append(0 if t == '.' else 1 if t == '#' else 3 if t in 'KP' else 2)
     sack_data = []
     for i, (c, r) in enumerate(SACK_CELLS):
         full = tilemap[r * MW + c]

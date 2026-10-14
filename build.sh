@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 mkdir -p build
 python3 tools/gen_assets.py
 cd src
-rasm main.asm -o ../build/vrouves -s -v2 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -Ei "error|warning|code\+data" || true
+rasm main.asm -o ../build/vrouves -s -v2 ${RASMFLAGS} 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -Ei "error|warning|code\+data" || true
 [ -f VROUVES.BIN ] || { echo "assembly failed"; exit 1; }
 mv VROUVES.BIN ../build/VROUVES.BIN
 cd ..

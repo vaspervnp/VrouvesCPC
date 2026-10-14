@@ -80,7 +80,11 @@ HUDF_STATS  equ 1
 HUDF_INFO   equ 2
 HUDF_STATUS equ 4
 
+        if DEBUG
+START_FUNDS equ 3000
+        else
 START_FUNDS equ 120
+        endif
 FIRST_COUNTDOWN equ 45
 NEXT_COUNTDOWN equ 15
 
@@ -89,9 +93,9 @@ NEXT_COUNTDOWN equ 15
 ;------------------------------------------------------------------------------
 ; enemy types: base hp, hp per wave, speed, armour, reward, base damage, air, -
 etype_tab:
-        db 5,2,20,0,3,4,1,0             ; bio-drone
-        db 14,5,9,2,5,8,0,0             ; compliance guard
-        db 40,14,7,4,12,20,0,0          ; weed destroyer (tank)
+        db 6,3,20,0,3,4,1,0             ; bio-drone
+        db 16,7,9,2,4,8,0,0             ; compliance guard
+        db 50,18,7,4,10,20,0,0          ; weed destroyer (tank)
 
 ; towers: cost, range, cooldown, damage, flags (bit0 hits air), projectile, sfx, sell
 ttype_tab:
@@ -117,20 +121,20 @@ proj_sprites:
 proj_speed:
         db 6,9, 7,10, 10,15, 3,5
 
-; effects: frame a, frame b, lifetime
+; effects: frame a, frame b, lifetime (8 bytes each)
 fx_tab:
         dw spr_spark_a,spr_spark_b
-        db 6,0
+        db 6,0,0,0
         dw spr_puff_a,spr_puff_b
-        db 12,0
+        db 12,0,0,0
         dw spr_bash_a,spr_bash_b
-        db 8,0
+        db 8,0,0,0
         dw spr_poof_a,spr_poof_b
-        db 10,0
+        db 10,0,0,0
         dw spr_boom_a,spr_boom_b
-        db 12,0
+        db 12,0,0,0
         dw spr_zap_a,spr_spark_b
-        db 6,0
+        db 6,0,0,0
 
 sel_keys:
         db K_1,K_2,K_3,K_4,K_5,K_6
@@ -155,6 +159,10 @@ game_run:
         call update_fx
         call banner_tick
 .draw:  call hud_refresh
+        if DEBUG
+        ld hl,dbg_show
+        call both_screens
+        endif
         call render
         call flip
         ld a,(game_over)
@@ -189,7 +197,11 @@ game_init:
         ld bc,NCOL*NROW
 .cm:    bit 7,(hl)
         jr z,.cn
-        ld (hl),0
+        ld a,(hl)
+        and #40                 ; a hovering psssst sat on a blocked cell
+        jr z,.c0
+        ld a,2
+.c0:    ld (hl),a
 .cn:    cpi
         jp pe,.cm
         ; clear all entity arrays and game variables
@@ -240,8 +252,26 @@ game_init:
         ld a,B_STAGE
         ld c,B_CALL
         call banner_show
+        if DEBUG
+        ld a,DEBUG-1            ; -DDEBUG=n starts at wave n
+        ld (wave_num),a
+        endif
         call set_palette
         ret
+
+        if DEBUG
+dbg_show:                       ; frames per game tick, top right
+        call text_normal
+        ld bc,#0900
+        call set_colors
+        ld de,37*256+8
+        call set_at
+        ld a,(dbg_el)
+        ld l,a
+        ld h,0
+        ld a,3
+        jp print_num
+        endif
 
 ; win or lose: banner, then wait for fire
 end_game:
@@ -465,6 +495,21 @@ cursor_input:
         ld a,SFX_MOVE
         jp sfx_play
 
+; carry if the selected defender cannot go on the cursor cell
+can_build:
+        call cur_cell
+        ld a,(hl)
+        or a
+        ret z
+        cp 2
+        scf
+        ret nz
+        ld a,(sel_type)
+        cp TT_PSSSST
+        ret z
+        scf
+        ret
+
 ; D,E = cursor col,row ; HL = cellmap entry
 cur_cell:
         ld a,(cur_c)
@@ -474,10 +519,8 @@ cur_cell:
         jp cell_ptr
 
 try_build:
-        call cur_cell
-        ld a,(hl)
-        or a
-        jr nz,.err
+        call can_build
+        jr c,.err
         ld a,(sel_type)
         call ttype_ptr
         ld a,(hl)
@@ -519,8 +562,15 @@ try_build:
         ld (iy+T_CD),8
         ld (iy+T_DIS),0
         call cur_cell
+        ld a,(hl)               ; 2 = blocked cell (only psssst hovers there)
+        and 2
+        rrca
+        rrca
+        rrca
+        ld c,a                  ; #40 marks it
         ld a,(tmp_idx)
         or #80
+        or c
         ld (hl),a
         ld a,(tmp_cost)
         ld c,a
@@ -541,8 +591,12 @@ try_sell:
         ld a,(hl)
         bit 7,a
         ret z
-        ld (hl),0
-        and #7f
+        ld c,0
+        bit 6,a
+        jr z,.s0
+        ld c,2
+.s0:    ld (hl),c
+        and #1f
         call tower_ptr
         push hl
         pop iy
@@ -746,7 +800,7 @@ redraw_cell_nd:
         ld a,(hl)
         bit 7,a
         jr z,.done
-        and #7f
+        and #1f
         call tower_ptr
         ld a,(hl)
         ld bc,T_DIS
@@ -785,7 +839,18 @@ redraw_cell_nd:
 ; D,E = col,row : redraw the cell and mark it for both screens
 redraw_cell:
         call redraw_cell_nd
+        ld a,(ban_on)           ; keep a banner on top of rows 6-7
+        or a
+        jr z,.nb
+        ld a,e
+        sub 6
+        cp 2
+        jr nc,.nb
         ld a,d
+        dec a
+        cp 18
+        jp c,banner_draw
+.nb:    ld a,d
         add a,a
         add a,a
         ld d,a
@@ -831,13 +896,12 @@ wave_update:
         ld a,(en_count)
         or a
         ret nz
-        ; wave cleared: bonus 20 + 5*wave
+        ; wave cleared: bonus 15 + 3*wave
         ld a,(wave_num)
         ld c,a
         add a,a
-        add a,a
         add a,c
-        add a,20
+        add a,15
         ld c,a
         ld b,0
         ld hl,(funds)
@@ -1254,7 +1318,7 @@ crush_at:
         ld a,(hl)
         bit 7,a
         jr z,.o
-        and #7f
+        and #1f
         call tower_ptr
         ld a,(hl)
         cp TT_CAULDRON
@@ -1980,11 +2044,10 @@ draw_flag:
 
 draw_cursor:
         call cur_cell
-        ld a,(hl)
-        bit 7,a
+        bit 7,(hl)
         jr nz,.ok
-        or a
-        jr nz,.bad
+        call can_build
+        jr c,.bad
         ld a,(sel_type)
         call ttype_ptr
         ld c,(hl)
@@ -2283,7 +2346,7 @@ hud_info:
         ld a,(hl)
         bit 7,a
         jr z,.build
-        and #7f
+        and #1f
         call tower_ptr
         ld a,(hl)
         push af

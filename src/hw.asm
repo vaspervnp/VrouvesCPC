@@ -80,6 +80,7 @@ flip:
         sub b
         cp 2
         jr c,.w2
+        ld (dbg_el),a
         ld a,(framecnt)
         ld (last_flip),a
         ld a,(back_mask)

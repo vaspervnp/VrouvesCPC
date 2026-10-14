@@ -15,6 +15,10 @@
         BUILDSNA
         BANKSET 0
 
+        ifndef DEBUG
+DEBUG       equ 0           ; rasm -DDEBUG=1: frame meter, rich start
+        endif
+
 LOAD_ADDR   equ #0040
 BGBUF       equ #8000
 TAB_PF      equ #B500       ; playfield line -> screen address (lo page, hi page)
@@ -148,6 +152,8 @@ tgt_mask:   defs 1
 both_fn:    defs 2
 spr_src:    defs 2
 spr_h:      defs 1
+rr_h:       defs 1
+rr_w:       defs 1
 dl_cur_base: defs 2
 dl_cur_ptr: defs 2
 dl_oth_base: defs 2
@@ -216,6 +222,7 @@ sp_ptype:   defs 1
 sp_pdmg:    defs 1
 sp_pflag:   defs 1
 end_wait:   defs 1
+dbg_el:     defs 1
 game_vars_end:
 bss_end:
 

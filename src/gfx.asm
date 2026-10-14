@@ -168,22 +168,30 @@ draw_sprite_raw:
 draw_sprite_wh:
         ld a,b
         ld (spr_h),a
-        ld (spr_src),hl
+        ex de,hl                ; DE = data, HL = x,y
         ld a,c                  ; entry = unroll + (4-w)*8
         neg
         add a,4
         add a,a
         add a,a
         add a,a
-        ld hl,.unroll
-        add a,l
-        ld l,a
+        ld bc,.unroll
+        add a,c
+        ld c,a
         jr nc,.n
-        inc h
-.n:     ld (.jp+1),hl
-.row:   call line_addr
+        inc b
+.n:     ld (.jp+1),bc
+        ld a,(tgt_tab)          ; how to step to the next line
+        cp hi(TAB_BG)
+        ld bc,.nscr
+        jr nz,.s
+        ld bc,.nbg
+.s:     ld (.nl+1),bc
         push de
-        ld de,(spr_src)
+        ex de,hl
+        call line_addr          ; HL = first line
+        pop de
+.row:   push hl
         ld b,hi(MASKTAB)
 .jp:    jp .unroll
 .unroll:
@@ -197,11 +205,25 @@ draw_sprite_wh:
         ld (hl),a
         inc hl
         rend
-        ld (spr_src),de
-        pop de
-        inc e
-        ld hl,spr_h
-        dec (hl)
+        pop hl
+.nl:    jp .nscr
+.nscr:  ld a,h                  ; screen: +#800, wrapping to the next char row
+        add a,8
+        ld h,a
+        and #38
+        jr nz,.cnt
+        ld a,l
+        add a,80
+        ld l,a
+        ld a,h
+        adc a,#c0
+        ld h,a
+        jr .cnt
+.nbg:   ld bc,80                ; background buffer: linear
+        add hl,bc
+.cnt:   ld a,(spr_h)
+        dec a
+        ld (spr_h),a
         jr nz,.row
         ret
 
@@ -287,18 +309,10 @@ restore_dirty:
 
 ; D,E,C,B = x,y,w,h : background -> back buffer
 restore_rect:
-.row:   push bc
-        push de
-        ld l,e
-        ld h,hi(TAB_BG)
-        ld a,(hl)
-        inc h
-        ld h,(hl)
-        add a,d
-        ld l,a
-        jr nc,.n2
-        inc h
-.n2:    push hl
+        ld a,b
+        ld (rr_h),a
+        ld a,c
+        ld (rr_w),a
         ld l,e
         ld h,hi(TAB_PF)
         ld a,(hl)
@@ -311,14 +325,42 @@ restore_rect:
 .n1:    ld a,(back_mask)
         and h
         ld h,a
-        ex de,hl
-        pop hl
+        push hl
+        ld l,e
+        ld h,hi(TAB_BG)
+        ld a,(hl)
+        inc h
+        ld h,(hl)
+        add a,d
+        ld l,a
+        jr nc,.n2
+        inc h
+.n2:    pop de                  ; DE = screen, HL = background
+.row:   push hl
+        push de
+        ld a,(rr_w)
+        ld c,a
         ld b,0
         ldir
         pop de
-        pop bc
-        inc e
-        djnz .row
+        pop hl
+        ld bc,80
+        add hl,bc
+        ld a,d
+        add a,8
+        ld d,a
+        and #38
+        jr nz,.ok
+        ld a,e
+        add a,80
+        ld e,a
+        ld a,d
+        adc a,#c0
+        ld d,a
+.ok:    ld a,(rr_h)
+        dec a
+        ld (rr_h),a
+        jr nz,.row
         ret
 
 ; whole background -> both screens
