@@ -8,6 +8,8 @@ squads and weed-destroying tanks to wipe out the wild, "copyrighted" *vrouves* o
 In Zoniana, the villagers have to protect the Kafenio and its sacks of bitter greens.
 The rebel corporate drone **Psssst** has defected to their side.
 
+![Screenshots from Caprice32](docs/screenshots.png)
+
 ## Running
 
 ```bash
