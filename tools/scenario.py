@@ -22,7 +22,7 @@ class Player:
         s = self.sim
         for _ in range(200):
             cc, rr = s.byte('cur_c'), s.byte('cur_r')
-            if (cc, rr) == (c, r):
+            if (cc, rr) == (c, r) or s.byte('game_over'):
                 return
             if cc < c:
                 s.tap('RIGHT')
@@ -41,6 +41,8 @@ class Player:
     def build(self, t, c, r):
         self.goto(c, r)
         s = self.sim
+        if s.byte('game_over'):
+            return False
         s.tap(TYPES[t])
         for _ in range(20):
             if s.byte('sel_type') == t:
@@ -56,8 +58,8 @@ class Player:
 
 
 def status(s):
-    return "frame %d wave %d state %d hp %d funds %d enemies %d" % (
-        s.frame, s.byte('wave_num'), s.byte('wave_state'), s.byte('hp'),
+    return "frame %d stage %d wave %d state %d hp %d funds %d enemies %d" % (
+        s.frame, s.byte('stage') + 1, s.byte('wave_num'), s.byte('wave_state'), s.byte('hp'),
         s.word('funds'), s.byte('en_count'))
 
 
@@ -80,7 +82,7 @@ PLAN = [(1, 7, 3), (3, 9, 2), (4, 5, 2), (5, 6, 3), (2, 3, 2), (1, 11, 5), (3, 1
 def stress():
     s = start()
     p = Player(s)
-    for t, c, r in PLAN:
+    for t, c, r in stress_plan(s):
         p.build(t, c, r)
     print("built:", status(s))
     s.tap('N')
@@ -103,34 +105,72 @@ COST = {1: 30, 2: 50, 3: 70, 4: 80, 5: 110, 6: 60}
 
 # a sensible build order for Stage 01
 FULL_PLAN = [(1, 3, 2), (1, 16, 2), (2, 3, 3), (3, 14, 3), (6, 9, 3), (1, 12, 5), (5, 3, 5),
-             (4, 16, 5), (2, 9, 6), (3, 13, 6), (5, 9, 8), (6, 16, 8), (4, 12, 11), (3, 16, 11),
-             (1, 7, 13), (2, 10, 11), (5, 14, 11), (4, 7, 9), (6, 5, 10), (3, 6, 6)]
+             (4, 16, 5), (2, 9, 6), (3, 13, 6), (5, 9, 8), (6, 15, 9), (4, 12, 11), (3, 16, 11),
+             (1, 7, 13), (2, 11, 11), (5, 14, 11), (4, 7, 9), (6, 5, 10), (3, 6, 6)]
+# and for Stage 02, the church
+PLAN2 = [(1, 8, 8), (1, 11, 7), (3, 9, 4), (6, 9, 11), (2, 9, 9), (1, 16, 10), (5, 11, 11),
+         (4, 14, 7), (3, 12, 8), (2, 16, 8), (5, 9, 8), (6, 2, 8), (1, 3, 5), (4, 12, 10),
+         (3, 6, 3), (2, 8, 3), (5, 16, 11), (6, 14, 11), (3, 2, 11), (1, 13, 6)]
+PLANS = [FULL_PLAN, PLAN2]
 
 
-def full(plan=FULL_PLAN, verbose=True):
-    s = start()
+def stress_plan(s):
+    """many defenders for a rich (-DDEBUG) game on the current stage"""
+    return [PLAN, PLAN2][s.byte('stage')]
+
+
+def full_plan(s):
+    return PLANS[s.byte('stage')]
+
+
+def play_stage(s, plan, verbose=True):
     p = Player(s)
     todo = list(plan)
     last_wave = -1
+    while s.byte('game_over') == 0:
+        while todo and s.word('funds') >= COST[todo[0][0]]:
+            t, c, r = todo.pop(0)
+            if not p.build(t, c, r) and verbose:
+                print("could not build", t, c, r, "cursor", s.byte('cur_c'), s.byte('cur_r'),
+                      "sel", s.byte('sel_type'), "funds", s.word('funds'),
+                      "paused", s.byte('paused'), "cell", s.peek(s.sym('cellmap') + r * 20 + c))
+        if s.byte('wave_state') == 0 and not todo or (s.byte('wave_state') == 0 and
+                                                      s.word('funds') < COST[todo[0][0]]):
+            s.tap('N')
+        s.run_frames(25)
+        w = s.byte('wave_num')
+        if w != last_wave:
+            if verbose:
+                print(status(s))
+            last_wave = w
+        if s.frame > 400000:
+            break
+
+
+def next_stage(s):
+    """after a won stage: press fire on the banner, wait for the next stage"""
+    stg = s.byte('stage')
+    for _ in range(100):
+        s.tap('SPACE')
+        s.run_frames(20)
+        if s.byte('stage') != stg:
+            break
+    while not (s.byte('msg_on') and s.byte('stage') != stg):
+        s.run_frames(5)
+    s.run_frames(5)
+
+
+def full(plan=None, verbose=True):
+    s = start()
     try:
-        while s.byte('game_over') == 0:
-            while todo and s.word('funds') >= COST[todo[0][0]]:
-                t, c, r = todo.pop(0)
-                if not p.build(t, c, r) and verbose:
-                    print("could not build", t, c, r, "cursor", s.byte('cur_c'), s.byte('cur_r'),
-                          "sel", s.byte('sel_type'), "funds", s.word('funds'),
-                          "paused", s.byte('paused'), "cell", s.peek(s.sym('cellmap') + r * 20 + c))
-            if s.byte('wave_state') == 0 and not todo or (s.byte('wave_state') == 0 and
-                                                          s.word('funds') < COST[todo[0][0]]):
-                s.tap('N')
-            s.run_frames(25)
-            w = s.byte('wave_num')
-            if w != last_wave:
-                if verbose:
-                    print(status(s))
-                last_wave = w
-            if s.frame > 200000:
+        while True:
+            stg = s.byte('stage')
+            play_stage(s, plan or PLANS[stg], verbose)
+            print("stage %d:" % (stg + 1), "WON" if s.byte('game_over') == 1 else "LOST", status(s))
+            s.screenshot("build/full_stage%d.png" % (stg + 1))
+            if s.byte('game_over') != 1 or stg + 1 >= len(PLANS) or plan:
                 break
+            next_stage(s)
     except Crash as e:
         print("CRASH", e)
         s.screenshot("build/full_crash.png")

@@ -11,7 +11,7 @@ from cpcsim import SLICE  # noqa: E402
 DEBUG = len(sys.argv) > 1 and sys.argv[1] == 'stress'
 s = scenario.start()
 p = scenario.Player(s)
-plan = scenario.PLAN if DEBUG else scenario.FULL_PLAN[:12]
+plan = scenario.stress_plan(s) if DEBUG else scenario.full_plan(s)[:12]
 for t, c, r in plan:
     p.build(t, c, r)
 s.tap('N')
@@ -36,7 +36,8 @@ def rects():
         if mem[f]:
             out.append(('f', i, mem[f + 1], mem[f + 2], 4, 12))
     out.append(('c', 0, s.byte('cur_c') * 4, s.byte('cur_r') * 12, 4, 12))
-    out.append(('g', 0, 14, 99, 4, 8))
+    fl = s.sym('stage_flag')
+    out.append(('g', 0, mem[fl + 1], mem[fl], 4, 8))
     return out
 
 

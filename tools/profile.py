@@ -11,7 +11,7 @@ from cpcsim import SLICE  # noqa: E402
 
 s = scenario.start()
 p = scenario.Player(s)
-for t, c, r in scenario.PLAN:
+for t, c, r in scenario.stress_plan(s):
     p.build(t, c, r)
 s.tap('N')
 s.run_frames(400)

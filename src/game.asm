@@ -2361,7 +2361,7 @@ draw_flag:
         and 16
         jr z,.a
         ld hl,spr_flag_b
-.a:     ld de,#0e63             ; x 14, y 99
+.a:     ld de,(stage_flag)      ; x, y
         jp draw_sprite
 
 draw_cursor:

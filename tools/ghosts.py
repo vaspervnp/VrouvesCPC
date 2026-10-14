@@ -11,6 +11,8 @@ import scenario  # noqa: E402
 def diffs(s):
     mem = s.m.memory
     cc, cr = s.byte('cur_c'), s.byte('cur_r')
+    fl = s.sym('stage_flag')
+    fy, fx = mem[fl], mem[fl + 1]
     bad = []
     for base in (0xC000, 0x4000):
         for y in range(168):
@@ -21,7 +23,7 @@ def diffs(s):
                 if mem[a + x] != mem[bg + x]:
                     if cc * 4 <= x < cc * 4 + 4 and cr * 12 <= y < cr * 12 + 12:
                         continue
-                    if 14 <= x < 18 and 99 <= y < 107:
+                    if fx <= x < fx + 4 and fy <= y < fy + 8:
                         continue
                     bad.append((hex(base), x, y))
     return bad
@@ -29,7 +31,7 @@ def diffs(s):
 
 s = scenario.start()
 p = scenario.Player(s)
-todo = list(scenario.FULL_PLAN)
+todo = list(scenario.full_plan(s))
 checks = errors = 0
 while s.byte('game_over') == 0 and s.frame < 60000:
     while todo and s.word('funds') >= scenario.COST[todo[0][0]]:

@@ -16,7 +16,8 @@ The rebel corporate drone **Psssst** has defected to their side.
 ./build.sh
 ```
 
-This writes `build/vrouves.dsk` (and `build/vrouves.sna`, a snapshot for quick loading).
+This writes `build/vrouves.dsk` (and `build/vrouves.sna`, a snapshot for quick loading; the
+game still reads its title screen and stages from the disk, so keep the disk inserted).
 Insert the disk in any CPC emulator or a real 464/664/6128 with a disc drive and type:
 
 ```
@@ -55,8 +56,16 @@ On the title screen, → (or joystick right) flips between the story, defenders 
 * **F&M compliance guards** – armoured walkers with weed-whackers and herbicide.
 * **Weed destroyers** – treaded tanks with lots of health; they dent cauldrons next to the road, putting them out of action for a few seconds.
 
-Stage 01 has ten waves. Every invader that reaches the Kafenio steals greens; the sacks on the
-porch disappear as the Kafenio's HP drops. Survive all ten waves to win.
+## Stages
+
+1. **The Kafenio** – the road winds down from the hills to the village café, its porch stacked
+   with sacks of vrouves.
+2. **The village church** – the greens are hidden in the church courtyard, with the priest and
+   the candle stand. The road is shorter and every wave a little bigger.
+
+Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
+steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
+next stage; lose, and it is back to the title screen.
 
 ## Building
 
@@ -64,18 +73,26 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
 [iDSK](https://github.com/cpcsdk/idsk).
 
 * `tools/gen_assets.py` generates `src/gen/assets.asm`: the 3×6 font (Latin and Greek), the
-  sprites (`tools/art.py`), the Stage 01 map rendered to 8×12 tiles, the enemy paths, all
-  English/Greek text (`tools/texts.py`, byte-pair compressed), the music, sound effects and
-  waves. Preview PNGs go to `build/preview/`.
+  sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
+  the music and sound effects; `src/gen/title_text.asm`, the texts only the title screen needs;
+  and one file per stage, `build/STAGE1.BIN` and `STAGE2.BIN`: the map rendered to 8×12
+  tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
+  stage's own texts, in a fixed layout. Preview PNGs go to `build/preview/`.
+* `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
+  landed (`src/gen/diskmap.asm`), assembles, adds the title overlay `TITLE.BIN` and
+  `VROUVES.BIN`, and checks that every file is where the loader will look for it.
 * `src/main.asm` is the entry point and memory map; `hw.asm` (interrupts, keyboard, AY
-  sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`, `title.asm`.
+  sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`,
+  `disk.asm` (the disk loader) and `title.asm` (assembled into the title overlay).
 * `RASMFLAGS="-DDEBUG=9" ./build.sh` builds a debug version that starts with plenty of money
-  at wave 9; add `-DMETER=1` to show how many 50 Hz frames each drawn frame took (top right).
+  at wave 9; `-DSTART_STAGE=2` starts at the church; add `-DMETER=1` to show how many 50 Hz
+  frames each drawn frame took (top right).
 
 ### Headless testing
 
 `tools/cpcsim.py` is a small headless CPC (Z80 core from the `z80` Python package, keyboard
-through the PPI/AY, gate array palette, CRTC base, 300 Hz interrupts) that renders the shown
+through the PPI/AY, gate array palette, CRTC base, 300 Hz interrupts, and the disc
+controller reading `build/vrouves.dsk`) that renders the shown
 screen to PNG and stops on a crash (PC or SP out of range). On top of it,
 `tools/scenario.py stress` builds two dozen defenders and runs a late wave,
 `tools/bench.py` (on a `-DDEBUG=9` build) reports the frame rate in that fight and
@@ -83,8 +100,9 @@ screen to PNG and stops on a crash (PC or SP out of range). On top of it,
 memory wait states), `tools/costs.py <wave>` the time per game activity,
 `tools/ghosts.py` checks that no sprite leftovers remain on either screen between waves,
 `tools/enemycheck.py [stress]` checks at every flip that every enemy is fully drawn, and
-`tools/scenario.py full` plays a whole game with a build order, printing progress per wave —
-handy for balancing (a full ten-wave game simulates in a few seconds).
+`tools/scenario.py full` plays a whole game, both stages, with a build order per stage,
+printing progress per wave — handy for balancing. The tools work on whichever stage the build
+starts at.
 
 ### Testing in Caprice32
 
@@ -96,8 +114,14 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 ## Technical notes
 
 * The firmware is switched off; the game owns all 64K. Memory map: code and data from `#0040`,
-  screen buffers at `#4000` and `#C000`, a copy of the playfield background at `#8000`, line
-  tables, sprite mask table, dirty-rectangle lists and entity tables up to `#BEFF`.
+  the current stage just below `#4000`, screen buffers at `#4000` and `#C000`, a copy of the
+  playfield background at `#8000`, line tables, sprite mask table, dirty-rectangle lists and
+  entity tables up to `#BEFF`. The title screen's code and texts are an overlay that is loaded
+  into the background buffer whenever the title is shown.
+* With the firmware off, `disk.asm` drives the µPD765 disc controller itself: motor on,
+  recalibrate, seek, and read data sector by sector (interrupts held off during each sector,
+  retries on errors) straight to the destination; the music is held meanwhile. Files are
+  stored without an AMSDOS header, and their tracks and sectors are fixed at build time.
 * The playfield is double buffered. Every sprite drawn on a buffer leaves a rectangle in that
   buffer's list, which is restored from the background copy before the next frame is drawn there.
 * Sprites use pen 0 as transparent and a 256-byte mask table, so they are stored at one byte

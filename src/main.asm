@@ -4,9 +4,11 @@
 ;
 ; Memory map (firmware is switched off):
 ;   #0038         interrupt vector (jp int_handler)
-;   #0040-#3FFF   code, data, variables
+;   #0040-...     code, data, variables
+;   STAGE_AREA-#3FFF  the current stage, loaded from STAGEn.BIN
 ;   #4000-#7FFF   screen buffer B
-;   #8000-#B47F   background buffer (playfield, 80 x 168)
+;   #8000-#B47F   background buffer (playfield, 80 x 168); on the title
+;                 screen it holds the title overlay (TITLE.BIN)
 ;   #B500-#B8FF   line tables
 ;   #B900-#BEFF   sprite mask table, dirty lists, entity arrays
 ;   #BF00-#BFFF   stack
@@ -18,12 +20,16 @@
         ifndef DEBUG
 DEBUG       equ 0           ; rasm -DDEBUG=n: rich start at wave n
         endif
+        ifndef START_STAGE
+START_STAGE equ 1           ; rasm -DSTART_STAGE=n: start at stage n
+        endif
         ifndef METER
 METER       equ 0           ; rasm -DMETER=1: frames per tick shown top right
         endif
 
 LOAD_ADDR   equ #0040
 BGBUF       equ #8000
+TITLE_AREA  equ #8000
 TAB_PF      equ #B500       ; playfield line -> screen address (lo page, hi page)
 TAB_BG      equ #B700       ; playfield line -> background address
 SQUARES     equ #B480       ; 64 x 16 bit
@@ -125,19 +131,32 @@ start:
         ld (mus_on),a
         call snd_init
         ei
-.main:  call title_screen
+.main:  ld hl,disk_title
+        call disk_load
+        call title_screen
         ld a,(framecnt)
         ld hl,seed
         xor (hl)
         ld (hl),a
+        ld a,START_STAGE-1
+.stage: ld (stage),a
+        call stage_load
         call game_run
+        ld a,(game_over)        ; won: on to the next stage
+        dec a
+        jr nz,.main
+        ld a,(stage)
+        inc a
+        cp NUM_STAGES
+        jr c,.stage
         jr .main
 
         include "hw.asm"
         include "gfx.asm"
         include "game.asm"
-        include "title.asm"
+        include "disk.asm"
         include "gen/assets.asm"
+        include "gen/diskmap.asm"
 
 code_end:
 
@@ -185,6 +204,9 @@ tpage:      defs 1
 ttimer:     defs 2
 tmp_i:      defs 1
 tmp_y:      defs 1
+stage:      defs 1
+dk_err:     defs 1
+dk_res:     defs 8
 
 ; cleared by game_init
 game_vars:
@@ -247,12 +269,24 @@ dbg_el:     defs 1
 game_vars_end:
 bss_end:
 
-        assert bss_end <= #4000
+        assert bss_end <= STAGE_AREA
         assert (DLIST0 & #ff) == 0
         assert ENT_END <= #BF00
         assert lo(enemies) == 0 && EN_SZ*MAX_EN == 256 && lo(projs) == 0
 
-        print "code+data end: ",{hex}code_end,"  bss end: ",{hex}bss_end,"  free: ",#4000-bss_end
+        print "code+data end: ",{hex}code_end,"  bss end: ",{hex}bss_end,"  free: ",STAGE_AREA-bss_end
 
         RUN start
         SAVE 'VROUVES.BIN',LOAD_ADDR,code_end-LOAD_ADDR
+
+;------------------------------------------------------------------------------
+; title overlay: the title screen and its texts, loaded into the background
+; buffer whenever the title is shown
+;------------------------------------------------------------------------------
+        org TITLE_AREA
+        include "title.asm"
+        include "gen/title_text.asm"
+title_end:
+        assert title_end <= TAB_PF
+        print "title overlay: ",title_end-TITLE_AREA," bytes"
+        SAVE 'TITLE.BIN',TITLE_AREA,title_end-TITLE_AREA

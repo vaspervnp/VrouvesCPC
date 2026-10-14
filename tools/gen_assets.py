@@ -18,6 +18,7 @@ import texts  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "src", "gen", "assets.asm")
+OUT_TITLE = os.path.join(ROOT, "src", "gen", "title_text.asm")
 PREVIEW = os.path.join(ROOT, "build", "preview")
 
 MW, MH = 20, 14          # map size in cells
@@ -70,9 +71,11 @@ def dw_lines(data, per=8):
     return lines
 
 
-# ------------------------------------------------------------------ map
+# ------------------------------------------------------------------ maps
+# '.' grass, '#' path (carved from the waypoints), T tree, C cactus, G goat,
+# Y cypress, W wall, K/P the defended building and its yard (cell type 3)
 
-MAP = [
+MAP1 = [
     "T.G..T...T..T.C...TT",
     "T..................T",
     "..........WWWWWW..T.",
@@ -88,18 +91,37 @@ MAP = [
     "PPPPP..............T",
     "PPPPPPT..T.CT..T.G.T",
 ]
-MAP = [r.ljust(MW, '.')[:MW] for r in MAP]
+GROUND1 = [(17, 0), (17, 1), (2, 1), (2, 4), (15, 4), (15, 7), (8, 7),
+           (8, 10), (17, 10), (17, 12), (5, 12)]
+AIR1 = [(17, 0), (12, 5), (12, 8), (8, 12), (5, 12)]
+SACKS1 = [(3, 12), (4, 12), (3, 13), (4, 13), (5, 13)]
 
-GROUND_WP = [(17, 0), (17, 1), (2, 1), (2, 4), (15, 4), (15, 7), (8, 7),
-             (8, 10), (17, 10), (17, 12), (5, 12)]
-AIR_WP = [(17, 0), (12, 5), (12, 8), (8, 12), (5, 12)]
+MAP2 = [
+    "T..T..C..T...Y.KKKKK",
+    "...............KKKKK",
+    "T..............KKKKK",
+    "Y..........Y...KKKKK",
+    ".....WWWW..T...PPPPP",
+    "T.G............PPPPP",
+    "Y...........C...Y..T",
+    "T........G....WWW..T",
+    "T...T..............T",
+    "....G........WWWW...",
+    "T.......T..........T",
+    "T..C........T......T",
+    "..T...G...........Y.",
+    "T.T..T..Y..T..T..C.T",
+]
+GROUND2 = [(1, 13), (1, 10), (7, 10), (7, 7), (1, 7), (1, 2), (10, 2), (10, 12),
+           (17, 12), (17, 6)]
+AIR2 = [(1, 13), (8, 6), (17, 6)]
+SACKS2 = [(15, 4), (16, 4), (18, 4), (19, 4), (15, 5)]
 
-SACK_CELLS = [(3, 12), (4, 12), (3, 13), (4, 13), (5, 13)]
 
-
-def carve_path(grid):
+def carve_path(grid, wps):
+    grid = [r.ljust(MW, '.')[:MW] for r in grid]
     cells = set()
-    for (a, b) in zip(GROUND_WP, GROUND_WP[1:]):
+    for (a, b) in zip(wps, wps[1:]):
         (c0, r0), (c1, r1) = a, b
         dc = (c1 > c0) - (c1 < c0)
         dr = (r1 > r0) - (r1 < r0)
@@ -236,6 +258,34 @@ GOAT_B = [
     "..oooo..",
     "..o..o..",
     "....r...",
+]
+CYPRESS = [
+    "...t....",
+    "...tk...",
+    "..ttt...",
+    "..tptk..",
+    "..tttk..",
+    ".ttpttk.",
+    ".tpttk..",
+    ".ttttk..",
+    ".tptttk.",
+    "..tttk..",
+    "...kr...",
+    "........",
+]
+PRIEST = [
+    "..kkk..",
+    ".kkkkk.",
+    ".kkkkk.",
+    "..sss..",
+    "..eee..",
+    ".keeek.",
+    "kkkekkk",
+    "kkkykkk",
+    "kkyyykk",
+    "kkkykkk",
+    ".kkkkk.",
+    ".kk.kk.",
 ]
 TABLE = [
     ".rrr.",
@@ -454,13 +504,145 @@ def porch(cv, with_sacks):
     # a cat
     cv.blit(["y.y", "yyy", ".y.", "yyy", "..y"], 26, 160)
     if with_sacks:
-        for (c, r) in SACK_CELLS:
+        for (c, r) in SACKS1:
             x0, y0 = c * TW, r * TH
             cv.blit(SACK, x0, y0 + 1)
             cv.blit(SACK, x0 + 4, y0 + 3)
 
 
-def render_background(grid, with_sacks=True):
+def kafenio_base(cv, with_sacks):
+    kafenio(cv)
+    porch(cv, with_sacks)
+
+
+# church and courtyard of Stage 02: cells 15-19 x 0-3 and 15-19 x 4-5
+CH_X0, CH_Y0 = 15 * TW, 0
+YARD_Y0 = 4 * TH
+
+
+def church(cv):
+    K, Wh, E, B, C, Y, r, G, T = (art.CH[k] for k in "kWeBcyrgt")
+    x0, x1, y1 = CH_X0, PFW - 1, YARD_Y0 - 1
+    # grass around the church
+    cv.rect(x0, 0, x1, y1, G)
+    for (x, y) in ((x0 + 2, 3), (x1 - 3, 44), (x0 + 3, 41), (x1 - 2, 4)):
+        cv.set(x, y, T)
+        cv.set(x + 2, y, T)
+        cv.set(x + 1, y + 1, T)
+    # nave: whitewashed walls and barrel roof, running east-west
+    nx0, nx1, ny0, ny1 = x0 + 8, x1 - 4, 13, 35
+    cv.rect(nx0, ny0, nx1, ny1, K)
+    cv.rect(nx0 + 1, ny0 + 1, nx1 - 1, ny1 - 1, Wh)
+    mid_y = (ny0 + ny1) // 2
+    for y in range(mid_y + 2, ny1 - 1):         # the roof curves away from the sun
+        for x in range(nx0 + 1, nx1):
+            if (y - mid_y) % 3 == 0 or y >= ny1 - 3:
+                cv.set(x, y, E)
+    for x in range(nx0 + 1, nx1):
+        cv.set(x, mid_y, E)
+    # apse at the east end
+    for y in range(ny0 + 3, ny1 - 2):
+        for x in range(nx1, x1 + 1):
+            d = math.hypot((x - nx1) * 2, y - (ny0 + ny1) / 2)
+            if d <= 7.5:
+                cv.set(x, y, K if d > 6.5 else Wh)
+    # blue dome in the middle, with a gold cross
+    cx, cy = (nx0 + nx1) / 2, mid_y + 0.5
+    for y in range(ny0 - 6, ny1 + 6):
+        for x in range(nx0, nx1 + 1):
+            d = math.hypot((x - cx) * 2, y - cy)
+            if d <= 10.5:
+                cv.set(x, y, K if d > 9.5 else C if (x - cx) * 2 + (y - cy) < -8 else B)
+    mx, my = int(cx), int(cy)
+    for (dx, dy) in ((0, -3), (0, -2), (-1, -1), (0, -1), (1, -1), (0, 0), (0, 1), (0, 2)):
+        cv.set(mx + dx, my + dy, Y)
+    # door to the courtyard, and a stone path
+    for y in range(ny1 - 1, y1 + 1):
+        for x in range(mx - 2, mx + 3):
+            cv.set(x, y, E if y > ny1 else K if x in (mx - 2, mx + 2) else r)
+    # bell tower at the west end, the bell in its arch
+    bx0, bx1, by0, by1 = x0 + 2, x0 + 9, 9, 39
+    cv.rect(bx0, by0, bx1, by1, K)
+    cv.rect(bx0 + 1, by0 + 1, bx1 - 1, by1 - 1, Wh)
+    cv.rect(bx0 + 2, 20, bx1 - 2, 28, K)
+    cv.rect(bx0 + 3, 22, bx1 - 3, 27, Y)
+    cv.set(bx0 + 4, 21, r)
+    for y in range(by0 + 2, by1 - 1, 4):
+        cv.set(bx1 - 1, y, E)
+    # flagpole on the tower (the cloth is the animated flag sprite)
+    fx, fy = STAGES_FLAG2[0] * 2, STAGES_FLAG2[1]
+    for y in range(fy, by0 + 1):
+        cv.set(fx, y, r)
+
+
+def courtyard(cv, with_sacks):
+    K, Wh, E, O, Y, B = (art.CH[k] for k in "kWeoyB")
+    x0, x1, y0, y1 = CH_X0, PFW - 1, YARD_Y0, YARD_Y0 + 2 * TH - 1
+    # pebble mosaic: a white diamond in every cell
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            u, v = x % TW, (y - y0) % TH
+            d = abs(u - 3.5) * 2 + abs(v - 5.5)
+            cv.set(x, y, Wh if 5 <= d < 6.5 else B if d < 1.5 else E)
+    # low white wall, with a gate where the road arrives
+    gx0, gx1 = 17 * TW, 18 * TW - 1
+    for x in range(x0, x1 + 1):
+        if not gx0 <= x <= gx1:
+            cv.set(x, y1, K)
+            cv.set(x, y1 - 1, Wh)
+    for y in range(y0, y1 + 1):
+        cv.set(x0, y, K)
+        cv.set(x0 + 1, y, Wh)
+    # candle stand: a tray of sand with candles
+    cx0, cy0 = 16 * TW + 1, y0 + TH + 2
+    cv.rect(cx0, cy0, cx0 + 5, cy0 + 6, K)
+    cv.rect(cx0 + 1, cy0 + 1, cx0 + 4, cy0 + 5, O)
+    for (dx, dy) in ((1, 1), (3, 2), (2, 4), (4, 4)):
+        cv.set(cx0 + dx, cy0 + dy, Y)
+    # the priest
+    cv.blit(PRIEST, 19 * TW, y0 + TH - 1)
+    if with_sacks:
+        for (c, r_) in SACKS2:
+            sx, sy = c * TW, r_ * TH
+            cv.blit(SACK, sx, sy + 1)
+            cv.blit(SACK, sx + 4, sy + 2)
+
+
+def church_base(cv, with_sacks):
+    church(cv)
+    courtyard(cv, with_sacks)
+
+
+STAGES_FLAG2 = (62, 1)
+
+
+class Stage:
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+
+
+STAGES = [
+    Stage(map=MAP1, ground=GROUND1, air=AIR1, sacks=SACKS1, base=kafenio_base,
+          flag=(14, 99), waves="WAVES1",
+          strings={
+              "B_STAGE": ("STAGE 01: THE KAFENIO", "ΠΙΣΤΑ 01: ΤΟ ΚΑΦΕΝΕΙΟ"),
+              "B_WIN": ("KAFENIO SAVED! NOW, TO THE CHURCH!",
+                        "ΤΟ ΚΑΦΕΝΕΙΟ ΣΩΘΗΚΕ! ΣΤΗΝ ΕΚΚΛΗΣΙΑ!"),
+              "B_LOSE": ("THE KAFENIO HAS FALLEN!", "ΤΟ ΚΑΦΕΝΕΙΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP2, ground=GROUND2, air=AIR2, sacks=SACKS2, base=church_base,
+          flag=STAGES_FLAG2, waves="WAVES2",
+          strings={
+              "B_STAGE": ("STAGE 02: THE VILLAGE CHURCH",
+                          "ΠΙΣΤΑ 02: Η ΕΚΚΛΗΣΙΑ ΤΟΥ ΧΩΡΙΟΥ"),
+              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_LOSE": ("THE CHURCH HAS FALLEN!", "Η ΕΚΚΛΗΣΙΑ ΕΠΕΣΕ!"),
+          }),
+]
+STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
+
+
+def render_background(stage, grid, with_sacks=True):
     cv = Canvas(PFW, PFH, art.CH['g'])
     for r in range(MH):
         for c in range(MW):
@@ -479,8 +661,9 @@ def render_background(grid, with_sacks=True):
                     cv.blit(CACTUS, c * TW, r * TH)
                 elif t == 'G':
                     cv.blit(GOAT_W if (c + r) % 2 else GOAT_B, c * TW, r * TH)
-    kafenio(cv)
-    porch(cv, with_sacks)
+                elif t == 'Y':
+                    cv.blit(CYPRESS, c * TW, r * TH)
+    stage.base(cv, with_sacks)
     return cv
 
 
@@ -570,7 +753,7 @@ SFX_PRIO = {"SFX_MOVE": 0, "SFX_PISTOL": 1, "SFX_RIFLE": 1, "SFX_LASER": 1, "SFX
 
 # ------------------------------------------------------------------ waves
 # enemy types: 1 drone, 2 guard, 3 tank.  (type, count, interval in frames)
-WAVES = [
+WAVES1 = [
     [(2, 6, 45)],
     [(1, 8, 28)],
     [(2, 6, 36), (1, 6, 24)],
@@ -582,6 +765,22 @@ WAVES = [
     [(1, 18, 14), (2, 10, 20), (3, 4, 40)],
     [(2, 12, 18), (1, 16, 12), (3, 8, 36)],
 ]
+# the church: a shorter road and a little more in every wave
+WAVES2 = [
+    [(2, 7, 42)],
+    [(1, 10, 26)],
+    [(2, 7, 34), (1, 6, 24)],
+    [(2, 7, 30), (3, 2, 70)],
+    [(1, 12, 18), (2, 6, 28)],
+    [(2, 10, 24), (3, 3, 56)],
+    [(1, 14, 16), (2, 9, 22), (3, 2, 48)],
+    [(3, 5, 46), (2, 11, 20), (1, 10, 14)],
+    [(1, 18, 13), (2, 11, 18), (3, 4, 40)],
+    [(2, 13, 16), (1, 16, 11), (3, 9, 32)],
+]
+
+# stage files are loaded at STAGE_AREA, just below #4000; their layout is fixed
+STAGE_FILES = ["STAGE1.BIN", "STAGE2.BIN"]
 
 # ------------------------------------------------------------------ build
 
@@ -589,6 +788,7 @@ WAVES = [
 def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     os.makedirs(PREVIEW, exist_ok=True)
+    os.makedirs(os.path.join(ROOT, "build"), exist_ok=True)
     A = []
 
     def emit(s=""):
@@ -620,75 +820,79 @@ def main():
     A.extend(db_lines(fdata, 12))
     emit()
 
-    # map / tiles
-    grid = carve_path(list(MAP))
-    cv_full = render_background(grid, True)
-    cv_empty = render_background(grid, False)
-    tiles = {}
-    tile_list = []
+    # stages: each one a file with a fixed layout, loaded at STAGE_AREA
+    built = []
+    for st in STAGES:
+        grid = carve_path(st.map, st.ground)
+        cv_full = render_background(st, grid, True)
+        cv_empty = render_background(st, grid, False)
+        tiles, tile_list, tilemap, celltype = {}, [], [], []
 
-    def tile_index(tb):
-        if tb not in tiles:
-            tiles[tb] = len(tile_list)
-            tile_list.append(tb)
-        return tiles[tb]
+        def tile_index(tb):
+            if tb not in tiles:
+                tiles[tb] = len(tile_list)
+                tile_list.append(tb)
+            return tiles[tb]
 
-    tilemap = []
-    celltype = []
-    for r in range(MH):
-        for c in range(MW):
-            tilemap.append(tile_index(cell_bytes(cv_full, c, r)))
-            t = grid[r][c]
-            celltype.append(0 if t == '.' else 1 if t == '#' else 3 if t in 'KP' else 2)
-    sack_data = []
-    for i, (c, r) in enumerate(SACK_CELLS):
-        full = tilemap[r * MW + c]
-        empty = tile_index(cell_bytes(cv_empty, c, r))
-        sack_data += [c, r, full, empty]
-    assert len(tile_list) < 256
-    emit("NUM_TILES equ %d" % len(tile_list))
-    emit("tiles:")
-    for tb in tile_list:
-        A.extend(db_lines(list(tb), 16))
-    emit("tilemap:")
-    A.extend(db_lines(tilemap, 20))
-    emit("cellmap:")
-    A.extend(db_lines(celltype, 20))
-    emit("NUM_SACKS equ %d" % len(SACK_CELLS))
-    emit("sack_cells:")
-    A.extend(db_lines(sack_data, 4))
+        for r in range(MH):
+            for c in range(MW):
+                tilemap.append(tile_index(cell_bytes(cv_full, c, r)))
+                t = grid[r][c]
+                celltype.append(0 if t == '.' else 1 if t == '#' else 3 if t in 'KP' else 2)
+        sack_data = []
+        for (c, r) in st.sacks:
+            full = tilemap[r * MW + c]
+            empty = tile_index(cell_bytes(cv_empty, c, r))
+            assert full != empty, (c, r)
+            sack_data += [c, r, full, empty]
+        assert len(st.sacks) == 5 and len(tile_list) < 256
+        paths = []
+        for wps in (st.ground, st.air):
+            segs = []
+            for (a_, b_) in zip(wps, wps[1:]):
+                (c0, r0), (c1, r1) = a_, b_
+                dc, dr = c1 - c0, r1 - r0
+                assert dc == 0 or dr == 0 or abs(dc) == abs(dr)
+                n = 12 * max(abs(dc), abs(dr))
+                assert n < 256
+                segs.append(((dc > 0) - (dc < 0), (dr > 0) - (dr < 0), n))
+            c0, r0 = wps[0]
+            x0, y0, sub0, rem0 = c0 * 4, r0 * 12, 0, segs[0][2]
+            while y0 < 2:   # start low enough for the health bar
+                dx, dy, _ = segs[0]
+                y0 += dy
+                sub0 += 1
+                if sub0 == 3:
+                    sub0 = 0
+                    x0 += dx
+                rem0 -= 1
+            data = [x0, y0, sub0, rem0]
+            for (dx, dy, n) in segs:
+                data += [dx & 0xFF, dy & 0xFF, n]
+            paths.append(data + [0, 0, 0])
+        waves = globals()[st.waves]
+        assert len(waves) == len(WAVES1)
+        wdata = []
+        for w in waves:
+            wdata.append([v for (t, n, iv) in w for v in (t, n, iv)] + [0])
+        built.append(dict(tilemap=tilemap, cellmap=celltype, sacks=sack_data,
+                          flag=list(st.flag), pg=paths[0], pa=paths[1], waves=wdata,
+                          tiles=[b_ for tb in tile_list for b_ in tb], ntiles=len(tile_list),
+                          grid=grid))
+        print("stage %d: %d tiles" % (len(built), len(tile_list)))
+    # fixed layout: every section as big as the biggest stage needs
+    sections = [("tilemap", 280), ("cellmap", 280), ("sack_cells", 20), ("stage_flag", 2),
+                ("path_ground", max(len(b_["pg"]) for b_ in built)),
+                ("path_air", max(len(b_["pa"]) for b_ in built)),
+                ("wave_table", 2 * len(WAVES1)),
+                ("wave_data", max(sum(len(w) for w in b_["waves"]) for b_ in built))]
+    stage_strs = [(sid, lang) for sid in STAGE_STRINGS for lang in (0, 1)]
+    STAGE_STR_ENC = {}           # filled in by the string encoder below
+    layout = {"_sections": sections}
+    emit("NUM_STAGES equ %d" % len(STAGES))
+    emit("NUM_SACKS equ 5")
+    emit("NUM_WAVES equ %d" % len(WAVES1))
     emit()
-
-    # paths: x0, y0, sub0, rem0, then (dx, dy, n) segments, 0,0,0 terminated
-    for name, wps in (("path_ground", GROUND_WP), ("path_air", AIR_WP)):
-        segs = []
-        for (a, b) in zip(wps, wps[1:]):
-            (c0, r0), (c1, r1) = a, b
-            dc, dr = c1 - c0, r1 - r0
-            assert dc == 0 or dr == 0 or abs(dc) == abs(dr)
-            n = 12 * max(abs(dc), abs(dr))
-            assert n < 256
-            segs.append(((dc > 0) - (dc < 0), (dr > 0) - (dr < 0), n))
-        c0, r0 = wps[0]
-        x0, y0, sub0, rem0 = c0 * 4, r0 * 12, 0, segs[0][2]
-        while y0 < 2:   # start low enough for the health bar
-            dx, dy, _ = segs[0]
-            y0 += dy
-            sub0 += 1
-            if sub0 == 3:
-                sub0 = 0
-                x0 += dx
-            rem0 -= 1
-        emit("%s:" % name)
-        data = [x0, y0, sub0, rem0]
-        for (dx, dy, n) in segs:
-            data += [dx & 0xFF, dy & 0xFF, n]
-        data += [0, 0, 0]
-        A.extend(db_lines(data, 16))
-        emit("%s_len equ %d" % (name, sum(n for _, _, n in segs)))
-    emit()
-
-
     # sprites
     for name, rows in art.SPRITES:
         emit("%s:" % name)
@@ -749,25 +953,42 @@ def main():
                 for line in t.split("\n"):
                     assert len(line) <= 35, line
     all_strings.append(("T_STORY", texts.wrap(texts.STORY_EN), texts.wrap(texts.STORY_GR)))
+    all_strings += [(sid, None, None) for sid in STAGE_STRINGS]
     for sid, en, gr in all_strings:
         if gr is None:
             gr = en
         ids.append(sid)
-        en_lines.append(("se_" + sid, enc_text(en)))
-        gr_lines.append(("sg_" + sid, enc_text(gr)))
+        if sid not in STAGE_STRINGS:
+            en_lines.append(("se_" + sid, enc_text(en)))
+            gr_lines.append(("sg_" + sid, enc_text(gr)))
     for i, sid in enumerate(ids):
         emit("%s equ %d" % (sid, i))
-    # deduplicate, then byte-pair encode all strings together
+    # deduplicate, then byte-pair encode all strings together.  Title-only
+    # strings (T_*) live in the title overlay, so a resident string must never
+    # alias one of them: resident strings come first.
     uniq = []
     lbl_of = {}
     alias = []
-    for lbl, data in en_lines + gr_lines:
+    title_lbls = set()
+
+    def is_title(lbl):
+        return lbl[3:].startswith("T_")
+    order = ([x for x in en_lines + gr_lines if not is_title(x[0])] +
+             [x for x in en_lines + gr_lines if is_title(x[0])])
+    for lbl, data in order:
         key = tuple(data)
         if key in lbl_of:
             alias.append((lbl, lbl_of[key]))
         else:
             lbl_of[key] = lbl
             uniq.append([lbl, list(data)])
+            if is_title(lbl):
+                title_lbls.add(lbl)
+    # stage strings: one per stage, never deduplicated
+    for k, st in enumerate(STAGES):
+        for sid in STAGE_STRINGS:
+            for lang in (0, 1):
+                uniq.append([("stage", k, sid, lang), enc_text(st.strings[sid][lang])])
     NG = len(font.GLYPHS)
     raw_size = sum(len(d) for _, d in uniq)
     pairs = []
@@ -805,17 +1026,72 @@ def main():
         flat += [a, b]
     A.extend(db_lines(flat, 16))
     emit("strtab_en:")
-    A.extend("    dw " + lbl for lbl, _ in en_lines)
+    A.extend("    dw se_" + sid for sid in ids)
     emit("strtab_gr:")
-    A.extend("    dw " + lbl for lbl, _ in gr_lines)
+    A.extend("    dw sg_" + sid for sid in ids)
     for lbl, target in alias:
         emit("%s equ %s" % (lbl, target))
+    T = ["; generated by tools/gen_assets.py - do not edit",
+         "; title-only strings, part of the title overlay"]
     for lbl, d in uniq:
-        emit("%s:" % lbl)
-        A.extend(db_lines(d, 20))
+        if isinstance(lbl, tuple):
+            STAGE_STR_ENC[lbl[1:]] = d
+        elif lbl in title_lbls:
+            T.append("%s:" % lbl)
+            T.extend(db_lines(d, 20))
+        else:
+            emit("%s:" % lbl)
+            A.extend(db_lines(d, 20))
     packed = sum(len(d) for _, d in uniq) + 2 * len(pairs)
     print("text: %d bytes raw, %d packed (%d pairs)" % (raw_size, packed, len(pairs)))
     emit()
+    with open(OUT_TITLE, "w") as f:
+        f.write("\n".join(T) + "\n")
+
+    # stage files
+    for sid in STAGE_STRINGS:
+        for lang in (0, 1):
+            sections.append(("%s_%s" % ("se" if lang == 0 else "sg", sid),
+                             max(len(STAGE_STR_ENC[(k, sid, lang)]) for k in range(len(STAGES)))))
+    fixed = sum(n for _, n in sections)
+    size = fixed + 48 * max(b_["ntiles"] for b_ in built)
+    stage_area = 0x4000 - size
+    emit("STAGE_AREA equ #%04X" % stage_area)
+    emit("STAGE_SIZE equ %d" % size)
+    off = {}
+    o = 0
+    for name, n in sections:
+        off[name] = o
+        if name != "wave_data":
+            emit("%s equ STAGE_AREA+%d" % (name, o))
+        o += n
+    emit("tiles equ STAGE_AREA+%d" % o)
+    emit()
+    for k, b_ in enumerate(built):
+        img = bytearray(fixed)
+
+        def put(name, data):
+            assert len(data) <= dict(sections)[name], name
+            img[off[name]:off[name] + len(data)] = bytes(v & 0xFF for v in data)
+        put("tilemap", b_["tilemap"])
+        put("cellmap", b_["cellmap"])
+        put("sack_cells", b_["sacks"])
+        put("stage_flag", b_["flag"][::-1])     # y, x: LD DE,(nn) gives D = x
+        put("path_ground", b_["pg"])
+        put("path_air", b_["pa"])
+        ptrs, wd = [], []
+        for w in b_["waves"]:
+            ptrs.append(stage_area + off["wave_data"] + len(wd))
+            wd += w
+        put("wave_table", [v for p_ in ptrs for v in (p_ & 255, p_ >> 8)])
+        put("wave_data", wd)
+        for sid in STAGE_STRINGS:
+            for lang in (0, 1):
+                put("%s_%s" % ("se" if lang == 0 else "sg", sid), STAGE_STR_ENC[(k, sid, lang)])
+        img += bytes(b_["tiles"])
+        with open(os.path.join(ROOT, "build", STAGE_FILES[k]), "wb") as f:
+            f.write(img)
+    print("stage area #%04X, %d bytes" % (stage_area, size))
 
     # music
     mel = parse_mel(MEL_A) + parse_mel(MEL_A) + parse_mel(MEL_B)
@@ -857,19 +1133,6 @@ def main():
         A.extend(db_lines(data, 16))
     emit()
 
-    # waves
-    emit("NUM_WAVES equ %d" % len(WAVES))
-    emit("wave_table:")
-    A.extend("    dw wave_%d" % i for i in range(len(WAVES)))
-    for i, w in enumerate(WAVES):
-        emit("wave_%d:" % i)
-        data = []
-        for (t, n, iv) in w:
-            data += [t, n, iv]
-        data.append(0)
-        A.extend(db_lines(data, 16))
-    emit()
-
     with open(OUT, "w") as f:
         f.write("\n".join(A) + "\n")
 
@@ -882,19 +1145,26 @@ def main():
         im = im.resize((cv.w * scale_x, cv.h * scale_y), Image.NEAREST)
         im.save(os.path.join(PREVIEW, name))
 
-    # playfield with a few units to judge the art
-    demo = render_background(grid, True)
-    placed = [(art.CRETAN, 4, 2), (art.YIAYIA, 9, 3), (art.BRIDE, 13, 5), (art.PSSSST, 6, 5),
-              (art.CAULDRON, 10, 8), (art.BAKER, 12, 11), (art.CAULDRON_CRUSHED, 16, 11)]
-    for rows, c, r in placed:
-        demo.blit(rows, c * TW, r * TH)
-    gp = path_steps(GROUND_WP)
-    ap = path_steps(AIR_WP)
-    for rows, (x, y) in ((art.DRONE_A, ap[60]), (art.GUARD_A, gp[100]), (art.TANK_L_A, gp[40]),
-                         (art.TANK_V_A, gp[200]), (art.GUARD_B, gp[300]), (art.DRONE_B, ap[120])):
-        demo.blit(rows, x * 2, y)
-    demo.blit(art.FLAG_A, 28, 99)
-    save(demo, "playfield.png")
+    # playfields with a few units to judge the art
+    for k, st in enumerate(STAGES):
+        demo = render_background(st, built[k]["grid"], True)
+        if k == 0:
+            placed = [(art.CRETAN, 4, 2), (art.YIAYIA, 9, 3), (art.BRIDE, 13, 5),
+                      (art.PSSSST, 6, 5), (art.CAULDRON, 10, 8), (art.BAKER, 12, 11),
+                      (art.CAULDRON_CRUSHED, 16, 11)]
+        else:
+            placed = [(art.CRETAN, 3, 4), (art.YIAYIA, 8, 11), (art.BRIDE, 12, 4),
+                      (art.PSSSST, 6, 8), (art.CAULDRON, 11, 10), (art.BAKER, 15, 8)]
+        for rows, c, r in placed:
+            demo.blit(rows, c * TW, r * TH)
+        gp = path_steps(st.ground)
+        ap = path_steps(st.air)
+        for rows, (x, y) in ((art.DRONE_A, ap[60]), (art.GUARD_A, gp[100]),
+                             (art.TANK_L_A, gp[40]), (art.TANK_V_A, gp[200]),
+                             (art.GUARD_B, gp[300]), (art.DRONE_B, ap[90])):
+            demo.blit(rows, x * 2, y)
+        demo.blit(art.FLAG_A, st.flag[0] * 2, st.flag[1])
+        save(demo, "playfield%d.png" % (k + 1))
 
     sheet = Canvas(10 * 10, 5 * 14, art.CH['n'])
     for i, (name, rows) in enumerate(art.SPRITES):
@@ -906,7 +1176,6 @@ def main():
         ft.text(ch, (i % 20) * 4, (i // 20) * 8 + 1, art.CH['W'])
     save(ft, "font.png", 8, 4)
 
-    print("tiles: %d (%d bytes)" % (len(tile_list), len(tile_list) * 48))
 
 
 if __name__ == "__main__":
