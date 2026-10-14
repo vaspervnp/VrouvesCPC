@@ -215,9 +215,10 @@ ban_on:     defs 1
 ban_id1:    defs 1
 ban_id2:    defs 1
 ban_timer:  defs 1
-ps_on:      defs 1
-ps_id1:     defs 1
-ps_id2:     defs 1
+msg_on:     defs 1
+msg_id1:    defs 1
+msg_id2:    defs 1
+msg_timer:  defs 1
 sacks_gone: defs 1
 tmp_cost:   defs 1
 tmp_idx:    defs 1

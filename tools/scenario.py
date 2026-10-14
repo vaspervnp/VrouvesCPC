@@ -52,7 +52,7 @@ def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym"):
     s = CPC(binf, sym)
     s.run_frames(60)
     s.tap('SPACE')
-    while not s.byte('ban_on'):     # game set up and showing its banner
+    while not s.byte('msg_on'):     # game set up and showing its message
         s.run_frames(5)
     s.run_frames(5)
     return s

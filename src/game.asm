@@ -81,6 +81,7 @@ HUDF_INFO   equ 2
 HUDF_STATUS equ 4
 HUDF_FUNDS  equ 8
 HUDF_HP     equ 16
+HUDF_TOP    equ 32
 
         if DEBUG
 START_FUNDS equ 3000
@@ -257,10 +258,10 @@ game_init:
         call dirty_reset
         ld a,#7f                ; draw into #4000 first
         ld (back_mask),a
-        call hud_full
         ld a,B_STAGE
         ld c,B_CALL
-        call banner_show
+        call msg_show
+        call hud_full
         if DEBUG
         ld a,DEBUG-1            ; -DDEBUG=n starts at wave n
         ld (wave_num),a
@@ -384,26 +385,12 @@ toggle_pause:
         xor 1
         ld (paused),a
         jr z,.resume
-        ld a,(ban_on)
-        ld (ps_on),a
-        ld a,(ban_id1)
-        ld (ps_id1),a
-        ld a,(ban_id2)
-        ld (ps_id2),a
         ld a,B_PAUSE
         ld c,B_PAUSE2
         call banner_show
         jr .st
 .resume:
-        ld a,(ps_on)
-        or a
-        jr z,.clr
-        ld a,(ps_id2)
-        ld c,a
-        ld a,(ps_id1)
-        call banner_show
-        jr .st
-.clr:   call banner_clear
+        call banner_clear
 .st:    ld a,HUDF_STATUS
         jp hud_set
 
@@ -949,7 +936,7 @@ wave_update:
         ld (cd_sub),a
         ld a,B_CLEAR
         ld c,B_NEXT
-        call banner_show
+        call msg_show
         ld a,SFX_SELL
         jp sfx_play
 
@@ -980,11 +967,11 @@ start_wave:
         jr nz,.nf
         ld a,B_FINAL
         ld c,#ff
-        call banner_show
+        call msg_show
         ld a,100
-        ld (ban_timer),a
+        ld (msg_timer),a
         jr .s
-.nf:    call banner_clear
+.nf:    call msg_clear
 .s:     ld a,SFX_WAVE
         call sfx_play
         ld a,HUDF_WAVE+HUDF_STATUS
@@ -2184,14 +2171,35 @@ banner_clear:
         ld bc,BAN_H*256+BAN_W
         jp dirty_add_both
 
-banner_tick:
-        ld a,(ban_timer)
+banner_tick:                    ; timed messages in the top bar
+        ld a,(msg_timer)
         or a
         ret z
         dec a
-        ld (ban_timer),a
+        ld (msg_timer),a
         ret nz
-        jp banner_clear
+        ; fall through
+msg_clear:
+        ld a,(msg_on)
+        or a
+        ret z
+        xor a
+        ld (msg_on),a
+        ld a,HUDF_TOP
+        jp hud_set
+
+; A = first string, C = second string (#FF none): shown in the top bar,
+; away from the playfield
+msg_show:
+        ld (msg_id1),a
+        ld a,c
+        ld (msg_id2),a
+        ld a,1
+        ld (msg_on),a
+        xor a
+        ld (msg_timer),a
+        ld a,HUDF_TOP
+        jp hud_set
 
 ;------------------------------------------------------------------------------
 ; HUD (drawn on both screens)
@@ -2242,7 +2250,7 @@ hud_refresh:
         ld (hl),0
         ld (hud_cur),a
         ld hl,hud_jobs
-        ld b,5
+        ld b,6
 .k1:    ld a,(hud_cur)
         and (hl)
         inc hl
@@ -2264,6 +2272,8 @@ call_hl:
         jp (hl)
 
 hud_jobs:
+        db HUDF_TOP
+        dw hud_top
         db HUDF_WAVE
         dw hud_wave
         db HUDF_FUNDS
@@ -2290,7 +2300,28 @@ sel_affordable:
         ret
 
 hud_top:
-        ld de,0
+        ld a,(msg_on)
+        or a
+        jr z,.title
+        ld de,0                 ; message bar
+        ld bc,16*256+80
+        ld a,PENBYTE_6
+        call fill_rect
+        call text_normal
+        ld bc,#0806
+        call set_colors
+        ld a,(msg_id1)
+        ld e,0
+        call print_id_centered
+        ld a,(msg_id2)
+        cp #ff
+        ret z
+        ld bc,#0506
+        call set_colors
+        ld a,(msg_id2)
+        ld e,8
+        jp print_id_centered
+.title: ld de,0
         ld bc,16*256+80
         xor a
         call fill_rect
