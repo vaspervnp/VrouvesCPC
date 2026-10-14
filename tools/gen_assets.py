@@ -178,6 +178,27 @@ GROUND5 = [(0, 12), (17, 12), (17, 9), (2, 9), (2, 6), (16, 6), (16, 3), (14, 3)
 AIR5 = [(0, 12), (5, 12), (14, 3)]
 SACKS5 = [(6, 4), (8, 4), (10, 4), (12, 4), (13, 4)]
 
+# 'F' is the football pitch: buildable grass, painted by the stage
+MAP6 = [
+    "T..T....T......T..T.",
+    "..C..Y.............T",
+    "T.....G...........T.",
+    "T...........C.....YT",
+    "T....FFFFFFFFFF....T",
+    "Y....FFFFFFFFFF...T.",
+    "T....FFFFFFFFFF....Y",
+    "...G.FFFFFFFFFF...T.",
+    "T....FFFFFFFFFF....T",
+    "Y....FFFFFFFFFF...Y.",
+    "T....FFFFFFFFFF....T",
+    "T....PPPPPPPPPP.C..T",
+    "..T..KKKKKKKKKK.....",
+    "T.T..KKKKKKKKKK.T.YT",
+]
+GROUND6 = [(19, 12), (17, 12), (17, 1), (10, 1), (10, 3), (2, 3), (2, 11), (4, 11)]
+AIR6 = [(19, 12), (12, 5), (6, 5), (4, 7), (4, 11)]
+SACKS6 = [(6, 11), (9, 11), (11, 11), (13, 11), (14, 11)]
+
 
 def carve_path(grid, wps):
     grid = [r.ljust(MW, '.')[:MW] for r in grid]
@@ -373,6 +394,18 @@ TEACHER = [
     ".BBBBB.",
     "..s.s..",
     "..k.k..",
+]
+COACH = [
+    "..kkk..",
+    "..sss..",
+    "..sss..",
+    ".RRWRR.",
+    "sRRRRRs",
+    ".RRRRR.",
+    ".BBBBB.",
+    ".BB.BB.",
+    ".BB.BB.",
+    ".WW.WW.",
 ]
 TABLE = [
     ".rrr.",
@@ -985,6 +1018,98 @@ def school_base(cv, with_sacks):
 STAGES_FLAG5 = (53, 36)
 
 
+# the village pitch of Stage 06: pitch cells 5-14 x 4-10, the touchline with
+# the bench 5-14 x 11, the stands 5-14 x 12-13
+PI_X0, PI_X1, PI_Y0, PI_Y1 = 5 * TW, 15 * TW - 1, 4 * TH, 11 * TH - 1
+
+
+def pitch(cv):
+    K, Wh, G, P, E, O = (art.CH[k] for k in "kWgpeo")
+    x0, x1, y0, y1 = PI_X0, PI_X1, PI_Y0, PI_Y1
+    for y in range(y0, y1 + 1):              # mowing stripes, a cell wide
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, G if (x // TW) % 2 else P)
+    lx0, lx1, ly0, ly1 = x0 + 2, x1 - 2, y0 + 2, y1 - 1
+    for x in range(lx0, lx1 + 1):
+        cv.set(x, ly0, Wh)
+        cv.set(x, ly1, Wh)
+    for y in range(ly0, ly1 + 1):
+        cv.set(lx0, y, Wh)
+        cv.set(lx1, y, Wh)
+        cv.set(10 * TW, y, Wh)                  # halfway line
+    cx, cy = 10 * TW, (ly0 + ly1) / 2
+    for y in range(ly0, ly1 + 1):
+        for x in range(cx - 8, cx + 9):
+            if 13 <= math.hypot((x - cx) * 2, y - cy) < 14.2:
+                cv.set(x, y, Wh)
+    cv.set(cx, int(cy), Wh)
+    cv.set(cx - 1, int(cy), Wh)
+    # penalty areas and goals with their nets
+    gy0, gy1 = int(cy) - 10, int(cy) + 10
+    for (gx, d) in ((lx0, 1), (lx1, -1)):
+        bx = gx + 9 * d
+        for y in range(gy0, gy1 + 1):
+            cv.set(bx, y, Wh)
+        for x in range(min(gx, bx), max(gx, bx) + 1):
+            cv.set(x, gy0, Wh)
+            cv.set(x, gy1, Wh)
+        for y in range(int(cy) - 5, int(cy) + 6):
+            for x in (gx - d, gx - 2 * d):
+                cv.set(x, y, Wh if y in (int(cy) - 5, int(cy) + 5) or (x + y) % 2 else E)
+    cv.blit([".WW.", "WkWW", "WWkW", ".WW."], cx + 10, int(cy) - 6)    # the ball
+
+
+def stands(cv, with_sacks):
+    K, Wh, E, B, R, Y, s_, r, G, C = (art.CH[k] for k in "kWeBRysrgc")
+    # touchline: the bench, the cooler, the coach and the sacks
+    y0, y1 = 11 * TH, 12 * TH - 1
+    x0, x1 = PI_X0, PI_X1
+    cv.rect(x0, y0, x1, y1, G)
+    for x in range(x0, x1 + 1):
+        cv.set(x, y0, Wh)
+    bx0, bx1 = 7 * TW + 1, 9 * TW - 2                  # team bench under a blue shelter
+    cv.rect(bx0, y0 + 2, bx1, y0 + 9, K)
+    cv.rect(bx0 + 1, y0 + 3, bx1 - 1, y0 + 5, B)
+    cv.rect(bx0 + 1, y0 + 6, bx1 - 1, y0 + 8, E)
+    for x in range(bx0 + 2, bx1 - 1, 3):
+        cv.set(x, y0 + 7, R)
+    cv.rect(12 * TW + 2, y0 + 3, 12 * TW + 5, y0 + 9, B)   # water cooler
+    cv.rect(12 * TW + 3, y0 + 2, 12 * TW + 4, y0 + 4, C)
+    cv.blit(COACH, 5 * TW, y0 + 1)
+    if with_sacks:
+        for (c, r_) in SACKS6:
+            sx, sy = c * TW, r_ * TH
+            cv.blit(SACK, sx, sy + 1)
+            cv.blit(SACK, sx + 4, sy + 2)
+    # the stands: concrete terraces full of villagers
+    y0, y1 = 12 * TH, PFH - 1
+    cv.rect(x0, y0, x1, y1, E)
+    for y in range(y0, y1 + 1, 4):
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, Wh)
+    heads = (s_, K, Y, R, B, Wh, r)
+    for row, y in enumerate(range(y0 + 2, y1, 4)):
+        for x in range(x0 + 1 + row % 2, x1, 3):
+            if (x * 5 + row * 3) % 7 < 5:
+                cv.set(x, y, heads[(x + row) % len(heads)])
+                cv.set(x, y + 1, heads[(x * 3 + row) % len(heads)])
+    for y in range(y0, y1 + 1):
+        cv.set(x0, y, K)
+        cv.set(x1, y, K)
+    # flagpole at the end of the stands (the cloth is the animated flag sprite)
+    fx, fy = STAGES_FLAG6[0] * 2, STAGES_FLAG6[1]
+    for y in range(fy, fy + 15):
+        cv.set(fx, y, K if y == fy + 14 else r)
+
+
+def pitch_base(cv, with_sacks):
+    pitch(cv)
+    stands(cv, with_sacks)
+
+
+STAGES_FLAG6 = (55, 146)
+
+
 class Stage:
     def __init__(self, **kw):
         self.__dict__.update(kw)
@@ -1028,8 +1153,16 @@ STAGES = [
           flag=STAGES_FLAG5, waves="WAVES5",
           strings={
               "B_STAGE": ("STAGE 05: THE SCHOOL", "ΠΙΣΤΑ 05: ΤΟ ΣΧΟΛΕΙΟ"),
-              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_WIN": ("SCHOOL SAVED! NOW, TO THE PITCH!",
+                        "ΤΟ ΣΧΟΛΕΙΟ ΣΩΘΗΚΕ! ΣΤΟ ΓΗΠΕΔΟ!"),
               "B_LOSE": ("THE SCHOOL HAS FALLEN!", "ΤΟ ΣΧΟΛΕΙΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP6, ground=GROUND6, air=AIR6, sacks=SACKS6, base=pitch_base,
+          flag=STAGES_FLAG6, waves="WAVES6",
+          strings={
+              "B_STAGE": ("STAGE 06: THE VILLAGE PITCH", "ΠΙΣΤΑ 06: ΤΟ ΓΗΠΕΔΟ ΤΟΥ ΧΩΡΙΟΥ"),
+              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_LOSE": ("THE PITCH HAS FALLEN!", "ΤΟ ΓΗΠΕΔΟ ΕΠΕΣΕ!"),
           }),
 ]
 STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
@@ -1210,6 +1343,19 @@ WAVES5 = [
     [(1, 26, 8), (2, 18, 11), (3, 10, 24)],
     [(2, 22, 9), (1, 24, 7), (3, 18, 16)],
 ]
+# the pitch: a short road around the field, so smaller waves
+WAVES6 = [
+    [(2, 7, 40)],
+    [(1, 10, 24)],
+    [(2, 7, 32), (1, 6, 22)],
+    [(2, 7, 28), (3, 2, 64)],
+    [(1, 12, 17), (2, 6, 26)],
+    [(2, 10, 22), (3, 3, 54)],
+    [(1, 14, 15), (2, 9, 20), (3, 2, 46)],
+    [(3, 5, 44), (2, 11, 18), (1, 10, 13)],
+    [(1, 17, 12), (2, 11, 17), (3, 4, 40)],
+    [(2, 13, 15), (1, 16, 10), (3, 8, 30)],
+]
 
 # stage files are loaded at STAGE_AREA, just below #4000; their layout is fixed
 
@@ -1272,7 +1418,7 @@ def main():
             for c in range(MW):
                 tilemap.append(tile_index(cell_bytes(cv_full, c, r)))
                 t = grid[r][c]
-                celltype.append(0 if t == '.' else 1 if t == '#' else 3 if t in 'KP' else 2)
+                celltype.append(0 if t in '.F' else 1 if t == '#' else 3 if t in 'KP' else 2)
         sack_data = []
         for (c, r) in st.sacks:
             full = tilemap[r * MW + c]
@@ -1595,9 +1741,12 @@ def main():
         elif k == 3:
             placed = [(art.CRETAN, 7, 4), (art.YIAYIA, 5, 10), (art.BRIDE, 12, 7),
                       (art.PSSSST, 16, 2), (art.CAULDRON, 10, 10), (art.BAKER, 3, 7)]
-        else:
+        elif k == 4:
             placed = [(art.CRETAN, 4, 7), (art.YIAYIA, 9, 10), (art.BRIDE, 12, 7),
                       (art.PSSSST, 15, 4), (art.CAULDRON, 6, 10), (art.BAKER, 8, 5)]
+        else:
+            placed = [(art.CRETAN, 4, 4), (art.YIAYIA, 3, 9), (art.BRIDE, 16, 6),
+                      (art.PSSSST, 11, 2), (art.CAULDRON, 15, 9), (art.BAKER, 6, 2)]
         for rows, c, r in placed:
             demo.blit(rows, c * TW, r * TH)
         gp = path_steps(st.ground)

@@ -66,8 +66,11 @@ On the title screen, → (or joystick right) flips between the story, defenders 
    the Greek and the EU flag fly over the portico.
 4. **The bakery** – in the yard of the village bakery by its wood-fired oven, among the
    woodpile and the racks of drying dakos. The road crosses the map in three close lanes.
-5. **The school** – the last stand, in the schoolyard with its basketball court, the flag and
-   the teacher. The waves are the biggest of all.
+5. **The school** – in the schoolyard with its basketball court, the flag and the teacher.
+   The waves are the biggest of all.
+6. **The village pitch** – the final match: the greens wait on the touchline by the coach and
+   the team bench, below stands full of villagers. The road runs around the pitch, which is
+   buildable grass; the drones fly straight across it.
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
@@ -81,7 +84,7 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
 * `tools/gen_assets.py` generates `src/gen/assets.asm`: the 3×6 font (Latin and Greek), the
   sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
   the music and sound effects; `src/gen/title_text.asm`, the texts only the title screen needs;
-  and one file per stage, `build/STAGE1.BIN` to `STAGE5.BIN`: the map rendered to 8×12
+  and one file per stage, `build/STAGE1.BIN` to `STAGE6.BIN`: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
   stage's own texts, in a fixed layout. Preview PNGs go to `build/preview/`.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they

@@ -127,12 +127,17 @@ PLAN5 = [(1, 8, 7), (1, 14, 5), (3, 12, 7), (6, 8, 10), (2, 5, 7), (1, 15, 4), (
          (3, 5, 11), (2, 10, 11), (5, 13, 5), (6, 18, 7), (3, 8, 8), (1, 3, 7), (6, 12, 5),
          (2, 11, 10), (5, 15, 10), (3, 9, 5), (1, 6, 11), (6, 12, 10), (3, 18, 8),
          (5, 9, 7), (2, 15, 5)]
-PLANS = [FULL_PLAN, PLAN2, PLAN3, PLAN4, PLAN5]
+# and for Stage 06, the pitch
+PLAN6 = [(1, 4, 5), (1, 16, 6), (3, 4, 9), (6, 8, 2), (2, 3, 6), (1, 15, 3), (5, 15, 9),
+         (4, 13, 2), (3, 16, 10), (2, 16, 4), (5, 5, 4), (6, 14, 4), (1, 5, 10), (3, 12, 2),
+         (4, 3, 10), (2, 9, 2), (5, 14, 10), (6, 15, 6), (3, 1, 5), (1, 18, 8), (5, 7, 2),
+         (3, 5, 7), (6, 14, 7), (2, 18, 10)]
+PLANS = [FULL_PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6]
 
 
 def stress_plan(s):
     """many defenders for a rich (-DDEBUG) game on the current stage"""
-    return [PLAN, PLAN2, PLAN3, PLAN4, PLAN5][s.byte('stage')]
+    return [PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6][s.byte('stage')]
 
 
 def full_plan(s):
@@ -144,9 +149,9 @@ def play_stage(s, plan, verbose=True):
     todo = list(plan)
     last_wave = -1
     while s.byte('game_over') == 0:
-        while todo and s.word('funds') >= COST[todo[0][0]]:
+        while todo and s.word('funds') >= COST[todo[0][0]] and not s.byte('game_over'):
             t, c, r = todo.pop(0)
-            if not p.build(t, c, r) and verbose:
+            if not p.build(t, c, r) and verbose and not s.byte('game_over'):
                 print("could not build", t, c, r, "cursor", s.byte('cur_c'), s.byte('cur_r'),
                       "sel", s.byte('sel_type'), "funds", s.word('funds'),
                       "paused", s.byte('paused'), "cell", s.peek(s.sym('cellmap') + r * 20 + c))
