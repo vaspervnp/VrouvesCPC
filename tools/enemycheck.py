@@ -11,7 +11,7 @@ from cpcsim import SLICE  # noqa: E402
 DEBUG = len(sys.argv) > 1 and sys.argv[1] == 'stress'
 s = scenario.start()
 p = scenario.Player(s)
-plan = scenario.stress_plan(s) if DEBUG else scenario.full_plan(s)[:12]
+plan = scenario.stress_plan(s) if DEBUG else scenario.available(s, scenario.full_plan(s))[:12]
 for t, c, r in plan:
     p.build(t, c, r)
 s.tap('N')

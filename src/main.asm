@@ -261,7 +261,6 @@ end_wait:   defs 1
 es_base:    defs 2
 stamp:      defs 1
 STAMPMAP:   defs 110
-        assert hi(STAMPMAP) == hi(STAMPMAP+109)
 tr_budget:  defs 1
 ticks_due:  defs 1
 frame_acc:  defs 1

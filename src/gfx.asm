@@ -311,7 +311,7 @@ restore_dirty:
         ret
 
 ; D,E,C,B = x,y,w,h : stamp the 16x16 cells the rectangle covers (STAMPMAP,
-; 10 x 11 cells, within one 256-byte page) so enemies underneath know they
+; 10 x 11 cells) so enemies underneath know they
 ; must be redrawn.  Preserves B,C,D,E.
 mark_rect:
         push bc
@@ -357,7 +357,9 @@ mark_rect:
         add a,l
         add a,lo(STAMPMAP)
         ld l,a
-        ld h,hi(STAMPMAP)
+        adc a,hi(STAMPMAP)
+        sub l
+        ld h,a
         ld a,10
         sub d
         ld e,a                  ; skip to the next row
@@ -365,13 +367,15 @@ mark_rect:
         ld c,a
 .r:     ld a,d
 .c:     ld (hl),c
-        inc l
+        inc hl
         dec a
         jr nz,.c
         ld a,l
         add a,e
         ld l,a
-        djnz .r
+        jr nc,.n
+        inc h
+.n:     djnz .r
         pop de
         pop bc
         ret

@@ -199,6 +199,27 @@ GROUND6 = [(19, 12), (17, 12), (17, 1), (10, 1), (10, 3), (2, 3), (2, 11), (4, 1
 AIR6 = [(19, 12), (12, 5), (6, 5), (4, 7), (4, 11)]
 SACKS6 = [(6, 11), (9, 11), (11, 11), (13, 11), (14, 11)]
 
+# 'X' is a grave
+MAP7 = [
+    "T..Y...T....Y...T..T",
+    "..................YT",
+    "T.....C......Y.....T",
+    "Y.................YT",
+    "T.X.X.X.X.X.X...Y..T",
+    "Y...........XXPKKKKK",
+    "T.X.X.X.X...XXPKKKKK",
+    "Y...........XXPKKKKK",
+    "T.X.X.X.X...XXPKKKKK",
+    "Y.X.X.X.X.....PPPPPP",
+    "T.X...X.....X......T",
+    "Y.X.X.X.X........Y.T",
+    "T...X...X...X...X..T",
+    "Y..T..Y..T..Y..T..YT",
+]
+GROUND7 = [(0, 1), (17, 1), (17, 3), (2, 3), (2, 7), (10, 7), (10, 11), (16, 11), (16, 10)]
+AIR7 = [(0, 1), (6, 1), (6, 2), (14, 10), (16, 10)]
+SACKS7 = [(14, 5), (14, 6), (14, 8), (18, 9), (19, 9)]
+
 
 def carve_path(grid, wps):
     grid = [r.ljust(MW, '.')[:MW] for r in grid]
@@ -406,6 +427,46 @@ COACH = [
     ".BB.BB.",
     ".BB.BB.",
     ".WW.WW.",
+]
+GRAVE_A = [
+    "........",
+    "..kkkk..",
+    ".kWWWek.",
+    ".kWkWek.",
+    ".kkkkek.",
+    ".kWkWek.",
+    ".kkkkkk.",
+    ".keeeek.",
+    ".keReyk.",
+    ".kyeeRk.",
+    ".kkkkkk.",
+    "........",
+]
+GRAVE_B = [
+    "...kk...",
+    "..kWek..",
+    ".kkWekk.",
+    ".kWWeek.",
+    ".kkWekk.",
+    "..kWek..",
+    "..kWek..",
+    ".kkeekk.",
+    ".keRyek.",
+    ".keeeek.",
+    ".kkkkkk.",
+    "........",
+]
+YIAYIA_BLACK = [
+    "..kkk..",
+    ".kkkkk.",
+    ".kssk..",
+    ".kkkkk.",
+    "kkkkkkk",
+    "skkkkks",
+    ".kkkkk.",
+    ".kkkkk.",
+    ".kkkkk.",
+    "..k.k..",
 ]
 TABLE = [
     ".rrr.",
@@ -1110,6 +1171,84 @@ def pitch_base(cv, with_sacks):
 STAGES_FLAG6 = (55, 146)
 
 
+# the cemetery chapel of Stage 07: cells 15-19 x 5-8; the churchyard is
+# 14 x 5-8 and 14-19 x 9
+CC_X0, CC_Y0, CC_Y1 = 15 * TW, 5 * TH, 9 * TH - 1
+
+
+def cemetery_chapel(cv):
+    K, Wh, E, R, r, O, Y, G, T = (art.CH[k] for k in "kWeRroygt")
+    x0, x1, y0, y1 = CC_X0, PFW - 1, CC_Y0, CC_Y1
+    cv.rect(x0, y0, x1, y1, G)
+    for (x, y) in ((x0 + 1, y0 + 2), (x1 - 3, y1 - 4), (x0 + 2, y1 - 2)):
+        cv.set(x, y, T)
+        cv.set(x + 2, y, T)
+        cv.set(x + 1, y + 1, T)
+    # the chapel: stone walls, a tiled gable roof running north-south
+    nx0, nx1, ny0, ny1 = x0 + 6, x1 - 6, y0 + 10, y1 - 4
+    cv.rect(nx0, ny0, nx1, ny1, K)
+    cv.rect(nx0 + 1, ny0 + 1, nx1 - 1, ny1 - 1, Wh)
+    mid = (nx0 + nx1) // 2
+    for y in range(ny0 + 1, ny1 - 3):
+        for x in range(nx0 + 1, nx1):
+            cv.set(x, y, (r if y % 3 == 0 else O) if x <= mid else (O if y % 3 == 0 else r))
+    for y in range(ny0 + 1, ny1 - 3):
+        cv.set(mid, y, K)
+    cv.rect(mid - 1, ny1 - 3, mid + 1, ny1 - 1, K)      # the door
+    cv.set(mid, ny1 - 2, r)
+    # belfry over the gate: a little stone arch with the bell and a cross
+    bx0, bx1, by0, by1 = mid - 5, mid + 5, y0 + 1, y0 + 9
+    cv.rect(bx0, by0, bx1, by1, K)
+    cv.rect(bx0 + 1, by0 + 1, bx1 - 1, by1 - 1, E)
+    cv.rect(mid - 2, by0 + 3, mid + 2, by1 - 1, K)
+    cv.rect(mid - 1, by0 + 4, mid + 1, by1 - 2, Y)
+    for (dx, dy) in ((0, 0), (0, 1), (-1, 1), (1, 1), (0, 2)):
+        cv.set(mid + dx, by0 + dy, Y)
+    # the ossuary beside it
+    cv.rect(x0 + 1, ny0 + 4, x0 + 4, ny0 + 13, K)
+    cv.rect(x0 + 2, ny0 + 5, x0 + 3, ny0 + 12, E)
+    # flagpole (the cloth is the animated flag sprite)
+    fx, fy = STAGES_FLAG7[0] * 2, STAGES_FLAG7[1]
+    for y in range(fy, fy + 15):
+        cv.set(fx, y, K if y == fy + 14 else r)
+
+
+def churchyard(cv, with_sacks):
+    K, Wh, E, R, Y, r = (art.CH[k] for k in "kWeRyr")
+    cells = [(14, r_) for r_ in range(5, 9)] + [(c, 9) for c in range(14, 20)]
+    for (c, r_) in cells:
+        x0, y0 = c * TW, r_ * TH
+        for y in range(TH):
+            for x in range(TW):
+                cv.set(x0 + x, y0 + y, E if x % 4 == 0 or y % 4 == 0 else Wh)
+    # low wall with the gate where the road arrives
+    gx0, gx1 = 16 * TW, 17 * TW - 1
+    for x in range(14 * TW, PFW):
+        if not gx0 <= x <= gx1:
+            cv.set(x, 10 * TH - 1, K)
+    for y in range(5 * TH, 10 * TH):
+        cv.set(14 * TW, y, K)
+    # oil lamps on the wall
+    for x in (15 * TW + 3, 18 * TW + 3):
+        cv.rect(x, 10 * TH - 4, x + 1, 10 * TH - 2, R)
+        cv.set(x, 10 * TH - 5, Y)
+    cv.blit(PRIEST, 14 * TW, 7 * TH)
+    cv.blit(YIAYIA_BLACK, 17 * TW, 9 * TH + 1)
+    if with_sacks:
+        for (c, r_) in SACKS7:
+            sx, sy = c * TW, r_ * TH
+            cv.blit(SACK, sx, sy + 1)
+            cv.blit(SACK, sx + 4, sy + 2)
+
+
+def cemetery_base(cv, with_sacks):
+    cemetery_chapel(cv)
+    churchyard(cv, with_sacks)
+
+
+STAGES_FLAG7 = (60, 61)
+
+
 class Stage:
     def __init__(self, **kw):
         self.__dict__.update(kw)
@@ -1161,11 +1300,31 @@ STAGES = [
           flag=STAGES_FLAG6, waves="WAVES6",
           strings={
               "B_STAGE": ("STAGE 06: THE VILLAGE PITCH", "ΠΙΣΤΑ 06: ΤΟ ΓΗΠΕΔΟ ΤΟΥ ΧΩΡΙΟΥ"),
-              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_WIN": ("PITCH SAVED! NOW, TO THE CEMETERY!",
+                        "ΤΟ ΓΗΠΕΔΟ ΣΩΘΗΚΕ! ΣΤΟ ΝΕΚΡΟΤΑΦΕΙΟ!"),
               "B_LOSE": ("THE PITCH HAS FALLEN!", "ΤΟ ΓΗΠΕΔΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP7, ground=GROUND7, air=AIR7, sacks=SACKS7, base=cemetery_base,
+          flag=STAGES_FLAG7, waves="WAVES7",
+          strings={
+              "B_STAGE": ("STAGE 07: THE CEMETERY CHURCH",
+                          "ΠΙΣΤΑ 07: Η ΕΚΚΛΗΣΙΑ ΤΟΥ ΝΕΚΡΟΤΑΦΕΙΟΥ"),
+              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_LOSE": ("THE CEMETERY CHURCH HAS FALLEN!",
+                         "Η ΕΚΚΛΗΣΙΑ ΤΟΥ ΝΕΚΡΟΤΑΦΕΙΟΥ ΕΠΕΣΕ!"),
           }),
 ]
 STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
+
+# defenders each stage has (types 1 cretan, 2 yiayia, 3 bride, 4 psssst,
+# 5 cauldron, 6 baker) and the two lines of the announcement at its start
+UNLOCKS = [
+    ({1, 4}, "S_INFO1", "S_INFO4"),
+    ({1, 2, 4}, "B_NEWDEF", "S_INFO2"),
+    ({1, 2, 3, 4}, "B_NEWDEF", "S_INFO3"),
+    ({1, 2, 3, 4, 6}, "B_NEWDEF", "S_INFO6"),
+    ({1, 2, 3, 4, 5, 6}, "B_NEWDEF", "S_INFO5"),
+]
 
 
 def render_background(stage, grid, with_sacks=True):
@@ -1189,6 +1348,8 @@ def render_background(stage, grid, with_sacks=True):
                     cv.blit(GOAT_W if (c + r) % 2 else GOAT_B, c * TW, r * TH)
                 elif t == 'Y':
                     cv.blit(CYPRESS, c * TW, r * TH)
+                elif t == 'X':
+                    cv.blit(GRAVE_A if (c + r) % 4 < 2 else GRAVE_B, c * TW, r * TH)
     stage.base(cv, with_sacks)
     return cv
 
@@ -1356,6 +1517,19 @@ WAVES6 = [
     [(1, 17, 12), (2, 11, 17), (3, 4, 40)],
     [(2, 13, 15), (1, 16, 10), (3, 8, 30)],
 ]
+# the cemetery church: the road winds between the graves, the final stand
+WAVES7 = [
+    [(2, 10, 32)],
+    [(1, 15, 18), (2, 5, 28)],
+    [(2, 12, 24), (1, 11, 16)],
+    [(2, 12, 20), (3, 5, 48)],
+    [(1, 20, 12), (2, 11, 18)],
+    [(2, 16, 15), (3, 6, 38)],
+    [(1, 22, 10), (2, 15, 14), (3, 5, 32)],
+    [(3, 10, 28), (2, 17, 12), (1, 18, 9)],
+    [(1, 26, 8), (2, 18, 11), (3, 10, 24)],
+    [(2, 22, 9), (1, 24, 7), (3, 18, 16)],
+]
 
 # stage files are loaded at STAGE_AREA, just below #4000; their layout is fixed
 
@@ -1462,6 +1636,7 @@ def main():
         print("stage %d: %d tiles" % (len(built), len(tile_list)))
     # fixed layout: every section as big as the biggest stage needs
     sections = [("tilemap", 280), ("cellmap", 280), ("sack_cells", 20), ("stage_flag", 2),
+                ("stage_unlock", 3),
                 ("path_ground", max(len(b_["pg"]) for b_ in built)),
                 ("path_air", max(len(b_["pa"]) for b_ in built)),
                 ("wave_table", 2 * len(WAVES1)),
@@ -1657,6 +1832,12 @@ def main():
         put("cellmap", b_["cellmap"])
         put("sack_cells", b_["sacks"])
         put("stage_flag", b_["flag"][::-1])     # y, x: LD DE,(nn) gives D = x
+        if k < len(UNLOCKS):
+            types, l1, l2 = UNLOCKS[k]
+            ann = [ids.index(l1), ids.index(l2)]
+        else:
+            types, ann = {1, 2, 3, 4, 5, 6}, [0xFF, 0xFF]
+        put("stage_unlock", [sum(1 << (t - 1) for t in types)] + ann)
         put("path_ground", b_["pg"])
         put("path_air", b_["pa"])
         ptrs, wd = [], []
@@ -1744,9 +1925,12 @@ def main():
         elif k == 4:
             placed = [(art.CRETAN, 4, 7), (art.YIAYIA, 9, 10), (art.BRIDE, 12, 7),
                       (art.PSSSST, 15, 4), (art.CAULDRON, 6, 10), (art.BAKER, 8, 5)]
-        else:
+        elif k == 5:
             placed = [(art.CRETAN, 4, 4), (art.YIAYIA, 3, 9), (art.BRIDE, 16, 6),
                       (art.PSSSST, 11, 2), (art.CAULDRON, 15, 9), (art.BAKER, 6, 2)]
+        else:
+            placed = [(art.CRETAN, 5, 2), (art.YIAYIA, 9, 9), (art.BRIDE, 11, 5),
+                      (art.PSSSST, 12, 4), (art.CAULDRON, 13, 10), (art.BAKER, 7, 8)]
         for rows, c, r in placed:
             demo.blit(rows, c * TW, r * TH)
         gp = path_steps(st.ground)

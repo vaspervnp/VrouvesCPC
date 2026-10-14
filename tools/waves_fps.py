@@ -9,7 +9,7 @@ import scenario  # noqa: E402
 
 s = scenario.start()
 p = scenario.Player(s)
-todo = list(scenario.full_plan(s))
+todo = scenario.available(s, scenario.full_plan(s))
 per = collections.defaultdict(collections.Counter)
 last = s.byte('last_flip')
 while s.byte('game_over') == 0 and s.frame < 60000:

@@ -31,7 +31,7 @@ def diffs(s):
 
 s = scenario.start()
 p = scenario.Player(s)
-todo = list(scenario.full_plan(s))
+todo = scenario.available(s, scenario.full_plan(s))
 checks = errors = 0
 while s.byte('game_over') == 0 and s.frame < 60000:
     while todo and s.word('funds') >= scenario.COST[todo[0][0]]:

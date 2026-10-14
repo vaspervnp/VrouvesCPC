@@ -34,7 +34,7 @@ CATS = [
 
 s = scenario.start()
 p = scenario.Player(s)
-todo = list(scenario.full_plan(s))
+todo = scenario.available(s, scenario.full_plan(s))
 while s.byte('wave_num') < WAVE or s.byte('wave_state') == 0:
     while todo and s.word('funds') >= scenario.COST[todo[0][0]]:
         t, c, r = todo.pop(0)

@@ -3,6 +3,7 @@
 
     tools/scenario.py stress      many towers, later waves, look for crashes
     tools/scenario.py full        a normal game from wave 1 with a build plan
+    tools/scenario.py stage       just the stage the build starts at
 """
 import os
 import sys
@@ -132,21 +133,41 @@ PLAN6 = [(1, 4, 5), (1, 16, 6), (3, 4, 9), (6, 8, 2), (2, 3, 6), (1, 15, 3), (5,
          (4, 13, 2), (3, 16, 10), (2, 16, 4), (5, 5, 4), (6, 14, 4), (1, 5, 10), (3, 12, 2),
          (4, 3, 10), (2, 9, 2), (5, 14, 10), (6, 15, 6), (3, 1, 5), (1, 18, 8), (5, 7, 2),
          (3, 5, 7), (6, 14, 7), (2, 18, 10)]
-PLANS = [FULL_PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6]
+# and for Stage 07, the cemetery church
+PLAN7 = [(1, 11, 10), (1, 9, 10), (3, 9, 6), (6, 11, 12), (2, 11, 9), (1, 9, 2), (5, 9, 12),
+         (3, 13, 12), (4, 12, 10), (2, 9, 11), (6, 3, 5), (1, 15, 12), (5, 11, 8), (3, 15, 10),
+         (4, 12, 4), (6, 9, 5), (2, 13, 10), (5, 3, 6), (3, 4, 2), (1, 15, 2), (6, 7, 5),
+         (3, 11, 6), (5, 15, 4), (2, 7, 6), (3, 14, 10), (1, 9, 9), (6, 11, 5),
+         (3, 5, 5)]
+PLANS = [FULL_PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6, PLAN7]
 
 
 def stress_plan(s):
     """many defenders for a rich (-DDEBUG) game on the current stage"""
-    return [PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6][s.byte('stage')]
+    return [PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6, PLAN7][s.byte('stage')]
 
 
 def full_plan(s):
     return PLANS[s.byte('stage')]
 
 
+SUBSTITUTE = {2: [1], 3: [1, 4], 5: [4, 1], 6: [1]}
+
+
+def available(s, plan):
+    """the plan with defenders this stage does not have yet replaced"""
+    mask = s.peek(s.sym('stage_unlock'))
+    out = []
+    for t, c, r in plan:
+        if not mask >> (t - 1) & 1:
+            t = next(u for u in SUBSTITUTE[t] if mask >> (u - 1) & 1)
+        out.append((t, c, r))
+    return out
+
+
 def play_stage(s, plan, verbose=True):
     p = Player(s)
-    todo = list(plan)
+    todo = available(s, plan)
     last_wave = -1
     while s.byte('game_over') == 0:
         while todo and s.word('funds') >= COST[todo[0][0]] and not s.byte('game_over'):
@@ -202,5 +223,13 @@ def full(plan=None, verbose=True):
     return 0
 
 
+def one_stage():
+    s = start()
+    play_stage(s, full_plan(s), verbose=False)
+    print("stage %d:" % (s.byte('stage') + 1), "WON" if s.byte('game_over') == 1 else "LOST",
+          status(s))
+    return 0
+
+
 if __name__ == "__main__":
-    sys.exit({"stress": stress, "full": full}[sys.argv[1]]())
+    sys.exit({"stress": stress, "full": full, "stage": one_stage}[sys.argv[1]]())

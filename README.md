@@ -41,14 +41,17 @@ On the title screen, → (or joystick right) flips between the story, defenders 
 
 ## Defenders
 
-| # | Defender | Cost | Notes |
-| --- | --- | --- | --- |
-| 1 | Cretan | 30 | Hunting rifle, hits drones and walkers |
-| 2 | Yiayia | 50 | Staff of chastisement and a pot of bitter leaves: slows everything near her, heavy close bash |
-| 3 | Bride | 70 | Rapid pistol, 1 in 4 shots is a triple-damage critical |
-| 4 | Psssst | 80 | The defected drone. Laser that also strips armour. Hovers, so it can sit on walls, trees and other blocked tiles |
-| 5 | Cauldron | 110 | Toxic "unlicensed lipids and ascorbic acids": area damage that ignores armour, slows walkers |
-| 6 | Baker | 60 | Hurls dakos (barley rusks) with splash damage |
+| # | Defender | Cost | From stage | Notes |
+| --- | --- | --- | --- | --- |
+| 1 | Cretan | 30 | 1 | Hunting rifle, hits drones and walkers |
+| 4 | Psssst | 80 | 1 | The defected drone. Laser that also strips armour. Hovers, so it can sit on walls, trees and other blocked tiles |
+| 2 | Yiayia | 50 | 2 | Staff of chastisement and a pot of bitter leaves: slows everything near her, heavy close bash |
+| 3 | Bride | 70 | 3 | Rapid pistol, 1 in 4 shots is a triple-damage critical |
+| 6 | Baker | 60 | 4 | Hurls dakos (barley rusks) with splash damage |
+| 5 | Cauldron | 110 | 5 | Toxic "unlicensed lipids and ascorbic acids": area damage that ignores armour, slows walkers |
+
+The village joins the fight bit by bit: the Kafenio is held by the Cretan and Psssst, and every
+following stage brings one more defender, announced when the stage begins.
 
 ## Invaders
 
@@ -68,9 +71,12 @@ On the title screen, → (or joystick right) flips between the story, defenders 
    woodpile and the racks of drying dakos. The road crosses the map in three close lanes.
 5. **The school** – in the schoolyard with its basketball court, the flag and the teacher.
    The waves are the biggest of all.
-6. **The village pitch** – the final match: the greens wait on the touchline by the coach and
-   the team bench, below stands full of villagers. The road runs around the pitch, which is
-   buildable grass; the drones fly straight across it.
+6. **The village pitch** – the greens wait on the touchline by the coach and the team bench,
+   below stands full of villagers. The road runs around the pitch, which is buildable grass;
+   the drones fly straight across it.
+7. **The cemetery church** – the last stand, at the little stone chapel among the graves and
+   cypresses, with the priest and a yiayia in black by the oil lamps. The road winds between
+   the graves, where nothing can be built.
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
@@ -84,7 +90,7 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
 * `tools/gen_assets.py` generates `src/gen/assets.asm`: the 3×6 font (Latin and Greek), the
   sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
   the music and sound effects; `src/gen/title_text.asm`, the texts only the title screen needs;
-  and one file per stage, `build/STAGE1.BIN` to `STAGE6.BIN`: the map rendered to 8×12
+  and one file per stage, `build/STAGE1.BIN` to `STAGE7.BIN`: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
   stage's own texts, in a fixed layout. Preview PNGs go to `build/preview/`.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
@@ -94,7 +100,7 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
   sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`,
   `disk.asm` (the disk loader) and `title.asm` (assembled into the title overlay).
 * `RASMFLAGS="-DDEBUG=9" ./build.sh` builds a debug version that starts with plenty of money
-  at wave 9; `-DSTART_STAGE=n` starts at stage n; add `-DMETER=1` to show how many 50 Hz
+  at wave 9 and every defender; `-DSTART_STAGE=n` starts at stage n; add `-DMETER=1` to show how many 50 Hz
   frames each drawn frame took (top right).
 
 ### Headless testing

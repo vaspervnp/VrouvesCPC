@@ -304,11 +304,23 @@ game_init:
         ld a,B_STAGE
         ld c,B_CALL
         call msg_show
-        call hud_full
         if DEBUG
         ld a,DEBUG-1            ; -DDEBUG=n starts at wave n
         ld (wave_num),a
+        ld a,#3f                ; and has every defender
+        ld (stage_unlock),a
+        else
+        ld hl,(stage_unlock+1)  ; the defenders this stage brings
+        ld a,l
+        cp #ff
+        jr z,.na
+        ld c,h
+        call banner_show
+        ld a,125                ; for five seconds
+        ld (ban_timer),a
+.na:
         endif
+        call hud_full
         call set_palette
         ret
 
@@ -404,6 +416,13 @@ handle_input:
         ld bc,#0601
 .sk:    ld a,(hl)
         call key_hit
+        jr nc,.nk
+        push bc                 ; only defenders this stage has
+        ld b,c
+        ld a,(stage_unlock)
+.ul:    rrca
+        djnz .ul
+        pop bc
         jr nc,.nk
         ld a,c
         ld (sel_type),a
@@ -919,10 +938,6 @@ redraw_cell:
         ld a,e
         sub 6
         cp 2
-        jr nc,.nb
-        ld a,d
-        dec a
-        cp 18
         jp c,banner_draw
 .nb:    ld a,d
         add a,a
@@ -1002,6 +1017,9 @@ wave_update:
         jp sfx_play
 
 start_wave:
+        ld a,(ban_timer)        ; the announcement makes way for the wave
+        or a
+        call nz,banner_clear
         ld a,(wave_num)
         cp NUM_WAVES
         ret nc
@@ -2402,9 +2420,9 @@ draw_cursor:
 ;------------------------------------------------------------------------------
 ; banner messages (drawn into the background, rows 6-7)
 ;------------------------------------------------------------------------------
-BAN_X equ 4
+BAN_X equ 0
 BAN_Y equ 72
-BAN_W equ 72
+BAN_W equ 80
 BAN_H equ 24
 
 ; A = first string, C = second string (#FF none)
@@ -2462,14 +2480,15 @@ banner_clear:
         ret z
         xor a
         ld (ban_on),a
+        ld (ban_timer),a
         ld e,6
-.r:     ld d,1
+.r:     ld d,0
 .c:     push de
         call redraw_cell_nd
         pop de
         inc d
         ld a,d
-        cp 19
+        cp NCOL
         jr nz,.c
         inc e
         ld a,e
@@ -2479,8 +2498,14 @@ banner_clear:
         ld bc,BAN_H*256+BAN_W
         jp dirty_add_both
 
-banner_tick:                    ; timed messages in the top bar
-        ld a,(msg_timer)
+banner_tick:                    ; the stage's announcement goes after a while
+        ld a,(ban_timer)
+        or a
+        jr z,.m
+        dec a
+        ld (ban_timer),a
+        call z,banner_clear
+.m:     ld a,(msg_timer)            ; timed messages in the top bar
         or a
         ret z
         dec a
