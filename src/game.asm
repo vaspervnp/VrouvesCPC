@@ -134,7 +134,7 @@ etype_tab:
 
 ; towers: cost, range, cooldown, damage, flags (bit0 hits air), projectile, sfx, sell
 ttype_tab:
-        db 30,30,18,6,1,PT_BULLET,SFX_RIFLE,15          ; cretan
+        db 35,30,18,6,1,PT_BULLET,SFX_RIFLE,17          ; cretan
         db 50,18,22,14,0,0,SFX_BASH,25                  ; yiayia
         db 70,28,6,4,1,PT_PISTOL,SFX_PISTOL,35          ; bride
         db 80,36,10,5,1,PT_LASER,SFX_LASER,40           ; psssst

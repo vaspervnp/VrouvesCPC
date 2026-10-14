@@ -43,7 +43,7 @@ On the title screen, → (or joystick right) flips between the story, defenders 
 
 | # | Defender | Cost | From stage | Notes |
 | --- | --- | --- | --- | --- |
-| 1 | Cretan | 30 | 1 | Hunting rifle, hits drones and walkers |
+| 1 | Cretan | 35 | 1 | Hunting rifle, hits drones and walkers |
 | 4 | Psssst | 80 | 1 | The defected drone. Laser that also strips armour. Hovers, so it can sit on walls, trees and other blocked tiles |
 | 2 | Yiayia | 50 | 2 | Staff of chastisement and a pot of bitter leaves: slows everything near her, heavy close bash |
 | 3 | Bride | 70 | 3 | Rapid pistol, 1 in 4 shots is a triple-damage critical |
