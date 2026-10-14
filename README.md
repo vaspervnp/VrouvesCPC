@@ -70,14 +70,17 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
 * `src/main.asm` is the entry point and memory map; `hw.asm` (interrupts, keyboard, AY
   sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`, `title.asm`.
 * `RASMFLAGS="-DDEBUG=9" ./build.sh` builds a debug version that starts with plenty of money
-  at wave 9 and shows the number of frames each game tick takes (top right).
+  at wave 9; add `-DMETER=1` to show how many 50 Hz frames each drawn frame took (top right).
 
 ### Headless testing
 
 `tools/cpcsim.py` is a small headless CPC (Z80 core from the `z80` Python package, keyboard
 through the PPI/AY, gate array palette, CRTC base, 300 Hz interrupts) that renders the shown
 screen to PNG and stops on a crash (PC or SP out of range). On top of it,
-`tools/scenario.py stress` builds two dozen defenders and runs a late wave, and
+`tools/scenario.py stress` builds two dozen defenders and runs a late wave,
+`tools/bench.py` (on a `-DDEBUG=9` build) reports the frame rate in that fight and
+`tools/profile.py` where the CPU time goes (set `CPC_SPEED=0.8` to approximate the CPC's
+memory wait states), and
 `tools/scenario.py full` plays a whole game with a build order, printing progress per wave —
 handy for balancing (a full ten-wave game simulates in a few seconds).
 
@@ -97,5 +100,9 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
   buffer's list, which is restored from the background copy before the next frame is drawn there.
 * Sprites use pen 0 as transparent and a 256-byte mask table, so they are stored at one byte
   per two pixels; black inside sprites uses pen 15.
-* The game runs at up to 25 frames per second, with music and effects on the AY driven from the
-  50 Hz interrupt.
+* The screen is drawn at a fixed 12.5 frames per second (every fourth 50 Hz frame), with the
+  game logic running two ticks per drawn frame (25 Hz), so the pace never changes however busy
+  the battle gets. Music and effects on the AY are driven from the 50 Hz interrupt.
+* Rendering: sprites step down screen lines arithmetically and use an unrolled, width-indexed
+  inner loop; background restores use unrolled `LDI`; row counters live in a shadow register;
+  HUD text changes are written to the back screen only, spreading the cost over two frames.

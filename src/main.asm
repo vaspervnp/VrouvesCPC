@@ -16,7 +16,10 @@
         BANKSET 0
 
         ifndef DEBUG
-DEBUG       equ 0           ; rasm -DDEBUG=1: frame meter, rich start
+DEBUG       equ 0           ; rasm -DDEBUG=n: rich start at wave n
+        endif
+        ifndef METER
+METER       equ 0           ; rasm -DMETER=1: frames per tick shown top right
         endif
 
 LOAD_ADDR   equ #0040
@@ -90,6 +93,11 @@ start:
         ld bc,bss_end-bss_start-1
         ld (hl),0
         ldir
+        ld hl,keys              ; keyboard buffers: nothing pressed
+        ld de,keys+1
+        ld bc,40-1
+        ld (hl),#ff
+        ldir
         call hw_init
         call build_tables
         call dirty_reset
@@ -139,7 +147,7 @@ last_flip:  defs 1
 back_mask:  defs 1
 keys:       defs 20         ; live state, then latch
 kcur:       defs 10
-kold:       defs 10
+kold:       defs 10         ; keys..kold: 40 bytes, set to #FF at start
 mus_on:     defs 1
 chan_a:     defs C_SIZE
 chan_b:     defs C_SIZE
@@ -154,6 +162,7 @@ spr_src:    defs 2
 spr_h:      defs 1
 rr_h:       defs 1
 rr_w:       defs 1
+rr_step:    defs 1
 dl_cur_base: defs 2
 dl_cur_ptr: defs 2
 dl_oth_base: defs 2
@@ -199,6 +208,8 @@ cur_r:      defs 1
 sel_type:   defs 1
 rep_t:      defs 1
 hud_flags:  defs 1
+hud_flags_b: defs 1         ; must follow hud_flags
+hud_cur:    defs 1
 hud_aff:    defs 1
 ban_on:     defs 1
 ban_id1:    defs 1

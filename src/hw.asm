@@ -70,7 +70,9 @@ wait_frame:
         jr z,.w
         ret
 
-; show the back buffer, wait so we run at most 25 fps, swap buffers
+FRAMES_PER_DRAW equ 4          ; 50 Hz / 4 = a steady 12.5 fps
+
+; show the back buffer, wait so we draw at a fixed 12.5 fps, swap buffers
 flip:
         call show_back
         call wait_frame                 ; the new screen is latched at frame start
@@ -78,7 +80,7 @@ flip:
         ld b,a
         ld a,(framecnt)
         sub b
-        cp 2
+        cp FRAMES_PER_DRAW
         jr c,.w2
         ld (dbg_el),a
         ld a,(framecnt)

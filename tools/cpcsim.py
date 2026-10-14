@@ -15,8 +15,10 @@ import sys
 import z80
 from PIL import Image
 
-T_FRAME = 79872          # 4 MHz * 19.968 ms
-SLICE = T_FRAME // 6
+import os
+# 4 MHz * 19.968 ms; CPC_SPEED < 1 approximates the CPC's memory wait states
+T_FRAME = int(79872 * float(os.environ.get("CPC_SPEED", "1")))
+SLICE = T_FRAME // 6 // 64 * 64
 
 KEYS = {
     'UP': 0, 'RIGHT': 1, 'DOWN': 2, 'ENTER': 6, 'LEFT': 8, 'COPY': 9, 'RETURN': 18,

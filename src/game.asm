@@ -154,14 +154,13 @@ game_run:
         ld a,(paused)
         or a
         jr nz,.draw
-        call wave_update
-        call update_enemies
-        call update_towers
-        call update_projs
-        call update_fx
-        call banner_tick
+        call game_tick          ; logic runs at 25 Hz: two ticks per drawn frame
+        ld a,(game_over)
+        or a
+        jr nz,.draw
+        call game_tick
 .draw:  call hud_refresh
-        if DEBUG
+        if METER
         ld hl,dbg_show
         call both_screens
         endif
@@ -171,6 +170,14 @@ game_run:
         or a
         jr z,.loop
         jp end_game
+
+game_tick:
+        call wave_update
+        call update_enemies
+        call update_towers
+        call update_projs
+        call update_fx
+        jp banner_tick
 
 game_init:
         call palette_black
@@ -261,7 +268,7 @@ game_init:
         call set_palette
         ret
 
-        if DEBUG
+        if METER
 dbg_show:                       ; frames per game tick, top right
         call text_normal
         ld bc,#0900
@@ -290,6 +297,7 @@ end_game:
         ld a,40
         ld (end_wait),a
 .l:     call kbd_update
+        call update_fx
         call update_fx
         call render
         call flip
@@ -460,9 +468,9 @@ cursor_input:
         dec a
         ld (rep_t),a
         ret nz
-        ld a,2
+        ld a,1
         jr .go
-.first: ld a,7
+.first: ld a,4
 .go:    ld (rep_t),a
         bit 0,c
         jr z,.nu
@@ -741,10 +749,17 @@ rand:
         pop hl
         ret
 
-hud_set:
+hud_set:                        ; A = flags, for both screens
+        push bc
         ld hl,hud_flags
+        ld c,a
         or (hl)
         ld (hl),a
+        inc hl
+        ld a,c
+        or (hl)
+        ld (hl),a
+        pop bc
         ret
 
 ;------------------------------------------------------------------------------
@@ -1404,7 +1419,7 @@ tower_think:
         ld (tr_sfx),a
         call find_target
         jr c,.fire
-        ld (iy+T_CD),3
+        ld (iy+T_CD),4          ; nobody in range: look again later
         ret
 .fire:  ld a,(tr_cd)
         ld (iy+T_CD),a
@@ -1898,11 +1913,15 @@ draw_enemies:
         or a
         jr z,.n
         ld d,(ix+E_X)
-        ld a,(ix+E_Y)
-        sub 2
-        ld e,a
-        ld bc,#0e04
-        call dirty_add
+        ld e,(ix+E_Y)
+        ld bc,#0c04
+        ld a,(ix+E_HP)
+        cp (ix+E_MAXHP)
+        jr nc,.full
+        dec e
+        dec e
+        ld b,#0e
+.full:  call dirty_add
         jr c,.n
         call draw_hpbar
         ; sprite: type, direction, frame
@@ -2194,19 +2213,37 @@ hud_all:
         call hud_info
         jp hud_status
 
+; each screen keeps its own pending HUD changes; only the back screen is
+; updated per frame, which spreads the text drawing over two frames
 hud_refresh:
         ld a,(hud_flags)
+        ld hl,hud_flags_b
+        or (hl)
         bit 3,a                 ; funds changed: did the selection become (un)affordable?
         jr z,.k0
         call sel_affordable
         ld hl,hud_aff
         cp (hl)
         jr z,.k0
+        ld (hl),a
         ld a,HUDF_INFO
         call hud_set
-.k0:    ld hl,hud_jobs
+.k0:    ld hl,hud_flags
+        ld a,(back_mask)
+        inc a
+        jr z,.ka
+        inc hl
+        call tgt_scr_b
+        jr .kb
+.ka:    call tgt_scr_a
+.kb:    ld a,(hl)
+        or a
+        ret z
+        ld (hl),0
+        ld (hud_cur),a
+        ld hl,hud_jobs
         ld b,5
-.k1:    ld a,(hud_flags)
+.k1:    ld a,(hud_cur)
         and (hl)
         inc hl
         ld e,(hl)
@@ -2217,13 +2254,14 @@ hud_refresh:
         push hl
         push bc
         ex de,hl
-        call both_screens
+        call call_hl
         pop bc
         pop hl
 .k2:    djnz .k1
-        xor a
-        ld (hud_flags),a
         ret
+
+call_hl:
+        jp (hl)
 
 hud_jobs:
         db HUDF_WAVE

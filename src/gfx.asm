@@ -167,7 +167,9 @@ draw_sprite_raw:
         inc hl
 draw_sprite_wh:
         ld a,b
-        ld (spr_h),a
+        exx
+        ld b,a                  ; B' = rows left
+        exx
         ex de,hl                ; DE = data, HL = x,y
         ld a,c                  ; entry = unroll + (4-w)*8
         neg
@@ -221,9 +223,9 @@ draw_sprite_wh:
         jr .cnt
 .nbg:   ld bc,80                ; background buffer: linear
         add hl,bc
-.cnt:   ld a,(spr_h)
-        dec a
-        ld (spr_h),a
+.cnt:   exx
+        dec b
+        exx
         jr nz,.row
         ret
 
@@ -310,7 +312,25 @@ restore_dirty:
 ; D,E,C,B = x,y,w,h : background -> back buffer
 restore_rect:
         ld a,b
-        ld (rr_h),a
+        exx
+        ld b,a                  ; B' = rows left
+        exx
+        ld a,80                 ; background step after a row
+        sub c
+        ld (rr_step),a
+        ld a,c                  ; widths up to 8: unrolled LDI, else LDIR
+        cp 9
+        ld hl,.wide
+        jr nc,.e
+        neg
+        add a,8
+        add a,a                 ; LDI is 2 bytes
+        ld hl,.ldi8
+        add a,l
+        ld l,a
+        jr nc,.e
+        inc h
+.e:     ld (.jp+1),hl
         ld a,c
         ld (rr_w),a
         ld l,e
@@ -336,16 +356,22 @@ restore_rect:
         jr nc,.n2
         inc h
 .n2:    pop de                  ; DE = screen, HL = background
-.row:   push hl
-        push de
-        ld a,(rr_w)
+.row:   push de
+.jp:    jp .ldi8
+.wide:  ld a,(rr_w)
         ld c,a
         ld b,0
         ldir
-        pop de
-        pop hl
-        ld bc,80
-        add hl,bc
+        jr .done
+.ldi8:  repeat 8
+        ldi
+        rend
+.done:  ld a,(rr_step)          ; background: next line
+        add a,l
+        ld l,a
+        jr nc,.b1
+        inc h
+.b1:    pop de                  ; screen: next line
         ld a,d
         add a,8
         ld d,a
@@ -357,9 +383,9 @@ restore_rect:
         ld a,d
         adc a,#c0
         ld d,a
-.ok:    ld a,(rr_h)
-        dec a
-        ld (rr_h),a
+.ok:    exx
+        dec b
+        exx
         jr nz,.row
         ret
 
