@@ -37,7 +37,10 @@ towers      equ #BD00       ; 32 x 8
 projs       equ #BE00       ; 20 x 10
 fxs         equ #BEC8       ; 8 x 4
 ENT_END     equ #BEF8
-STACK_TOP   equ #C000
+ESTATE0     equ #BF00       ; enemy draw state per screen: 16 x 4 bytes each
+ESTATE1     equ #BF40
+ESTATE_SIZE equ 64
+STACK_TOP   equ #C000       ; stack: #BF80-#BFFF
 
 
 PF_Y        equ 16
@@ -235,6 +238,11 @@ sp_ptype:   defs 1
 sp_pdmg:    defs 1
 sp_pflag:   defs 1
 end_wait:   defs 1
+es_base:    defs 2
+stamp:      defs 1
+mr_c0:      defs 1
+mr_c1:      defs 1
+STAMPMAP:   defs 110
 tr_budget:  defs 1
 ticks_due:  defs 1
 frame_acc:  defs 1

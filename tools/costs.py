@@ -17,7 +17,7 @@ CATS = [
     ('WAIT_FRAME', 'waiting for the frame (idle)'),
     ('FLIP', 'waiting for the frame (idle)'),
     ('RESTORE_DIRTY', 'erase: restore background under sprites'),
-    ('DRAW_ENEMIES', 'draw enemies (+ health bars)'),
+    ('DRAW_ENEMIES', 'draw enemies'),
     ('DRAW_PROJS', 'draw projectiles'),
     ('DRAW_FX', 'draw effects'),
     ('DRAW_FLAG', 'draw flag + cursor'),

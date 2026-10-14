@@ -80,7 +80,9 @@ screen to PNG and stops on a crash (PC or SP out of range). On top of it,
 `tools/scenario.py stress` builds two dozen defenders and runs a late wave,
 `tools/bench.py` (on a `-DDEBUG=9` build) reports the frame rate in that fight and
 `tools/profile.py` where the CPU time goes (set `CPC_SPEED=0.8` to approximate the CPC's
-memory wait states), and
+memory wait states), `tools/costs.py <wave>` the time per game activity,
+`tools/ghosts.py` checks that no sprite leftovers remain on either screen between waves,
+`tools/enemycheck.py [stress]` checks at every flip that every enemy is fully drawn, and
 `tools/scenario.py full` plays a whole game with a build order, printing progress per wave —
 handy for balancing (a full ten-wave game simulates in a few seconds).
 
@@ -106,6 +108,9 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
   about 24–25 fps in waves 1–7 and 19–23 fps in the busiest late waves, where sixteen walkers
   on screen alone take most of two frames to draw. The logic then runs as many 25 Hz ticks as
   frames passed (at most two), so the pace stays the same.
+* Enemies are only redrawn when they change: per screen buffer the game remembers where and
+  with which sprite each enemy was last drawn; restored rectangles stamp a 16×16 cell map and
+  an unchanged enemy is redrawn only if one of its cells was restored. There are no health bars.
 * Per 25 Hz tick at most four towers look for a target; input handling is skipped when no key
   is down; a cauldron draws at most two clouds per throw; up to eight effects at a time. Music and effects on the AY are driven from the 50 Hz interrupt.
 * Rendering: sprites step down screen lines arithmetically and use an unrolled, width-indexed

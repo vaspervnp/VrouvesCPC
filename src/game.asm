@@ -236,6 +236,11 @@ game_init:
         ld bc,ENT_END-ENT_START-1
         ld (hl),0
         ldir
+        ld hl,ESTATE0           ; nothing drawn yet on either screen
+        ld de,ESTATE0+1
+        ld bc,ESTATE_SIZE*2-1
+        ld (hl),0
+        ldir
         ld hl,game_vars
         ld de,game_vars+1
         ld bc,game_vars_end-game_vars-1
@@ -1923,6 +1928,9 @@ update_fx:
 ;------------------------------------------------------------------------------
 render:
         call tgt_back
+        call enemies_prepare
+        ld hl,stamp
+        inc (hl)
         call restore_dirty
         call draw_enemies
         call draw_projs
@@ -1930,26 +1938,72 @@ render:
         call draw_flag
         jp draw_cursor
 
-draw_enemies:
+; Enemies are only redrawn when they change.  For each screen buffer we keep,
+; per enemy, where and with which sprite it was last drawn there (ESTATE0/1:
+; status, x, y, sprite).  Status 1 = unchanged, 2 = must be drawn.  An
+; unchanged enemy is redrawn only if something was restored over its cells.
+
+; before the restore: queue the old picture of changed or gone enemies for erasing
+enemies_prepare:
+        ld a,(back_mask)
+        inc a
+        ld iy,ESTATE0
+        jr z,.s
+        ld iy,ESTATE1
+.s:     ld (es_base),iy
         ld ix,enemies
         ld b,MAX_EN
 .l:     push bc
         ld a,(ix+E_TYPE)
         or a
+        jr z,.dead
+        call enemy_sprite_idx
+        ld c,a
+        ld a,(iy+0)
+        or a
+        jr z,.new
+        ld a,(iy+1)
+        cp (ix+E_X)
+        jr nz,.chg
+        ld a,(iy+2)
+        cp (ix+E_Y)
+        jr nz,.chg
+        ld a,(iy+3)
+        cp c
+        jr nz,.chg
+        ld (iy+0),1
+        jr .n
+.chg:   push bc
+        call es_erase
+        pop bc
+.new:   ld (iy+0),2
+        ld a,(ix+E_X)
+        ld (iy+1),a
+        ld a,(ix+E_Y)
+        ld (iy+2),a
+        ld (iy+3),c
+        jr .n
+.dead:  ld a,(iy+0)
+        or a
         jr z,.n
-        ld d,(ix+E_X)
-        ld e,(ix+E_Y)
+        call es_erase
+        ld (iy+0),0
+.n:     ld de,EN_SZ
+        add ix,de
+        ld de,4
+        add iy,de
+        pop bc
+        djnz .l
+        ret
+
+es_erase:
+        ld d,(iy+1)
+        ld e,(iy+2)
         ld bc,#0c04
-        ld a,(ix+E_HP)
-        cp (ix+E_MAXHP)
-        jr nc,.full
-        dec e
-        dec e
-        ld b,#0e
-.full:  call dirty_add
-        jr c,.n
-        call draw_hpbar
-        ; sprite: type, direction, frame
+        jp dirty_add
+
+; IX = enemy -> A = index into enemy_sprites (type, direction, frame)
+enemy_sprite_idx:
         call enemy_seg
         ld a,(hl)
         or a
@@ -1957,20 +2011,37 @@ draw_enemies:
         ld a,1
         jp m,.dn
         inc a
-.dn:    ld c,a
+.dn:    ld e,a
         ld a,(ix+E_TYPE)
         dec a
-        ld b,a
+        ld d,a
         add a,a
-        add a,b
-        add a,c
+        add a,d
+        add a,e
         add a,a
-        ld c,a
+        ld e,a
         ld a,(ix+E_ANIM)
         rrca
         rrca
         and 1
-        add a,c
+        add a,e
+        ret
+
+; after the restore
+draw_enemies:
+        ld iy,(es_base)
+        ld ix,enemies
+        ld b,MAX_EN
+.l:     push bc
+        ld a,(ix+E_TYPE)
+        or a
+        jr z,.n
+        ld a,(iy+0)
+        cp 2
+        jr z,.draw
+        call enemy_touched
+        jr nc,.n
+.draw:  ld a,(iy+3)
         add a,a
         ld l,a
         ld h,0
@@ -1985,51 +2056,62 @@ draw_enemies:
         call draw_sprite_raw
 .n:     ld de,EN_SZ
         add ix,de
+        ld de,4
+        add iy,de
         pop bc
         djnz .l
         ret
 
-; health bar above a damaged enemy: n = hp*8/maxhp pixels of green
-draw_hpbar:
-        ld a,(ix+E_HP)
-        cp (ix+E_MAXHP)
-        ret nc
+; IX = enemy -> carry if any of its cells was restored this frame
+enemy_touched:
+        ld a,(stamp)
+        ld c,a
+        ld a,(ix+E_Y)
+        call .row
+        ret c
+        ld a,(ix+E_Y)
+        add a,11
+.row:   rrca
+        rrca
+        rrca
+        rrca
+        and 15
+        ld l,a
+        add a,a
+        add a,a
+        add a,l
+        add a,a
         ld l,a
         ld h,0
-        add hl,hl
-        add hl,hl
-        add hl,hl
-        ld e,(ix+E_MAXHP)
-        ld d,0
-        ld b,0
-.dv:    or a
-        sbc hl,de
-        jr c,.dd
-        inc b
-        jr .dv
-.dd:    ld c,b
-        ld d,(ix+E_X)
-        ld a,(ix+E_Y)
-        sub 2
+        ld de,STAMPMAP
+        add hl,de
+        ld a,(ix+E_X)
+        rrca
+        rrca
+        rrca
+        and 31
         ld e,a
-        call line_addr
-        ld b,4
-.k:     ld a,c
-        cp 2
-        jr nc,.gg
+        ld d,0
+        push hl
+        add hl,de
+        ld a,(hl)
+        pop hl
+        cp c
+        scf
+        ret z
+        ld a,(ix+E_X)
+        add a,3
+        rrca
+        rrca
+        rrca
+        and 31
+        ld e,a
+        add hl,de
+        ld a,(hl)
+        cp c
+        scf
+        ret z
         or a
-        jr z,.rr
-        ld a,BAR_GR
-        ld c,0
-        jr .w
-.rr:    ld a,BAR_RR
-        jr .w
-.gg:    sub 2
-        ld c,a
-        ld a,BAR_GG
-.w:     ld (hl),a
-        inc hl
-        djnz .k
         ret
 
 draw_projs:

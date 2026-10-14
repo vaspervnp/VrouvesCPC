@@ -302,11 +302,85 @@ restore_dirty:
         ld b,(hl)
         inc hl
         push hl
+        call mark_rect
         call restore_rect
         pop hl
         jr .loop
 .done:  ld hl,(dl_cur_base)
         ld (dl_cur_ptr),hl
+        ret
+
+; D,E,C,B = x,y,w,h : stamp the 16x16 cells the rectangle covers (STAMPMAP,
+; 10 x 11 cells) so enemies underneath know they must be redrawn
+mark_rect:
+        push hl
+        push bc
+        push de
+        ld a,d
+        add a,c
+        dec a
+        rrca
+        rrca
+        rrca
+        and 31
+        ld (mr_c1),a
+        ld a,d
+        rrca
+        rrca
+        rrca
+        and 31
+        ld (mr_c0),a
+        ld a,e
+        add a,b
+        dec a
+        rrca
+        rrca
+        rrca
+        rrca
+        and 15
+        ld b,a
+        ld a,e
+        rrca
+        rrca
+        rrca
+        rrca
+        and 15
+        ld e,a
+        ld a,b
+        sub e
+        inc a
+        ld b,a                  ; rows
+        ld a,e
+        add a,a
+        ld c,a
+        add a,a
+        add a,a
+        add a,c                 ; first row * 10
+        ld l,a
+        ld h,0
+        ld de,STAMPMAP
+        add hl,de
+.r:     push hl
+        ld a,(mr_c0)
+        ld e,a
+        ld d,0
+        add hl,de
+        ld a,(mr_c1)
+        sub e
+        inc a
+        ld c,a                  ; columns
+        ld a,(stamp)
+.c:     ld (hl),a
+        inc hl
+        dec c
+        jr nz,.c
+        pop hl
+        ld de,10
+        add hl,de
+        djnz .r
+        pop de
+        pop bc
+        pop hl
         ret
 
 ; D,E,C,B = x,y,w,h : background -> back buffer
