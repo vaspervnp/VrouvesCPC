@@ -2645,12 +2645,6 @@ hud_top:
         ld de,8
         call set_at
         ld a,S_LANGHINT
-        call print_id
-        ld bc,#0700
-        call set_colors
-        ld de,29*256+8
-        call set_at
-        ld a,S_AMSTRAD
         jp print_id
 
 HUD_Y1 equ 184
