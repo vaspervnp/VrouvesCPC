@@ -35,7 +35,7 @@ ENT_START   equ #BC00
 enemies     equ #BC00       ; 16 x 16
 towers      equ #BD00       ; 32 x 8
 projs       equ #BE00       ; 20 x 10
-fxs         equ #BEC8       ; 12 x 4
+fxs         equ #BEC8       ; 8 x 4
 ENT_END     equ #BEF8
 STACK_TOP   equ #C000
 
@@ -235,6 +235,9 @@ sp_ptype:   defs 1
 sp_pdmg:    defs 1
 sp_pflag:   defs 1
 end_wait:   defs 1
+tr_budget:  defs 1
+ticks_due:  defs 1
+frame_acc:  defs 1
 dbg_el:     defs 1
 game_vars_end:
 bss_end:

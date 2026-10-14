@@ -32,14 +32,27 @@ class Player:
                 s.tap('DOWN')
             else:
                 s.tap('UP')
+            for _ in range(16):     # wait until the game has moved the cursor
+                if (s.byte('cur_c'), s.byte('cur_r')) != (cc, rr):
+                    break
+                s.run_frames(1)
         raise RuntimeError("cursor stuck")
 
     def build(self, t, c, r):
         self.goto(c, r)
-        self.sim.tap(TYPES[t])
-        before = self.sim.word('funds')
-        self.sim.tap('SPACE')
-        return self.sim.word('funds') < before
+        s = self.sim
+        s.tap(TYPES[t])
+        for _ in range(20):
+            if s.byte('sel_type') == t:
+                break
+            s.run_frames(1)
+        before = s.word('funds')
+        s.tap('SPACE')
+        for _ in range(20):         # wait for the game to take the keypress
+            if s.word('funds') < before:
+                return True
+            s.run_frames(1)
+        return False
 
 
 def status(s):
@@ -104,7 +117,9 @@ def full(plan=FULL_PLAN, verbose=True):
             while todo and s.word('funds') >= COST[todo[0][0]]:
                 t, c, r = todo.pop(0)
                 if not p.build(t, c, r) and verbose:
-                    print("could not build", t, c, r)
+                    print("could not build", t, c, r, "cursor", s.byte('cur_c'), s.byte('cur_r'),
+                          "sel", s.byte('sel_type'), "funds", s.word('funds'),
+                          "paused", s.byte('paused'), "cell", s.peek(s.sym('cellmap') + r * 20 + c))
             if s.byte('wave_state') == 0 and not todo or (s.byte('wave_state') == 0 and
                                                           s.word('funds') < COST[todo[0][0]]):
                 s.tap('N')

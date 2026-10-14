@@ -67,7 +67,15 @@ F_X     equ 1
 F_Y     equ 2
 F_T     equ 3
 FX_SZ   equ 4
-MAX_FX  equ 12
+MAX_FX  equ 8
+TARGET_BUDGET equ 4
+        if FRAMES_PER_DRAW == 4
+REP_FIRST equ 4                 ; cursor auto-repeat, in drawn frames
+REP_NEXT equ 1
+        else
+REP_FIRST equ 7
+REP_NEXT equ 2
+        endif
 
 FX_SPARK equ 1
 FX_PUFF  equ 2
@@ -155,11 +163,17 @@ game_run:
         ld a,(paused)
         or a
         jr nz,.draw
-        call game_tick          ; logic runs at 25 Hz: two ticks per drawn frame
+        ld a,(ticks_due)        ; logic always runs at 25 Hz: one tick per
+.t:     push af                 ; two frames that passed since the last draw
+        call game_tick
+        pop af
+        ld b,a
         ld a,(game_over)
         or a
         jr nz,.draw
-        call game_tick
+        ld a,b
+        dec a
+        jr nz,.t
 .draw:  call hud_refresh
         if METER
         ld hl,dbg_show
@@ -173,6 +187,8 @@ game_run:
         jp end_game
 
 game_tick:
+        ld a,TARGET_BUDGET
+        ld (tr_budget),a
         call wave_update
         call update_enemies
         call update_towers
@@ -239,6 +255,7 @@ game_init:
         ld (cur_r),a
         ld a,1
         ld (sel_type),a
+        ld (ticks_due),a
         ; background
         call tgt_bg
         ld e,0
@@ -299,7 +316,6 @@ end_game:
         ld (end_wait),a
 .l:     call kbd_update
         call update_fx
-        call update_fx
         call render
         call flip
         ld a,(end_wait)
@@ -316,7 +332,17 @@ end_game:
 ; input
 ;------------------------------------------------------------------------------
 handle_input:
-        ld a,K_L
+        ld hl,kcur              ; nothing pressed now or last frame: no work
+        ld b,20
+        ld a,#ff
+.any:   and (hl)
+        inc hl
+        djnz .any
+        inc a
+        jr nz,.keys
+        ld (rep_t),a            ; keys released: reset the cursor repeat
+        ret
+.keys:  ld a,K_L
         call key_hit
         call c,toggle_lang
         ld a,K_M
@@ -455,9 +481,9 @@ cursor_input:
         dec a
         ld (rep_t),a
         ret nz
-        ld a,1
+        ld a,REP_NEXT
         jr .go
-.first: ld a,4
+.first: ld a,REP_FIRST
 .go:    ld (rep_t),a
         bit 0,c
         jr z,.nu
@@ -1380,7 +1406,12 @@ tower_think:
         jr z,.rdy
         dec (iy+T_CD)
         ret
-.rdy:   ld a,(iy+T_TYPE)
+.rdy:   ld a,(tr_budget)        ; only a few towers look for a target per tick
+        or a
+        ret z
+        dec a
+        ld (tr_budget),a
+        ld a,(iy+T_TYPE)
         call ttype_ptr
         inc hl
         ld a,(hl)
@@ -1543,6 +1574,8 @@ fire_yiayia:
 
 ; toxic cloud: hurts (ignoring armour) and slows every walker in reach
 fire_cauldron:
+        ld a,2                  ; draw at most two clouds per throw
+        ld (tmp_idx),a
         ld ix,enemies
         ld b,MAX_EN
 .l:     push bc
@@ -1554,11 +1587,16 @@ fire_cauldron:
         call in_range
         jr nc,.n
         ld (ix+E_SLOW),30
+        ld a,(tmp_idx)
+        or a
+        jr z,.nofx
+        dec a
+        ld (tmp_idx),a
         ld d,(ix+E_X)
         ld e,(ix+E_Y)
         ld a,FX_PUFF
         call spawn_fx
-        ld a,(tr_dmg)
+.nofx:  ld a,(tr_dmg)
         ld c,1
         call damage_enemy
 .n:     ld de,EN_SZ

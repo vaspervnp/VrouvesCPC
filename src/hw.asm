@@ -70,9 +70,12 @@ wait_frame:
         jr z,.w
         ret
 
-FRAMES_PER_DRAW equ 4          ; 50 Hz / 4 = a steady 12.5 fps
+; 4 = a steady 12.5 fps; 2 = 25 fps when a frame fits (18-25 in the late waves).
+; Game logic always runs at 25 Hz whichever is chosen.
+FRAMES_PER_DRAW equ 4
 
-; show the back buffer, wait so we draw at a fixed 12.5 fps, swap buffers
+; show the back buffer, wait so we draw at most at 25 fps, swap buffers;
+; work out how many 25 Hz logic ticks the next frame must run
 flip:
         call show_back
         call wait_frame                 ; the new screen is latched at frame start
@@ -83,6 +86,18 @@ flip:
         cp FRAMES_PER_DRAW
         jr c,.w2
         ld (dbg_el),a
+        ld hl,frame_acc
+        add a,(hl)
+        ld b,a
+        and 1
+        ld (hl),a
+        ld a,b
+        srl a
+        cp 3                    ; at most two ticks: under a very heavy load the
+        jr c,.td                ; game slows down a touch instead of stuttering
+        ld a,2
+        ld (hl),0
+.td:    ld (ticks_due),a
         ld a,(framecnt)
         ld (last_flip),a
         ld a,(back_mask)

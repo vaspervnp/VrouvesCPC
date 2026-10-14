@@ -102,7 +102,12 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
   per two pixels; black inside sprites uses pen 15.
 * The screen is drawn at a fixed 12.5 frames per second (every fourth 50 Hz frame), with the
   game logic running two ticks per drawn frame (25 Hz), so the pace never changes however busy
-  the battle gets. Music and effects on the AY are driven from the 50 Hz interrupt.
+  the battle gets. `FRAMES_PER_DRAW equ 2` in `src/hw.asm` draws at up to 25 fps instead:
+  about 24–25 fps in waves 1–7 and 19–23 fps in the busiest late waves, where sixteen walkers
+  on screen alone take most of two frames to draw. The logic then runs as many 25 Hz ticks as
+  frames passed (at most two), so the pace stays the same.
+* Per 25 Hz tick at most four towers look for a target; input handling is skipped when no key
+  is down; a cauldron draws at most two clouds per throw; up to eight effects at a time. Music and effects on the AY are driven from the 50 Hz interrupt.
 * Rendering: sprites step down screen lines arithmetically and use an unrolled, width-indexed
   inner loop; background restores use unrolled `LDI`; row counters live in a shadow register;
   HUD text changes are written to the back screen only, spreading the cost over two frames.
