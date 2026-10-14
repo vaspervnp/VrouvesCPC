@@ -561,23 +561,23 @@ sg_B_PAUSE:
 sg_B_PAUSE2:
     db #08,#4D,#42,#19,#F5,#05,#4B,#E8,#8F,#03,#4D,#05,#40,#0F,#3D,#E0,#FF
 
-STAGE_AREA equ #2E59
-STAGE_SIZE equ 4519
+STAGE_AREA equ #2E58
+STAGE_SIZE equ 4520
 tilemap equ STAGE_AREA+0
 cellmap equ STAGE_AREA+280
 sack_cells equ STAGE_AREA+560
 stage_flag equ STAGE_AREA+580
 stage_unlock equ STAGE_AREA+582
-path_ground equ STAGE_AREA+585
-path_air equ STAGE_AREA+622
-wave_table equ STAGE_AREA+641
-se_B_STAGE equ STAGE_AREA+740
-sg_B_STAGE equ STAGE_AREA+751
-se_B_WIN equ STAGE_AREA+765
-sg_B_WIN equ STAGE_AREA+782
-se_B_LOSE equ STAGE_AREA+800
-sg_B_LOSE equ STAGE_AREA+810
-tiles equ STAGE_AREA+823
+path_ground equ STAGE_AREA+586
+path_air equ STAGE_AREA+623
+wave_table equ STAGE_AREA+642
+se_B_STAGE equ STAGE_AREA+741
+sg_B_STAGE equ STAGE_AREA+752
+se_B_WIN equ STAGE_AREA+766
+sg_B_WIN equ STAGE_AREA+783
+se_B_LOSE equ STAGE_AREA+801
+sg_B_LOSE equ STAGE_AREA+811
+tiles equ STAGE_AREA+824
 
 music_durs:
     db #06,#0C,#12,#18,#30

@@ -1250,6 +1250,8 @@ STAGES_FLAG7 = (60, 61)
 
 
 class Stage:
+    toughness = 0       # invaders have the health of this many waves later
+
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
@@ -1273,7 +1275,7 @@ STAGES = [
               "B_LOSE": ("THE CHURCH HAS FALLEN!", "Η ΕΚΚΛΗΣΙΑ ΕΠΕΣΕ!"),
           }),
     Stage(map=MAP3, ground=GROUND3, air=AIR3, sacks=SACKS3, base=town_hall_base,
-          flag=STAGES_FLAG3, waves="WAVES3",
+          flag=STAGES_FLAG3, waves="WAVES3", toughness=2,
           strings={
               "B_STAGE": ("STAGE 03: THE TOWN HALL", "ΠΙΣΤΑ 03: ΤΟ ΔΗΜΑΡΧΕΙΟ"),
               "B_WIN": ("TOWN HALL SAVED! NOW, TO THE BAKERY!",
@@ -1465,18 +1467,18 @@ WAVES2 = [
     [(1, 18, 13), (2, 11, 18), (3, 4, 40)],
     [(2, 13, 16), (1, 16, 11), (3, 9, 32)],
 ]
-# the town hall: bigger again
+# the town hall: bigger again, and tougher invaders
 WAVES3 = [
-    [(2, 8, 40)],
-    [(1, 11, 24)],
-    [(2, 8, 32), (1, 7, 22)],
-    [(2, 8, 28), (3, 3, 64)],
-    [(1, 13, 16), (2, 7, 26)],
-    [(2, 11, 22), (3, 4, 52)],
-    [(1, 15, 15), (2, 10, 20), (3, 3, 44)],
-    [(3, 5, 44), (2, 12, 18), (1, 11, 13)],
-    [(1, 18, 12), (2, 11, 17), (3, 5, 38)],
-    [(2, 13, 15), (1, 16, 10), (3, 9, 30)],
+    [(2, 9, 38)],
+    [(1, 13, 22)],
+    [(2, 9, 30), (1, 8, 20)],
+    [(2, 9, 26), (3, 4, 58)],
+    [(1, 15, 15), (2, 8, 24)],
+    [(2, 13, 20), (3, 5, 48)],
+    [(1, 17, 14), (2, 12, 18), (3, 4, 40)],
+    [(3, 6, 40), (2, 14, 16), (1, 13, 12)],
+    [(1, 21, 11), (2, 13, 15), (3, 6, 34)],
+    [(2, 15, 13), (1, 18, 9), (3, 11, 26)],
 ]
 # the bakery, the last stand: three lanes close together, so many more invaders
 WAVES4 = [
@@ -1636,7 +1638,7 @@ def main():
         print("stage %d: %d tiles" % (len(built), len(tile_list)))
     # fixed layout: every section as big as the biggest stage needs
     sections = [("tilemap", 280), ("cellmap", 280), ("sack_cells", 20), ("stage_flag", 2),
-                ("stage_unlock", 3),
+                ("stage_unlock", 4),
                 ("path_ground", max(len(b_["pg"]) for b_ in built)),
                 ("path_air", max(len(b_["pa"]) for b_ in built)),
                 ("wave_table", 2 * len(WAVES1)),
@@ -1837,7 +1839,7 @@ def main():
             ann = [ids.index(l1), ids.index(l2)]
         else:
             types, ann = {1, 2, 3, 4, 5, 6}, [0xFF, 0xFF]
-        put("stage_unlock", [sum(1 << (t - 1) for t in types)] + ann)
+        put("stage_unlock", [sum(1 << (t - 1) for t in types)] + ann + [STAGES[k].toughness])
         put("path_ground", b_["pg"])
         put("path_air", b_["pa"])
         ptrs, wd = [], []

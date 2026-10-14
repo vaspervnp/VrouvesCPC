@@ -1115,14 +1115,19 @@ spawn_enemy:
 .got:   ld (ix+E_TYPE),c
         ld a,c
         call etype_ptr
-        ld a,(wave_num)
+        ld a,(wave_num)         ; hp: base + per wave * (wave + stage toughness)
+        ld b,a
+        ld a,(stage_unlock+3)
+        add a,b
         ld b,a
         ld a,(hl)
         inc hl
         ld e,(hl)
         inc hl
 .m:     add a,e
-        djnz .m
+        jr nc,.k
+        ld a,255
+.k:     djnz .m
         ld (ix+E_HP),a
         ld (ix+E_MAXHP),a
         ld a,(hl)

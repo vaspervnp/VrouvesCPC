@@ -66,7 +66,8 @@ following stage brings one more defender, announced when the stage begins.
 2. **The village church** – the greens are hidden in the church courtyard, with the priest and
    the candle stand. The road is shorter and every wave a little bigger.
 3. **The town hall** – on the plaza under the old plane tree, by the fountain and the mayor;
-   the Greek and the EU flag fly over the portico.
+   the Greek and the EU flag fly over the portico. The invaders here are tougher: they come
+   with the health they would have two waves later.
 4. **The bakery** – in the yard of the village bakery by its wood-fired oven, among the
    woodpile and the racks of drying dakos. The road crosses the map in three close lanes.
 5. **The school** – in the schoolyard with its basketball court, the flag and the teacher.
@@ -92,7 +93,7 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
   the music and sound effects; `src/gen/title_text.asm`, the texts only the title screen needs;
   and one file per stage, `build/STAGE1.BIN` to `STAGE7.BIN`: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
-  stage's own texts, in a fixed layout. Preview PNGs go to `build/preview/`.
+  stage's own texts, the defenders it has and how tough its invaders are, in a fixed layout. Preview PNGs go to `build/preview/`.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
   landed (`src/gen/diskmap.asm`), assembles, adds the title overlay `TITLE.BIN` and
   `VROUVES.BIN`, and checks that every file is where the loader will look for it.
