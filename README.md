@@ -29,7 +29,7 @@ RUN"VROUVES
 | 1 – 6 | Choose a defender |
 | SPACE / RETURN / ENTER / COPY / FIRE | Build on the cursor tile |
 | S / DEL | Sell the defender under the cursor (half price back) |
-| N | Call the next wave now |
+| N | Call the next wave now (half the seconds left on the countdown are paid as a bonus) |
 | H | Pause / continue (ESC while paused quits to the title) |
 | L | Switch English / Greek at any time |
 | M | Music on / off |

@@ -96,8 +96,8 @@ NEXT_COUNTDOWN equ 15
 ; enemy types: base hp, hp per wave, speed, armour, reward, base damage, air, -
 etype_tab:
         db 6,3,20,0,3,4,1,0             ; bio-drone
-        db 16,7,9,2,4,8,0,0             ; compliance guard
-        db 50,18,7,4,10,20,0,0          ; weed destroyer (tank)
+        db 16,8,9,2,4,8,0,0             ; compliance guard
+        db 50,19,7,4,10,20,0,0          ; weed destroyer (tank)
 
 ; towers: cost, range, cooldown, damage, flags (bit0 hits air), projectile, sfx, sell
 ttype_tab:
@@ -619,10 +619,19 @@ try_sell:
         ld a,HUDF_FUNDS+HUDF_INFO
         jp hud_set
 
-call_wave_now:
+call_wave_now:                  ; early call: half the seconds left become vrouves
         ld a,(wave_state)
         or a
         ret nz
+        ld a,(cd_sec)
+        srl a
+        ld c,a
+        ld b,0
+        ld hl,(funds)
+        add hl,bc
+        ld (funds),hl
+        ld a,HUDF_FUNDS
+        call hud_set
         jp start_wave
 
 ;------------------------------------------------------------------------------
@@ -2174,6 +2183,11 @@ hud_full:
 
 hud_all:
         call hud_top
+        ld de,HUD_Y1
+        ld bc,16*256+80
+        xor a
+        call fill_rect
+        call hud_labels
         call hud_wave
         call hud_funds
         call hud_hp
@@ -2305,9 +2319,13 @@ hud_wave:
         ld (pn_zero),a
         ret
 
-hud_funds:
+hud_labels:
         ld de,11*2*256+HUD_Y1
-        ld bc,8*256+24
+        ld bc,8*256+16
+        xor a
+        call fill_rect
+        ld de,23*2*256+HUD_Y1
+        ld bc,8*256+10
         xor a
         call fill_rect
         call text_normal
@@ -2317,6 +2335,13 @@ hud_funds:
         call set_at
         ld a,S_FUNDS
         call print_id
+        ld de,24*256+HUD_Y1
+        call set_at
+        ld a,S_HP
+        jp print_id
+
+hud_funds:
+        call text_normal
         ld bc,#0800
         call set_colors
         ld de,19*256+HUD_Y1
@@ -2326,17 +2351,7 @@ hud_funds:
         jp print_num
 
 hud_hp:
-        ld de,23*2*256+HUD_Y1
-        ld bc,8*256+20
-        xor a
-        call fill_rect
         call text_normal
-        ld bc,#0500
-        call set_colors
-        ld de,24*256+HUD_Y1
-        call set_at
-        ld a,S_HP
-        call print_id
         ld a,(hp)
         cp 30
         ld bc,#0800
