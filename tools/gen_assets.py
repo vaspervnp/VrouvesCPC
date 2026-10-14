@@ -138,6 +138,26 @@ GROUND3 = [(0, 2), (17, 2), (17, 5), (2, 5), (2, 11), (6, 11), (6, 8), (10, 8), 
 AIR3 = [(0, 2), (10, 12), (11, 12)]
 SACKS3 = [(12, 10), (13, 10), (13, 11), (12, 13), (13, 13)]
 
+MAP4 = [
+    "KKKKKP..T...C...T..T",
+    "KKKKKP.......Y.....T",
+    "KKKKKP.........WWW.T",
+    "KKKKKP.....T........",
+    "PPPPPP....WWWW...T.T",
+    "..T..........C.....T",
+    "T...G..............Y",
+    "Y.....T....Y......T.",
+    "T..WWWW.......G....T",
+    "...................T",
+    "T...T.....C.....T...",
+    "Y......G......WWWW.T",
+    "....................",
+    "T.T..Y..T..T.C..T.YT",
+]
+GROUND4 = [(19, 12), (2, 12), (2, 9), (17, 9), (17, 6), (8, 6), (8, 2), (6, 2)]
+AIR4 = [(19, 12), (16, 12), (6, 2)]
+SACKS4 = [(5, 1), (5, 3), (1, 4), (3, 4), (5, 4)]
+
 
 def carve_path(grid, wps):
     grid = [r.ljust(MW, '.')[:MW] for r in grid]
@@ -750,6 +770,99 @@ def church_base(cv, with_sacks):
 STAGES_FLAG2 = (62, 1)
 
 
+# bakery of Stage 04: cells 0-4 x 0-3; the yard is 5 x 0-3 and 0-5 x 4
+BK_X1, BK_Y1 = 5 * TW - 1, 4 * TH - 1
+
+
+def bakery(cv):
+    K, Wh, E, O, r, R, Y, B = (art.CH[k] for k in "kWeorRyB")
+    x0, y0, x1, y1 = 0, 0, BK_X1, BK_Y1
+    # stone walls
+    cv.rect(x0, y0, x1, y1, E)
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            if y % 4 == 3 or (x + (y // 4) * 3) % 6 == 0:
+                cv.set(x, y, K)
+    # tiled roof over the shop
+    for y in range(y0, 25):
+        for x in range(x0, 25):
+            cv.set(x, y, r if y % 3 == 0 else O)
+    for y in range(y0, 26):
+        cv.set(25, y, K)
+    for x in range(x0, 26):
+        cv.set(x, 25, K)
+    # chimney with a puff of smoke
+    cv.rect(16, 6, 21, 11, K)
+    cv.rect(17, 7, 20, 10, E)
+    cv.rect(18, 8, 19, 9, K)
+    for (x, y) in ((20, 3), (21, 2), (22, 3), (23, 1), (21, 4), (24, 2)):
+        cv.set(x, y, Wh)
+    # the wood-fired oven: a whitewashed dome, its mouth glowing toward the yard
+    cx, cy = 32.5, 14.5
+    for y in range(0, 32):
+        for x in range(26, x1 + 1):
+            d = math.hypot((x - cx) * 2, y - cy)
+            if d <= 13:
+                cv.set(x, y, K if d > 12 else Wh if (x - cx) * 2 + (y - cy) < 6 else E)
+    cv.rect(35, 12, x1, 17, K)
+    cv.rect(36, 13, x1, 16, R)
+    cv.rect(37, 14, x1, 15, Y)
+    # sign
+    cv.rect(x0 + 1, 28, 34, 38, K)
+    cv.rect(x0 + 2, 29, 33, 37, B)
+    cv.text("ΦΟΥΡΝΟΣ", x0 + 4, 30, Wh)
+    # shop window with loaves
+    cv.rect(x0 + 3, 40, 30, y1, K)
+    cv.rect(x0 + 4, 41, 29, y1, O)
+    for x in range(x0 + 5, 29, 4):
+        cv.set(x, 43, r)
+        cv.set(x + 1, 43, r)
+        cv.set(x + 1, 45, Y)
+    # flagpole (the cloth is the animated flag sprite)
+    fx, fy = STAGES_FLAG4[0] * 2, STAGES_FLAG4[1]
+    for y in range(fy, fy + 15):
+        cv.set(fx, y, K if y == fy + 14 else r)
+
+
+def bake_yard(cv, with_sacks):
+    K, Wh, E, O, r, Y, G = (art.CH[k] for k in "kWeoryg")
+    cells = [(5, r_) for r_ in range(4)] + [(c, 4) for c in range(6)]
+    for (c, r_) in cells:
+        x0, y0 = c * TW, r_ * TH
+        for y in range(TH):
+            for x in range(TW):
+                cv.set(x0 + x, y0 + y, K if (x == 7 or y == 11) and (x + y) % 2 else E)
+    for y in range(0, 5 * TH):
+        cv.set(6 * TW - 1, y, K)
+    for x in range(0, 6 * TW):
+        cv.set(x, 5 * TH - 1, K)
+    # woodpile
+    for (lx, ly) in ((1, 50), (4, 50), (2, 53), (5, 53), (1, 56), (4, 56)):
+        cv.rect(lx, ly, lx + 2, ly + 2, r)
+        cv.set(lx + 1, ly + 1, O)
+    # rack of dakos drying in the sun
+    cv.rect(17, 49, 30, 58, K)
+    cv.rect(18, 50, 29, 57, Wh)
+    for (dx, dy) in ((19, 51), (23, 51), (27, 51), (21, 55), (25, 55)):
+        cv.rect(dx, dy, dx + 2, dy + 1, O)
+        cv.set(dx + 1, dy, r)
+    # the baker himself, with his peel
+    cv.blit(art.BAKER, 5 * TW, 0)
+    if with_sacks:
+        for (c, r_) in SACKS4:
+            sx, sy = c * TW, r_ * TH
+            cv.blit(SACK, sx, sy + 1)
+            cv.blit(SACK, sx + 4, sy + 2)
+
+
+def bakery_base(cv, with_sacks):
+    bakery(cv)
+    bake_yard(cv, with_sacks)
+
+
+STAGES_FLAG4 = (1, 1)
+
+
 class Stage:
     def __init__(self, **kw):
         self.__dict__.update(kw)
@@ -777,8 +890,16 @@ STAGES = [
           flag=STAGES_FLAG3, waves="WAVES3",
           strings={
               "B_STAGE": ("STAGE 03: THE TOWN HALL", "ΠΙΣΤΑ 03: ΤΟ ΔΗΜΑΡΧΕΙΟ"),
-              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_WIN": ("TOWN HALL SAVED! NOW, TO THE BAKERY!",
+                        "ΤΟ ΔΗΜΑΡΧΕΙΟ ΣΩΘΗΚΕ! ΣΤΟ ΦΟΥΡΝΟ!"),
               "B_LOSE": ("THE TOWN HALL HAS FALLEN!", "ΤΟ ΔΗΜΑΡΧΕΙΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP4, ground=GROUND4, air=AIR4, sacks=SACKS4, base=bakery_base,
+          flag=STAGES_FLAG4, waves="WAVES4",
+          strings={
+              "B_STAGE": ("STAGE 04: THE BAKERY", "ΠΙΣΤΑ 04: Ο ΦΟΥΡΝΟΣ"),
+              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_LOSE": ("THE BAKERY HAS FALLEN!", "Ο ΦΟΥΡΝΟΣ ΕΠΕΣΕ!"),
           }),
 ]
 STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
@@ -932,6 +1053,19 @@ WAVES3 = [
     [(3, 5, 44), (2, 12, 18), (1, 11, 13)],
     [(1, 18, 12), (2, 11, 17), (3, 5, 38)],
     [(2, 13, 15), (1, 16, 10), (3, 9, 30)],
+]
+# the bakery, the last stand: three lanes close together, so many more invaders
+WAVES4 = [
+    [(2, 10, 34)],
+    [(1, 14, 20), (2, 4, 30)],
+    [(2, 11, 26), (1, 10, 18)],
+    [(2, 11, 22), (3, 4, 52)],
+    [(1, 18, 13), (2, 10, 20)],
+    [(2, 16, 16), (3, 6, 40)],
+    [(1, 22, 11), (2, 15, 15), (3, 5, 34)],
+    [(3, 9, 32), (2, 16, 14), (1, 16, 10)],
+    [(1, 24, 9), (2, 17, 13), (3, 9, 28)],
+    [(2, 20, 11), (1, 22, 8), (3, 16, 20)],
 ]
 
 # stage files are loaded at STAGE_AREA, just below #4000; their layout is fixed
@@ -1312,9 +1446,12 @@ def main():
         elif k == 1:
             placed = [(art.CRETAN, 3, 4), (art.YIAYIA, 8, 11), (art.BRIDE, 12, 4),
                       (art.PSSSST, 6, 8), (art.CAULDRON, 11, 10), (art.BAKER, 15, 8)]
-        else:
+        elif k == 2:
             placed = [(art.CRETAN, 4, 3), (art.YIAYIA, 4, 9), (art.BRIDE, 8, 6),
                       (art.PSSSST, 12, 6), (art.CAULDRON, 8, 10), (art.BAKER, 14, 4)]
+        else:
+            placed = [(art.CRETAN, 7, 4), (art.YIAYIA, 5, 10), (art.BRIDE, 12, 7),
+                      (art.PSSSST, 16, 2), (art.CAULDRON, 10, 10), (art.BAKER, 3, 7)]
         for rows, c, r in placed:
             demo.blit(rows, c * TW, r * TH)
         gp = path_steps(st.ground)
