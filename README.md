@@ -69,7 +69,8 @@ following stage brings one more defender, announced when the stage begins.
    the Greek and the EU flag fly over the portico. The invaders here are tougher: they come
    with the health they would have two waves later.
 4. **The bakery** – in the yard of the village bakery by its wood-fired oven, among the
-   woodpile and the racks of drying dakos. The road crosses the map in three close lanes.
+   woodpile and the racks of drying dakos. The road crosses the map in three close lanes, and
+   the invaders come with the health of the next wave.
 5. **The school** – in the schoolyard with its basketball court, the flag and the teacher.
    The waves are the biggest of all.
 6. **The village pitch** – the greens wait on the touchline by the coach and the team bench,

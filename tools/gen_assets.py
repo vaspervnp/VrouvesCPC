@@ -1283,7 +1283,7 @@ STAGES = [
               "B_LOSE": ("THE TOWN HALL HAS FALLEN!", "ΤΟ ΔΗΜΑΡΧΕΙΟ ΕΠΕΣΕ!"),
           }),
     Stage(map=MAP4, ground=GROUND4, air=AIR4, sacks=SACKS4, base=bakery_base,
-          flag=STAGES_FLAG4, waves="WAVES4",
+          flag=STAGES_FLAG4, waves="WAVES4", toughness=1,
           strings={
               "B_STAGE": ("STAGE 04: THE BAKERY", "ΠΙΣΤΑ 04: Ο ΦΟΥΡΝΟΣ"),
               "B_WIN": ("BAKERY SAVED! NOW, TO THE SCHOOL!",
