@@ -13,11 +13,7 @@ STAGE_SECTORS equ (STAGE_SIZE+511)/512
 disk_title:
         db DISK_NEXT_TRACK,DISK_NEXT_SECTOR,TITLE_SECTORS
         dw TITLE_AREA
-disk_stages:
-        db DISK_STAGE1_TRACK,DISK_STAGE1_SECTOR,STAGE_SECTORS
-        dw STAGE_AREA
-        db DISK_STAGE2_TRACK,DISK_STAGE2_SECTOR,STAGE_SECTORS
-        dw STAGE_AREA
+; disk_stages: one descriptor per stage file, in src/gen/diskmap.asm
 
 ; A = stage (0..)
 stage_load:

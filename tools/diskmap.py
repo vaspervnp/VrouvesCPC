@@ -91,6 +91,12 @@ def main():
             key = name.split('.')[0].upper()
             lines.append("DISK_%s_TRACK equ %d" % (key, t))
             lines.append("DISK_%s_SECTOR equ #%02X" % (key, s))
+        stages = [n for n in sys.argv[4:] if n.startswith("STAGE")]
+        lines.append("disk_stages:")
+        for name in stages:
+            key = name.split('.')[0].upper()
+            lines.append("        db DISK_%s_TRACK,DISK_%s_SECTOR,STAGE_SECTORS" % (key, key))
+            lines.append("        dw STAGE_AREA")
         nxt = max(used | {1}) + 1
         t, s = dsk.block_pos(nxt)
         lines.append("DISK_NEXT_TRACK equ %d" % t)

@@ -62,6 +62,8 @@ On the title screen, → (or joystick right) flips between the story, defenders 
    with sacks of vrouves.
 2. **The village church** – the greens are hidden in the church courtyard, with the priest and
    the candle stand. The road is shorter and every wave a little bigger.
+3. **The town hall** – the last stand, on the plaza under the old plane tree, by the fountain
+   and the mayor; the Greek and the EU flag fly over the portico. The biggest waves of all.
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
@@ -75,7 +77,7 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
 * `tools/gen_assets.py` generates `src/gen/assets.asm`: the 3×6 font (Latin and Greek), the
   sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
   the music and sound effects; `src/gen/title_text.asm`, the texts only the title screen needs;
-  and one file per stage, `build/STAGE1.BIN` and `STAGE2.BIN`: the map rendered to 8×12
+  and one file per stage, `build/STAGE1.BIN` to `STAGE3.BIN`: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
   stage's own texts, in a fixed layout. Preview PNGs go to `build/preview/`.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
@@ -85,7 +87,7 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
   sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`,
   `disk.asm` (the disk loader) and `title.asm` (assembled into the title overlay).
 * `RASMFLAGS="-DDEBUG=9" ./build.sh` builds a debug version that starts with plenty of money
-  at wave 9; `-DSTART_STAGE=2` starts at the church; add `-DMETER=1` to show how many 50 Hz
+  at wave 9; `-DSTART_STAGE=n` starts at stage n; add `-DMETER=1` to show how many 50 Hz
   frames each drawn frame took (top right).
 
 ### Headless testing
@@ -100,7 +102,7 @@ screen to PNG and stops on a crash (PC or SP out of range). On top of it,
 memory wait states), `tools/costs.py <wave>` the time per game activity,
 `tools/ghosts.py` checks that no sprite leftovers remain on either screen between waves,
 `tools/enemycheck.py [stress]` checks at every flip that every enemy is fully drawn, and
-`tools/scenario.py full` plays a whole game, both stages, with a build order per stage,
+`tools/scenario.py full` plays a whole game, all stages, with a build order per stage,
 printing progress per wave — handy for balancing. The tools work on whichever stage the build
 starts at.
 

@@ -117,6 +117,27 @@ GROUND2 = [(1, 13), (1, 10), (7, 10), (7, 7), (1, 7), (1, 2), (10, 2), (10, 12),
 AIR2 = [(1, 13), (8, 6), (17, 6)]
 SACKS2 = [(15, 4), (16, 4), (18, 4), (19, 4), (15, 5)]
 
+MAP3 = [
+    "T..T...C...T....T..T",
+    "..G.........Y.....T.",
+    "..................TT",
+    "T...WWWWW....C......",
+    "..T.......Y.......T.",
+    "T.................YT",
+    "T....T.....WWWW....T",
+    "....C.....G......T..",
+    "T...........Y....T.T",
+    "Y.......T...PPPPPPPP",
+    "T...G.......PPKKKKKK",
+    "T.......Y...PPKKKKKK",
+    "..T..C......PPKKKKKK",
+    "T.T..T..Y..TPPKKKKKK",
+]
+GROUND3 = [(0, 2), (17, 2), (17, 5), (2, 5), (2, 11), (6, 11), (6, 8), (10, 8), (10, 12),
+           (11, 12)]
+AIR3 = [(0, 2), (10, 12), (11, 12)]
+SACKS3 = [(12, 10), (13, 10), (13, 11), (12, 13), (13, 13)]
+
 
 def carve_path(grid, wps):
     grid = [r.ljust(MW, '.')[:MW] for r in grid]
@@ -286,6 +307,19 @@ PRIEST = [
     "kkkykkk",
     ".kkkkk.",
     ".kk.kk.",
+]
+MAYOR = [
+    "..eee..",
+    ".eeeee.",
+    "..sss..",
+    "..sss..",
+    ".kkWkk.",
+    "kkkRkkk",
+    "kkkRkkk",
+    "kkkkkkk",
+    ".kkkkk.",
+    ".kk.kk.",
+    ".rr.rr.",
 ]
 TABLE = [
     ".rrr.",
@@ -608,6 +642,106 @@ def courtyard(cv, with_sacks):
             cv.blit(SACK, sx + 4, sy + 2)
 
 
+# town hall of Stage 03: cells 14-19 x 10-13; the plaza is 12-13 x 9-13 and
+# 14-19 x 9
+TH_X0, TH_Y0 = 14 * TW, 10 * TH
+PLAZA_Y0 = 9 * TH
+
+
+def town_hall(cv):
+    K, Wh, E, B, O, r, R, Y = (art.CH[k] for k in "kWeBorRy")
+    x0, y0, x1, y1 = TH_X0, TH_Y0, PFW - 1, PFH - 1
+    # steps and portico facing the plaza
+    cv.rect(x0, y0, x1, y0 + 1, Wh)
+    cv.rect(x0, y0 + 2, x1, y0 + 2, E)
+    cv.rect(x0, y0 + 3, x1, y0 + 10, E)
+    for x in range(x0 + 2, x1 - 1, 5):
+        cv.rect(x, y0 + 3, x + 1, y0 + 9, Wh)
+        cv.set(x + 2, y0 + 4, K)
+        cv.set(x + 2, y0 + 8, K)
+    cv.rect(x0 + 21, y0 + 4, x0 + 26, y0 + 10, r)      # the door
+    cv.rect(x0 + 22, y0 + 5, x0 + 25, y0 + 10, K)
+    # sign over the entrance
+    cv.rect(x0, y0 + 11, x1, y0 + 20, K)
+    cv.rect(x0 + 1, y0 + 12, x1 - 1, y0 + 19, Wh)
+    cv.text("ΔΗΜΑΡΧΕΙΟ", x0 + 6, y0 + 13, K)
+    # hipped roof of tiles
+    ry0 = y0 + 21
+    for y in range(ry0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, r if (y - ry0) % 3 == 0 else O)
+    mid = (ry0 + y1) // 2
+    for y in range(ry0, y1 + 1):          # hips from the corners to the ridge
+        d = min(y - ry0, y1 - y)
+        for x in (x0 + d * 2, x0 + d * 2 + 1, x1 - d * 2, x1 - d * 2 - 1):
+            if x0 <= x <= x1:
+                cv.set(x, y, R)
+    for x in range(x0 + (mid - ry0) * 2, x1 - (mid - ry0) * 2 + 1):
+        cv.set(x, mid, R)
+    for y in range(ry0, y1 + 1):
+        cv.set(x0, y, K)
+    # flagpoles: the Greek flag is the animated sprite; the EU one is painted
+    fx, fy = STAGES_FLAG3[0] * 2, STAGES_FLAG3[1]
+    for y in range(fy, fy + 15):
+        cv.set(fx, y, K if y == fy + 14 else r)
+    ex, ey = x0 + 8, fy
+    for y in range(ey, ey + 15):
+        cv.set(ex, y, K if y == ey + 14 else r)
+    cv.rect(ex + 1, ey, ex + 7, ey + 5, B)
+    for (dx, dy) in ((4, 0), (2, 1), (6, 1), (1, 3), (7, 3), (2, 5), (6, 5), (4, 5)):
+        if ex + dx <= ex + 7 and dy <= 5:
+            cv.set(ex + dx, ey + dy, Y)
+
+
+def plaza(cv, with_sacks):
+    K, Wh, E, B, C, r, G, P, L, T = (art.CH[k] for k in "kWeBcrgplt")
+    cells = [(c, r_) for c in (12, 13) for r_ in range(9, 14)] + [(c, 9) for c in range(14, 20)]
+    for (c, r_) in cells:
+        x0, y0 = c * TW, r_ * TH
+        for y in range(TH):
+            for x in range(TW):
+                cv.set(x0 + x, y0 + y, Wh if y in (0, 6) or x == (0 if y < 6 else 4) else E)
+    # edge of the plaza against the grass
+    for y in range(PLAZA_Y0, PFH):
+        cv.set(12 * TW, y, K)
+    for x in range(12 * TW, PFW):
+        cv.set(x, PLAZA_Y0, K)
+    # the old plane tree
+    cx, cy = 14 * TW + 7.5, PLAZA_Y0 + 5.5
+    for y in range(PLAZA_Y0 - 2, PLAZA_Y0 + TH):
+        for x in range(14 * TW - 2, 16 * TW + 2):
+            d = math.hypot((x - cx) * 2, y - cy)
+            if d <= 9:
+                v = (x * 7 + y * 3) % 5
+                cv.set(x, y, K if d > 8.2 else P if v == 0 else L if v == 1 else T)
+    # fountain
+    cx, cy = 17 * TW + 7.5, PLAZA_Y0 + 5.5
+    for y in range(PLAZA_Y0, PLAZA_Y0 + TH):
+        for x in range(17 * TW, 19 * TW):
+            d = math.hypot((x - cx) * 2, y - cy)
+            if d <= 6:
+                cv.set(x, y, K if d > 5.4 else Wh if d > 4.4 else
+                       Wh if d < 1.2 else C if (x + y) % 3 == 0 else B)
+    # bench
+    cv.rect(19 * TW + 1, PLAZA_Y0 + 3, 19 * TW + 6, PLAZA_Y0 + 4, r)
+    cv.rect(19 * TW + 1, PLAZA_Y0 + 6, 19 * TW + 6, PLAZA_Y0 + 7, r)
+    # the mayor
+    cv.blit(MAYOR, 12 * TW, PLAZA_Y0 + 1)
+    if with_sacks:
+        for (c, r_) in SACKS3:
+            sx, sy = c * TW, r_ * TH
+            cv.blit(SACK, sx, sy + 1)
+            cv.blit(SACK, sx + 4, sy + 2)
+
+
+def town_hall_base(cv, with_sacks):
+    town_hall(cv)
+    plaza(cv, with_sacks)
+
+
+STAGES_FLAG3 = (74, 141)
+
+
 def church_base(cv, with_sacks):
     church(cv)
     courtyard(cv, with_sacks)
@@ -635,8 +769,16 @@ STAGES = [
           strings={
               "B_STAGE": ("STAGE 02: THE VILLAGE CHURCH",
                           "ΠΙΣΤΑ 02: Η ΕΚΚΛΗΣΙΑ ΤΟΥ ΧΩΡΙΟΥ"),
-              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_WIN": ("CHURCH SAVED! NOW, TO THE TOWN HALL!",
+                        "Η ΕΚΚΛΗΣΙΑ ΣΩΘΗΚΕ! ΣΤΟ ΔΗΜΑΡΧΕΙΟ!"),
               "B_LOSE": ("THE CHURCH HAS FALLEN!", "Η ΕΚΚΛΗΣΙΑ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP3, ground=GROUND3, air=AIR3, sacks=SACKS3, base=town_hall_base,
+          flag=STAGES_FLAG3, waves="WAVES3",
+          strings={
+              "B_STAGE": ("STAGE 03: THE TOWN HALL", "ΠΙΣΤΑ 03: ΤΟ ΔΗΜΑΡΧΕΙΟ"),
+              "B_WIN": ("VICTORY! THE VROUVES ARE SAFE!", "ΝΙΚΗ! ΟΙ ΒΡΟΥΒΕΣ ΣΩΘΗΚΑΝ!"),
+              "B_LOSE": ("THE TOWN HALL HAS FALLEN!", "ΤΟ ΔΗΜΑΡΧΕΙΟ ΕΠΕΣΕ!"),
           }),
 ]
 STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
@@ -778,9 +920,21 @@ WAVES2 = [
     [(1, 18, 13), (2, 11, 18), (3, 4, 40)],
     [(2, 13, 16), (1, 16, 11), (3, 9, 32)],
 ]
+# the town hall: bigger again
+WAVES3 = [
+    [(2, 8, 40)],
+    [(1, 11, 24)],
+    [(2, 8, 32), (1, 7, 22)],
+    [(2, 8, 28), (3, 3, 64)],
+    [(1, 13, 16), (2, 7, 26)],
+    [(2, 11, 22), (3, 4, 52)],
+    [(1, 15, 15), (2, 10, 20), (3, 3, 44)],
+    [(3, 5, 44), (2, 12, 18), (1, 11, 13)],
+    [(1, 18, 12), (2, 11, 17), (3, 5, 38)],
+    [(2, 13, 15), (1, 16, 10), (3, 9, 30)],
+]
 
 # stage files are loaded at STAGE_AREA, just below #4000; their layout is fixed
-STAGE_FILES = ["STAGE1.BIN", "STAGE2.BIN"]
 
 # ------------------------------------------------------------------ build
 
@@ -821,6 +975,9 @@ def main():
     emit()
 
     # stages: each one a file with a fixed layout, loaded at STAGE_AREA
+    for f in os.listdir(os.path.join(ROOT, "build")):
+        if f.startswith("STAGE") and f.endswith(".BIN"):
+            os.remove(os.path.join(ROOT, "build", f))
     built = []
     for st in STAGES:
         grid = carve_path(st.map, st.ground)
@@ -1089,7 +1246,7 @@ def main():
             for lang in (0, 1):
                 put("%s_%s" % ("se" if lang == 0 else "sg", sid), STAGE_STR_ENC[(k, sid, lang)])
         img += bytes(b_["tiles"])
-        with open(os.path.join(ROOT, "build", STAGE_FILES[k]), "wb") as f:
+        with open(os.path.join(ROOT, "build", "STAGE%d.BIN" % (k + 1)), "wb") as f:
             f.write(img)
     print("stage area #%04X, %d bytes" % (stage_area, size))
 
@@ -1152,9 +1309,12 @@ def main():
             placed = [(art.CRETAN, 4, 2), (art.YIAYIA, 9, 3), (art.BRIDE, 13, 5),
                       (art.PSSSST, 6, 5), (art.CAULDRON, 10, 8), (art.BAKER, 12, 11),
                       (art.CAULDRON_CRUSHED, 16, 11)]
-        else:
+        elif k == 1:
             placed = [(art.CRETAN, 3, 4), (art.YIAYIA, 8, 11), (art.BRIDE, 12, 4),
                       (art.PSSSST, 6, 8), (art.CAULDRON, 11, 10), (art.BAKER, 15, 8)]
+        else:
+            placed = [(art.CRETAN, 4, 3), (art.YIAYIA, 4, 9), (art.BRIDE, 8, 6),
+                      (art.PSSSST, 12, 6), (art.CAULDRON, 8, 10), (art.BAKER, 14, 4)]
         for rows, c, r in placed:
             demo.blit(rows, c * TW, r * TH)
         gp = path_steps(st.ground)
