@@ -3,8 +3,8 @@
 loads at &C000) and build/splash_inks.txt (its 16 firmware colours, read by
 tools/make_boot.py), plus build/preview/splash.png.
 
-The 16 inks are picked from the 27 CPC colours to fit the picture (in Lab,
-which keeps the hues), which is then lightly dithered; the English title goes
+The 16 inks are picked from the 27 CPC colours to fit the picture, which is
+first made bolder and then Floyd-Steinberg dithered; the English title goes
 over the sky in its own chunky letters.
 """
 import os
@@ -19,45 +19,29 @@ import art  # noqa: E402
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "assets", "vrouves.jpeg")
 W, H = 160, 200
-SATURATION = 1.6        # the CPC colours are bold: push the picture towards them
-DITHER = 0.25           # how much of each pixel's error is spread to its neighbours
+SATURATION = 1.5        # the CPC colours are bold: push the picture towards them
+CONTRAST = 1.15
+DITHER = 0.35           # how much of each pixel's error is spread to its neighbours
+WEIGHT = (3, 4, 2)      # red, green, blue in the colour distance
 CPC = [art.fw_rgb(n) for n in range(27)]
 
 
-def lab(c):
-    """sRGB -> CIE Lab: distances there keep the hues (purple mountains, blue door)"""
-    def lin(u):
-        u /= 255
-        return ((u + 0.055) / 1.055) ** 2.4 if u > 0.04045 else u / 12.92
-    r, g, b = map(lin, c)
-    x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.9505
-    y = 0.2126 * r + 0.7152 * g + 0.0722 * b
-    z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.089
-
-    def f(t):
-        return t ** (1 / 3) if t > 0.008856 else 7.787 * t + 16 / 116
-    return (116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z)))
-
-
-CPC_LAB = [lab(c) for c in CPC]
-
-
 def dist(a, b):
-    return sum((x - y) ** 2 for x, y in zip(a, b))
+    return sum(w * (x - y) ** 2 for w, x, y in zip(WEIGHT, a, b))
 
 
-def pick_inks(labs):
+def pick_inks(pixels):
     """greedy: start from black, add the CPC colour that lowers the error most"""
-    counts = Counter(tuple(round(v / 4) * 4 for v in c) for c in labs)
+    counts = Counter((r // 8 * 8 + 4, g // 8 * 8 + 4, b // 8 * 8 + 4) for r, g, b in pixels)
     cols = list(counts.items())
-    best = [dist(c, CPC_LAB[0]) for c, _ in cols]
+    best = [dist(c, CPC[0]) for c, _ in cols]
     inks = [0]
     while len(inks) < 16:
         top = None
         for k in range(27):
             if k in inks:
                 continue
-            nb = [min(b_, dist(c, CPC_LAB[k])) for (c, _), b_ in zip(cols, best)]
+            nb = [min(b_, dist(c, CPC[k])) for (c, _), b_ in zip(cols, best)]
             err = sum(b_ * n for b_, (_, n) in zip(nb, cols))
             if top is None or err < top[0]:
                 top = (err, k, nb)
@@ -66,14 +50,14 @@ def pick_inks(labs):
     return inks
 
 
-def dither(labs, pal):
-    """Floyd-Steinberg in Lab, with only part of the error passed on"""
-    buf = [list(c) for c in labs]
+def dither(pixels, pal):
+    """Floyd-Steinberg, with only part of the error passed on"""
+    buf = [list(map(float, p)) for p in pixels]
     out = [0] * (W * H)
     for y in range(H):
         for x in range(W):
             i = y * W + x
-            c = buf[i]
+            c = [min(255.0, max(0.0, v)) for v in buf[i]]
             k = min(range(len(pal)), key=lambda j: dist(c, pal[j]))
             out[i] = k
             err = [(a - b) * DITHER for a, b in zip(c, pal[k])]
@@ -167,12 +151,12 @@ def enc_byte(p0, p1):
 
 def main():
     im = ImageEnhance.Color(Image.open(SRC).convert("RGB")).enhance(SATURATION)
-    im = im.resize((W, H), Image.LANCZOS)
-    labs = [lab(p) for p in im.get_flattened_data()]
-    inks = pick_inks(labs)
+    im = ImageEnhance.Contrast(im).enhance(CONTRAST).resize((W, H), Image.LANCZOS)
+    pixels = list(im.get_flattened_data())
+    inks = pick_inks(pixels)
     pal = [CPC[c] for c in inks]
-    pens = dither(labs, [CPC_LAB[c] for c in inks])
-    near = lambda fw: min(range(16), key=lambda j: dist(CPC_LAB[fw], CPC_LAB[inks[j]]))  # noqa: E731
+    pens = dither(pixels, pal)
+    near = lambda fw: min(range(16), key=lambda j: dist(CPC[fw], pal[j]))  # noqa: E731
     l1, l2 = "LET'S GO FOR", "VROUVES!"
     w1, w2 = width(l1, SMALL), width(l2, BIG)
     x0 = 6
