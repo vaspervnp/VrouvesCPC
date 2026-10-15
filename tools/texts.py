@@ -42,8 +42,8 @@ STRINGS = [
     ("B_PAUSE", "PAUSED", "ΠΑΥΣΗ"),
     ("B_PAUSE2", "H: CONTINUE    ESC: QUIT", "H: ΣΥΝΕΧΕΙΑ    ESC: ΕΞΟΔΟΣ"),
     ("T_START", "SPACE / FIRE: START", "SPACE / FIRE: ΕΝΑΡΞΗ"),
-    ("T_CREDIT", "SEVEN STAGES  -  ZONIANA 2026",
-                 "ΕΠΤΑ ΠΙΣΤΕΣ  -  ΖΩΝΙΑΝΑ 2026"),
+    ("T_CREDIT", "REVIVE8BIT - 2026 - VASPER",
+                 "REVIVE8BIT - 2026 - VASPER"),
     ("T_DEFHDR", "THE DEFENDERS", "ΟΙ ΥΠΕΡΑΣΠΙΣΤΕΣ"),
     ("T_ENEHDR", "THE INVADERS OF F&M CO.", "ΟΙ ΕΙΣΒΟΛΕΙΣ ΤΗΣ F&M CO."),
     ("T_CAST1", "CRETAN - 35\nIN MIDNIGHT BLACK. HUNTING RIFLE.",
@@ -64,12 +64,11 @@ STRINGS = [
                "ΦΥΛΑΚΑΣ ΣΥΜΜΟΡΦΩΣΗΣ\nΘΩΡΑΚΙΣΜΕΝΟΣ, ΜΕ ΖΙΖΑΝΙΟΚΤΟΝΟ."),
     ("T_ENE3", "WEED DESTROYER\nTREADED TANK. CRUSHES CAULDRONS.",
                "ΚΑΤΑΣΤΡΟΦΕΑΣ ΧΟΡΤΩΝ\nΕΡΠΥΣΤΡΙΟΦΟΡΟ. ΛΙΩΝΕΙ ΚΑΖΑΝΙΑ."),
-    ("T_CTRL", "CURSORS/QAOP/JOY: MOVE   1-6: CHOOSE\n"
-               "SPACE/FIRE: BUILD        S: SELL\n"
-               "N: NEXT WAVE   H: PAUSE   M: MUSIC",
-               "ΒΕΛΑΚΙΑ/QAOP/JOY: ΚΙΝΗΣΗ  1-6: ΕΠΙΛΟΓΗ\n"
-               "SPACE/FIRE: ΧΤΙΣΙΜΟ      S: ΠΟΥΛΗΜΑ\n"
-               "N: ΚΥΜΑ   H: ΠΑΥΣΗ   M: ΜΟΥΣΙΚΗ"),
+    # the key labels of the first title page, one key row every 16 lines
+    ("T_CTRL", "MOVE\n\nBUILD\n\nNEXT WAVE\n\nMUSIC",
+               "ΚΙΝΗΣΗ\n\nΧΤΙΣΙΜΟ\n\nΝΕΟ ΚΥΜΑ\n\nΜΟΥΣΙΚΗ"),
+    ("T_CTRL2", "CHOOSE\n\nSELL\n\nPAUSE\n\nGREEK",
+                "ΕΠΙΛΟΓΗ\n\nΠΟΥΛΗΜΑ\n\nΠΑΥΣΗ\n\nΑΓΓΛΙΚΑ"),
 ]
 
 STORY_EN = (

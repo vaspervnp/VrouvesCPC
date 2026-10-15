@@ -21,6 +21,14 @@ mv VROUVES.BIN TITLE.BIN ../build/
 cd ..
 iDSK build/vrouves.dsk -i build/TITLE.BIN -t 0 >/dev/null 2>&1
 iDSK build/vrouves.dsk -i build/VROUVES.BIN -t 1 -c 0040 -e 0040 >/dev/null 2>&1
+# RUN"VROUVES finds the BASIC loader first: the REVIVE8BIT and splash
+# screens, then VROUVES.BIN
+python3 tools/make_splash.py >/dev/null
+python3 tools/make_boot.py
+cp assets/revive8b.scr build/REVIVE8B.SCR
+iDSK build/vrouves.dsk -i build/REVIVE8B.SCR -t 1 -c C000 -e 0 >/dev/null 2>&1
+iDSK build/vrouves.dsk -i build/SPLASH.SCR -t 1 -c C000 -e 0 >/dev/null 2>&1
+iDSK build/vrouves.dsk -i build/VROUVES.BAS -t 0 >/dev/null 2>&1
 python3 tools/diskmap.py build/vrouves.dsk verify src/gen/diskmap.asm \
     $(for f in $STAGES; do echo "$f=build/$f"; done) TITLE.BIN=build/TITLE.BIN
-iDSK build/vrouves.dsk -l 2>/dev/null | grep -i "\.BIN"
+iDSK build/vrouves.dsk -l 2>/dev/null | grep -Ei "\.(BIN|BAS|SCR)"

@@ -285,6 +285,7 @@ bss_end:
         org TITLE_AREA
         include "title.asm"
         include "gen/title_text.asm"
+        include "gen/title_art.asm"
 title_end:
         assert title_end <= TAB_PF
         print "title overlay: ",title_end-TITLE_AREA," bytes"

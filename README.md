@@ -24,6 +24,11 @@ Insert the disk in any CPC emulator or a real 464/664/6128 with a disc drive and
 RUN"VROUVES
 ```
 
+A small BASIC loader (`VROUVES.BAS`) shows the REVIVE8BIT screen (`assets/revive8b.scr`)
+and then the splash screen, each for 10 seconds or until SPACE / FIRE, then runs
+`VROUVES.BIN`. The splash is made by `tools/make_splash.py` from `assets/vrouves.jpeg`: 16
+inks picked from the 27 CPC colours, light dithering and the title in the game's font.
+
 ## Controls
 
 | Key | Action |
@@ -37,7 +42,7 @@ RUN"VROUVES
 | L | Switch English / Greek at any time |
 | M | Music on / off |
 
-On the title screen, → (or joystick right) flips between the story, defenders and invaders pages.
+On the title screen, → (or joystick right) flips between the pages: a scene with the keys, the story, the defenders and the invaders.
 
 ## Defenders
 
@@ -91,7 +96,8 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
 
 * `tools/gen_assets.py` generates `src/gen/assets.asm`: the 3×6 font (Latin and Greek), the
   sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
-  the music and sound effects; `src/gen/title_text.asm`, the texts only the title screen needs;
+  the music and sound effects; `src/gen/title_text.asm` and `src/gen/title_art.asm`, the texts and the packed
+  first-page picture only the title screen needs;
   and one file per stage, `build/STAGE1.BIN` to `STAGE7.BIN`: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
   stage's own texts, the defenders it has and how tough its invaders are, in a fixed layout. Preview PNGs go to `build/preview/`.
