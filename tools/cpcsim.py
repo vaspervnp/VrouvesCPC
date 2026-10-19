@@ -196,10 +196,10 @@ class CPC:
     # ---------------------------------------------------------------- run
     def _check(self):
         pc, sp = self.m.pc, self.m.sp
-        # code also runs from the hidden tails of the #4000 screen (#x7D0-#x7FF)
+        # code also runs from the hidden tails of the screen blocks (#x7D0-#x7FF)
         if not (0x38 <= pc < self.code_end or
                 self.overlay[0] <= pc < self.overlay[1] or
-                0x4000 <= pc < 0x8000 and pc & 0x7FF >= 0x7D0):
+                (0x4000 <= pc < 0x8000 or pc >= 0xC000) and pc & 0x7FF >= 0x7D0):
             raise Crash("PC out of code: #%04X (SP #%04X) frame %d" % (pc, sp, self.frame))
         if not (0xBE00 <= sp <= 0xC000):
             raise Crash("SP out of range: #%04X (PC #%04X) frame %d" % (sp, pc, self.frame))

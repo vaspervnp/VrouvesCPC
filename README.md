@@ -58,6 +58,17 @@ On the title screen, → (or joystick right) flips between the pages: a scene wi
 The village joins the fight bit by bit: the Kafenio is held by the Cretan and Psssst, and every
 following stage brings one more defender, announced when the stage begins.
 
+Neighbours matter. A defender right next to its partner (left, right, above or below, not
+diagonally) hits harder or softer; the bonus shows on the info line, green or red, before
+it is built:
+
+| Defender | next to | Damage |
+| --- | --- | --- |
+| Bride | a Cretan | +50% |
+| Yiayia | a Baker | +20% |
+| Baker | a Cretan | -50% |
+| Psssst | a Cretan | -20% |
+
 ## Invaders
 
 * **Bio-drones** – fast and fragile; they fly a shortcut straight over the walls. Yiayia and the cauldron cannot reach them.
@@ -141,7 +152,9 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 * The firmware is switched off; the game owns all 64K. Memory map: code and data from `#0040`,
   the current stage just below `#4000`, screen buffers at `#4000` and `#C000`, a copy of the
   playfield background at `#8000`, line tables, sprite mask table, dirty-rectangle lists and
-  entity tables up to `#BEFF`. The title screen's code and texts are an overlay that is loaded
+  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`) runs from the hidden
+  48 byte tails of five screen blocks, copied there from the title overlay when a game
+  starts. The title screen's code and texts are an overlay that is loaded
   into the background buffer whenever the title is shown. The ending, `ENDING.SCR`, loads
   straight onto the `#C000` screen; its inks and the few bytes of code that show it sit in
   the hidden tails of the screen blocks (`tools/png_to_scr.py`), so it costs the resident

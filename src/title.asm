@@ -36,7 +36,7 @@ title_screen:
         call key_hit
         jr c,.next
         call fire_hit
-        ret c
+        jp c,syn_install        ; into the game: the neighbour bonus code
         ld hl,(ttimer)
         inc hl
         ld (ttimer),hl

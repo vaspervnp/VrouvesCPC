@@ -103,6 +103,21 @@ start of its stage.
 | ![](img/baker.png) | 6 | **Baker** | 60 | 4 | Hurls dakos (barley rusks) that splash onto everything around the target. |
 | ![](img/cauldron.png) | 5 | **Cauldron** | 110 | 5 | A toxic cloud of "unlicensed lipids and ascorbic acids": hurts every walker around it, ignoring armour, and slows them. It cannot reach drones, and tanks dent it as they pass. |
 
+### Neighbours
+
+Some defenders work better side by side, and some get in each other's way. A defender right
+next to its partner – left, right, above or below, not diagonally – hits harder or softer:
+
+| Defender | next to | Damage |
+| --- | --- | --- |
+| Bride | a Cretan | **+50%** |
+| Yiayia | a Baker | **+20%** |
+| Baker | a Cretan | **–50%** |
+| Psssst | a Cretan | **–20%** |
+
+Before you build, the info line shows the bonus the defender would get on the cursor cell:
+green for a bonus, red for a penalty.
+
 ## The invaders
 
 | | Invader | What it does |
@@ -185,6 +200,7 @@ Psssst, who hovers.
 * Cretans are cheap and hit everything, but a single drone wave can slip past a defence made
   of walkers-only defenders. Keep something that hits the air near the drones' route.
 * Put the Yiayia where the road bends, so that the slowed walkers stay longer under fire.
+* Put Brides beside Cretans, and keep Bakers and Psssst a step away from them.
 * Against armoured guards and tanks, Psssst's laser and the Cauldron's cloud are worth their
   price. Keep Cauldrons a step away from the road, out of the tanks' way.
 * Psssst can sit on walls, trees and graves: use the cells no one else can.

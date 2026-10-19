@@ -28,6 +28,12 @@ METER       equ 0           ; rasm -DMETER=1: frames per tick shown top right
         endif
 
 LOAD_ADDR   equ #0040
+; the neighbour bonus (synergy.asm), in hidden screen block tails
+TAIL_SYNDATA    equ #67D0
+TAIL_SYNFIND    equ #6FD0
+TAIL_SYNLOOP    equ #77D0
+TAIL_SYNDMG     equ #7FD0
+TAIL_SYNHUD     equ #E7D0
 BGBUF       equ #8000
 TITLE_AREA  equ #8000
 TAB_PF      equ #B500       ; playfield line -> screen address (lo page, hi page)
@@ -289,6 +295,7 @@ bss_end:
         include "title.asm"
         include "gen/title_text.asm"
         include "gen/title_art.asm"
+        include "synergy.asm"
 title_end:
         assert title_end <= TAB_PF
         print "title overlay: ",title_end-TITLE_AREA," bytes"

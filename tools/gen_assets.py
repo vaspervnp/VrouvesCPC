@@ -1809,6 +1809,9 @@ def main():
 
     all_strings = list(texts.STRINGS)
     for sid, en, gr in all_strings:
+        if sid in ("S_INFO2", "S_INFO3", "S_INFO4", "S_INFO6"):     # the neighbour bonus
+            assert max(len(en), len(gr)) <= 34, sid                  # goes in columns 36-39
+    for sid, en, gr in all_strings:
         if sid.startswith("T_CAST") or sid.startswith("T_ENE"):
             for t in (en, gr):
                 for line in t.split("\n"):
@@ -1881,6 +1884,8 @@ def main():
             item[1] = out
         code += 1
     emit("NUM_GLYPHS equ %d" % NG)
+    for nm, ch in (("PLUS", "+"), ("MINUS", "-"), ("PCT", "%"), ("0", "0"), ("2", "2"), ("5", "5")):
+        emit("G_%s equ %d" % (nm, font.glyph_index(ch)))     # for the neighbour bonus
     emit("pair_table:")
     flat = []
     for a, b in pairs:

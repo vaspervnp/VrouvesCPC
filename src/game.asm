@@ -1482,8 +1482,7 @@ tower_think:
         ld a,(hl)
         ld (tr_cd),a
         inc hl
-        ld a,(hl)
-        ld (tr_dmg),a
+        call TAIL_SYNDMG            ; the damage, with the neighbour bonus
         inc hl
         ld a,(hl)
         ld (tr_flags),a
@@ -2841,4 +2840,5 @@ hud_info:
 .aff:   call set_colors
         ld a,(sel_type)
         add a,S_INFO1-1
-        jp print_id
+        call print_id
+        jp TAIL_SYNHUD              ; and the neighbour bonus here
