@@ -30,6 +30,21 @@ press SPACE / FIRE; then the game loads.
 Leave the disk in the drive: the game reads the title screen and every stage from it while
 you play. There is a short pause with a black screen each time.
 
+### On cassette
+
+On a 464 with its tape deck, insert `vrouves.cdt` (a CPC with a disc drive needs `|TAPE`
+first), type:
+
+```
+RUN"
+```
+
+and press PLAY. The cassette version has no loading screens. The title screen loads first,
+then each stage when you reach it, with the border striping: leave the tape in the deck and
+do not rewind it. If you lose a stage, you play it again straight away, with no loading.
+After the last stage comes the ending; SPACE then resets the computer. If a part fails to
+load, wind the tape back a little and press PLAY again.
+
 ## The title screen
 
 The title screen opens with a scene from the game and the main keys, then tells the story

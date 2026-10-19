@@ -29,6 +29,22 @@ and then the splash screen, each for 10 seconds or until SPACE / FIRE, then runs
 `VROUVES.BIN`. The splash is made by `tools/make_splash.py` from `assets/vrouves.jpeg`: 16
 inks picked from the 27 CPC colours, light dithering and the title in the game's font.
 
+### On cassette
+
+`build.sh` also writes `build/vrouves.cdt`, the cassette version, for a 464 (or any CPC with
+`|TAPE`):
+
+```
+RUN"
+```
+
+It has no loading screens. `VROUVES.BIN` loads with the firmware at 1000 baud; then the
+game's own loader (`src/tape.asm`, about 1600 baud, the border striping) reads the title
+screen, and each stage in turn as it is reached, so the tape just runs on: leave it in the
+deck and do not rewind. A lost stage is played again at once, without loading; after the
+last one the ending loads, and SPACE resets the CPC. If a block fails to load, wind the tape
+back a little and press PLAY: the loader waits for the block it wants.
+
 ## Controls
 
 | Key | Action |
@@ -116,10 +132,12 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
   stage's own texts, the defenders it has and how tough its invaders are, in a fixed layout. Preview PNGs go to `build/preview/`.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
   landed (`src/gen/diskmap.asm`), assembles, adds the title overlay `TITLE.BIN` and
-  `VROUVES.BIN`, and checks that every file is where the loader will look for it.
+  `VROUVES.BIN`, and checks that every file is where the loader will look for it. Then it
+  assembles again with `-DTAPE=1` and has `tools/make_cdt.py` write the cassette image.
 * `src/main.asm` is the entry point and memory map; `hw.asm` (interrupts, keyboard, AY
   sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`,
-  `disk.asm` (the disk loader) and `title.asm` (assembled into the title overlay).
+  `disk.asm` (the disk loader), `tape.asm` (the cassette loader, instead of it with
+  `-DTAPE=1`) and `title.asm` (assembled into the title overlay).
 * `RASMFLAGS="-DDEBUG=9" ./build.sh` builds a debug version that starts with plenty of money
   at wave 9 and every defender; `-DSTART_STAGE=n` starts at stage n; add `-DMETER=1` to show how many 50 Hz
   frames each drawn frame took (top right).

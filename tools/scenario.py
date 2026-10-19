@@ -64,11 +64,32 @@ def status(s):
         s.word('funds'), s.byte('en_count'))
 
 
+TAPE = os.environ.get("TAPE") == "1"     # the cassette version, played from build/vrouves.cdt
+
+
+def wait_load(s):
+    """on tape: until the block the game asked for has loaded"""
+    if TAPE:
+        for _ in range(100):
+            if s.tape.motor:
+                break
+            s.run_frames(2)
+        while s.tape.motor:
+            s.run_frames(25)
+
+
 def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym"):
-    s = CPC(binf, sym)
+    if TAPE:
+        s = CPC("build/tape/VROUVES.BIN", "build/tape/vrouves.sym", cdtfile="build/vrouves.cdt")
+        title = open("build/tape/TITLE.BIN", "rb").read()
+        while s.peek(0x8000, 64) != title[:64] or s.tape.motor:      # the title loads
+            s.run_frames(50)
+    else:
+        s = CPC(binf, sym)
     s.run_frames(60)
     s.tap('SPACE')
-    while not s.byte('msg_on'):     # game set up and showing its message
+    wait_load(s)
+    while not s.byte('msg_on') or s.ink[1] == 0x54:     # game set up and showing its message
         s.run_frames(5)
     s.run_frames(5)
     return s
@@ -199,7 +220,8 @@ def next_stage(s):
         s.run_frames(20)
         if s.byte('stage') != stg:
             break
-    while not (s.byte('msg_on') and s.byte('stage') != stg):
+    wait_load(s)
+    while not (s.byte('msg_on') and s.byte('stage') != stg) or s.ink[1] == 0x54:
         s.run_frames(5)
     s.run_frames(5)
 

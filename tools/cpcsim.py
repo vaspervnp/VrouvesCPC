@@ -104,8 +104,57 @@ class FDC:
             self.res = [0x80]
 
 
+class Tape:
+    """the game's blocks of a .cdt (from the first one in the game's own format,
+    tools/make_cdt.py): the times of its edges, played while the motor is on"""
+    def __init__(self, cdtfile):
+        import struct
+        d = open(cdtfile, 'rb').read()
+        assert d[:8] == b"ZXTape!\x1a"
+        p, t, self.edges = 10, 0.0, []
+        game = False
+        while p < len(d):
+            assert d[p] == 0x11, "block %02X" % d[p]
+            pilot, s1, s2, zero, one, plen, bits, pause = struct.unpack_from("<HHHHHHBH", d, p + 1)
+            n = d[p + 16] | d[p + 17] << 8 | d[p + 18] << 16
+            data = d[p + 19:p + 19 + n]
+            p += 19 + n
+            game = game or pilot == 2100
+            if not game:
+                continue
+            us = lambda tst: tst / 3.5      # noqa: E731
+            for _ in range(plen):
+                t += us(pilot)
+                self.edges.append(t)
+            for w in (s1, s2):
+                t += us(w)
+                self.edges.append(t)
+            for b in data:
+                for k in range(8):
+                    w = one if b & (0x80 >> k) else zero
+                    for _ in range(2):
+                        t += us(w)
+                        self.edges.append(t)
+            t += pause * 1000.0
+        self.pos = 0.0          # us of tape played
+        self.motor = False
+        self.t0 = 0.0
+
+    def level(self, now):
+        import bisect
+        pos = self.pos + (now - self.t0 if self.motor else 0)
+        return bisect.bisect_right(self.edges, pos) & 1
+
+    def set_motor(self, on, now):
+        if on and not self.motor:
+            self.t0 = now
+        elif self.motor and not on:
+            self.pos += now - self.t0
+        self.motor = on
+
+
 class CPC:
-    def __init__(self, binfile, symfile=None, load=0x40, dskfile="build/vrouves.dsk"):
+    def __init__(self, binfile, symfile=None, load=0x40, dskfile="build/vrouves.dsk", cdtfile=None):
         self.m = z80.Z80Machine()
         data = open(binfile, 'rb').read()
         self.m.set_memory_block(load, data)
@@ -135,6 +184,10 @@ class CPC:
         self.m.set_output_callback(self._out)
         self.ldir_watch = []
         self.fdc = FDC(dskfile)
+        self.tape = Tape(cdtfile) if cdtfile else None
+        self.lower_rom = False
+        self.t = 0              # CPU ticks run so far (4 per us)
+        self._step = 0
         self.overlay = (0x8000, self.syms.get('TITLE_END', 0x8000))
 
     # ---------------------------------------------------------------- I/O
@@ -143,7 +196,8 @@ class CPC:
         if hi == 0xFB:
             return self.fdc.msr() if port & 1 == 0 else self.fdc.read()
         if hi == 0xF5:
-            return 0x5E | (1 if self.vsync else 0)
+            tape = self.tape.level(self.now()) << 7 if self.tape else 0
+            return 0x5E | tape | (1 if self.vsync else 0)
         if hi == 0xF4:
             if self.psg_reg == 14:
                 return self.keys[self.ppi_c & 15] if (self.ppi_c & 15) < 10 else 0xFF
@@ -161,6 +215,8 @@ class CPC:
                 self.pen_sel = value & 0x1F
             elif value & 0xC0 == 0x40:
                 self.ink[min(self.pen_sel, 16)] = value & 0x5F | 0x40
+            elif value & 0xC0 == 0x80 and not value & 4:
+                self.lower_rom = True       # switched in at some point; the ROM is not emulated
         elif hi == 0xBC:
             self.crtc_reg = value & 31
         elif hi == 0xBD:
@@ -169,6 +225,8 @@ class CPC:
         elif hi == 0xF4:
             self.psg_latch = value
         elif hi == 0xF6:
+            if self.tape:
+                self.tape.set_motor(bool(value & 0x10), self.now())
             self.ppi_c = value
             mode = value >> 6
             if mode == 3:
@@ -177,6 +235,10 @@ class CPC:
                 self.psg[self.psg_reg] = self.psg_latch
         elif hi == 0xF7:
             pass
+
+    def now(self):
+        """us since the start, during a run too"""
+        return (self.t + self._step - self.m.ticks_to_stop) / 4.0
 
     # ---------------------------------------------------------------- keys
     def set_key(self, name, down):
@@ -216,7 +278,10 @@ class CPC:
                     step = 256 if pending else left
                     step = min(step, left)
                     self.m.ticks_to_stop = step
+                    self._step = step
                     self.m.run()
+                    self.t += step
+                    self._step = 0
                     left -= step
                     self._check()
             self.frame += 1

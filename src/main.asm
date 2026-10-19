@@ -23,6 +23,9 @@ DEBUG       equ 0           ; rasm -DDEBUG=n: rich start at wave n
         ifndef START_STAGE
 START_STAGE equ 1           ; rasm -DSTART_STAGE=n: start at stage n
         endif
+        ifndef TAPE
+TAPE        equ 0           ; rasm -DTAPE=1: the cassette version (tape.asm)
+        endif
         ifndef METER
 METER       equ 0           ; rasm -DMETER=1: frames per tick shown top right
         endif
@@ -137,8 +140,14 @@ start:
         ld (mus_on),a
         call snd_init
         ei
+        if TAPE                 ; the tape runs on: the title loads only once
+        ld hl,disk_title
+        call disk_load
+.main:
+        else
 .main:  ld hl,disk_title
         call disk_load
+        endif
         call title_screen
         ld a,(framecnt)
         ld hl,seed
@@ -147,10 +156,14 @@ start:
         ld a,START_STAGE-1
 .stage: ld (stage),a
         call stage_load
-        call game_run
+.play:  call game_run
         ld a,(game_over)        ; won: on to the next stage
         dec a
+        if TAPE
+        jr nz,.play             ; lost: the same stage again, no reload
+        else
         jr nz,.main
+        endif
         ld a,(stage)
         inc a
         cp NUM_STAGES
@@ -158,14 +171,27 @@ start:
         ld hl,disk_ending       ; all stages won: the feast at the school
         call disk_load
         call ENDING_CODE
+        if TAPE
+        di                      ; the end of the tape: reset the CPC
+        ld bc,#7f89
+        out (c),c
+        rst 0
+        else
         jr .main
+        endif
 
         include "hw.asm"
         include "gfx.asm"
         include "game.asm"
+        if TAPE == 0
         include "disk.asm"
+        endif
         include "gen/assets.asm"
+        if TAPE
+        include "tape.asm"      ; after assets.asm: it counts the stages
+        else
         include "gen/diskmap.asm"
+        endif
 
 code_end:
 

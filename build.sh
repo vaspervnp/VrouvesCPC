@@ -35,3 +35,16 @@ iDSK build/vrouves.dsk -i build/VROUVES.BAS -t 0 >/dev/null 2>&1
 python3 tools/diskmap.py build/vrouves.dsk verify src/gen/diskmap.asm \
     $(for f in $STAGES; do echo "$f=build/$f"; done) TITLE.BIN=build/TITLE.BIN ENDING.SCR=build/ENDING.SCR
 iDSK build/vrouves.dsk -l 2>/dev/null | grep -Ei "\.(BIN|BAS|SCR)"
+
+# the cassette version (no loading screens): VROUVES.BIN in the firmware's format for
+# RUN"", then the title overlay, the stages and the ending for the game's own tape loader
+mkdir -p build/tape
+cd src
+rm -f VROUVES.BIN TITLE.BIN ENDCODE.BIN
+rasm main.asm -o ../build/tape/vrouves -s -sq -DTAPE=1 ${RASMFLAGS} 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -Ei "error|warning" || true
+[ -f VROUVES.BIN ] && [ -f TITLE.BIN ] && [ -f ENDCODE.BIN ] || { echo "tape assembly failed"; exit 1; }
+mv VROUVES.BIN TITLE.BIN ENDCODE.BIN ../build/tape/
+cd ..
+python3 tools/png_to_scr.py assets/ending_sceneFinal.png build/tape/ENDING.SCR 0x7D0 build/tape/ENDCODE.BIN@0xFD0 >/dev/null
+python3 tools/make_cdt.py build/vrouves.cdt fw:VROUVES:build/tape/VROUVES.BIN:0x40:0x40 id:1:build/tape/TITLE.BIN \
+    $(k=2; for f in $STAGES; do echo "id:$k:build/$f"; k=$((k+1)); done) id:$((2+$(echo $STAGES | wc -w))):build/tape/ENDING.SCR
