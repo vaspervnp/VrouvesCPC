@@ -149,6 +149,9 @@ start:
         inc a
         cp NUM_STAGES
         jr c,.stage
+        ld hl,disk_ending       ; all stages won: the feast at the school
+        call disk_load
+        call ENDING_CODE
         jr .main
 
         include "hw.asm"
@@ -290,3 +293,26 @@ title_end:
         assert title_end <= TAB_PF
         print "title overlay: ",title_end-TITLE_AREA," bytes"
         SAVE 'TITLE.BIN',TITLE_AREA,title_end-TITLE_AREA
+
+;------------------------------------------------------------------------------
+; the ending: ENDING.SCR, a full Mode 0 screen loaded onto #C000 after the last
+; stage is won.  Its inks and the code that shows it until SPACE / FIRE live in
+; the hidden tails of the screen's first two blocks (tools/png_to_scr.py)
+;------------------------------------------------------------------------------
+ENDING_PAL  equ #C7D0
+ENDING_CODE equ #CFD0
+        org ENDING_CODE
+ending_show:
+        ld a,#ff
+        ld (back_mask),a
+        call show_back
+        ld hl,ENDING_PAL
+        call set_pal_hl
+.wait:  call wait_frame
+        call kbd_update
+        call fire_hit
+        jr nc,.wait
+        ret
+ending_end:
+        assert ending_end <= ENDING_CODE+48
+        SAVE 'ENDCODE.BIN',ENDING_CODE,ending_end-ENDING_CODE

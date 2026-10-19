@@ -23,6 +23,8 @@ hw_init:
 
 set_palette:
         ld hl,palette_hw
+; HL = 16 gate array colours
+set_pal_hl:
         ld e,0
 .l:     ld bc,#7f00
         out (c),e

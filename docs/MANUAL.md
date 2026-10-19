@@ -85,7 +85,8 @@ is not grass, or you cannot afford the defender.
   tank 20. The sacks of vrouves disappear one by one as the HP drops. At 0 HP the stage is
   lost and you go back to the title screen.
 * Survive all ten waves and you move on to the next stage. Win the last one, and the vrouves
-  are safe!
+  are safe: the whole village celebrates at a feast in front of the school. Press SPACE /
+  FIRE to go back to the title screen.
 
 ## The defenders
 

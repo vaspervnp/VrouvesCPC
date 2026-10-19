@@ -6,7 +6,8 @@ own disk loader (the firmware is switched off while the game runs).
                                                    plus NEXT_* for the next free block
     tools/diskmap.py <dsk> verify <diskmap.asm> NAME=localfile ...
                                                    files are where the equates say
-                                                   (TITLE at NEXT) and hold the data
+                                                   (TITLE at NEXT, the next ones
+                                                   right after it) and hold the data
 
 A file must occupy consecutive blocks; block b of the data format starts at
 logical sector 2b: track 2b // 9, sector #C1 + 2b % 9.
@@ -99,6 +100,7 @@ def main():
             lines.append("        dw STAGE_AREA")
         nxt = max(used | {1}) + 1
         t, s = dsk.block_pos(nxt)
+        lines.append("DISK_NEXT_BLOCK equ %d" % nxt)
         lines.append("DISK_NEXT_TRACK equ %d" % t)
         lines.append("DISK_NEXT_SECTOR equ #%02X" % s)
         open(sys.argv[3], "w").write("\n".join(lines) + "\n")
@@ -109,13 +111,19 @@ def main():
             if len(p) == 3 and p[1] == "equ":
                 eq[p[0]] = int(p[2].replace('#', '0x'), 0)
         bad = 0
-        for spec in sys.argv[4:]:
+        after = None        # files with no equates of their own: the first at NEXT,
+        for spec in sys.argv[4:]:   # each following one right after the one before
             name, local = spec.split("=")
             key = name.split('.')[0].upper()
-            if "DISK_%s_TRACK" % key not in eq:
-                key = "NEXT"
-            want = (eq["DISK_%s_TRACK" % key], eq["DISK_%s_SECTOR" % key])
             bl = files.get(name)
+            if "DISK_%s_TRACK" % key in eq:
+                want = (eq["DISK_%s_TRACK" % key], eq["DISK_%s_SECTOR" % key])
+            elif after is None:
+                want = (eq["DISK_NEXT_TRACK"], eq["DISK_NEXT_SECTOR"])
+            else:
+                want = dsk.block_pos(after)
+            if "DISK_%s_TRACK" % key not in eq and bl:
+                after = bl[-1] + 1
             data = open(local, "rb").read()
             got = b"".join(dsk.read_block(b) for b in bl) if bl else b""
             if (not bl or bl != list(range(bl[0], bl[0] + len(bl))) or

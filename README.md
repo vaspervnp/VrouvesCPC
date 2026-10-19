@@ -87,7 +87,9 @@ following stage brings one more defender, announced when the stage begins.
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
-next stage; lose, and it is back to the title screen.
+next stage; lose, and it is back to the title screen. Win the last stage and the whole village
+celebrates at a feast in front of the school (`assets/ending_sceneFinal.png`); SPACE / FIRE
+goes back to the title screen.
 
 ## Building
 
@@ -140,7 +142,10 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
   the current stage just below `#4000`, screen buffers at `#4000` and `#C000`, a copy of the
   playfield background at `#8000`, line tables, sprite mask table, dirty-rectangle lists and
   entity tables up to `#BEFF`. The title screen's code and texts are an overlay that is loaded
-  into the background buffer whenever the title is shown.
+  into the background buffer whenever the title is shown. The ending, `ENDING.SCR`, loads
+  straight onto the `#C000` screen; its inks and the few bytes of code that show it sit in
+  the hidden tails of the screen blocks (`tools/png_to_scr.py`), so it costs the resident
+  code only a call.
 * With the firmware off, `disk.asm` drives the µPD765 disc controller itself: motor on,
   recalibrate, seek, and read data sector by sector (interrupts held off during each sector,
   retries on errors) straight to the destination; the music is held meanwhile. Files are

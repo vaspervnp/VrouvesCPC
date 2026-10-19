@@ -13,6 +13,11 @@ STAGE_SECTORS equ (STAGE_SIZE+511)/512
 disk_title:
         db DISK_NEXT_TRACK,DISK_NEXT_SECTOR,TITLE_SECTORS
         dw TITLE_AREA
+; ENDING.SCR (16K) comes right after TITLE.BIN, in whole 1K blocks
+ENDING_BLOCK equ DISK_NEXT_BLOCK+(title_end-TITLE_AREA+1023)/1024
+disk_ending:
+        db (ENDING_BLOCK*2)/9,#C1+(ENDING_BLOCK*2)%9,32
+        dw #C000
 ; disk_stages: one descriptor per stage file, in src/gen/diskmap.asm
 
 ; A = stage (0..)
