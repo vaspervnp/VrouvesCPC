@@ -10,11 +10,8 @@
 ;
 ; There is no room left in the resident code, so this lives in the hidden
 ; 48 byte tails of screen blocks (#67D0 ... #7FD0 on the #4000 screen, #E7D0
-; on the #C000 one), which nothing else uses during a game.  It is part of
-; the title overlay, and syn_install copies it there when a game starts.
+; on the #C000 one), which nothing else uses during a game: see tails.asm.
 ;==============================================================================
-SYN_CHUNKS equ 5
-SYN_SRC:
         org TAIL_SYNDATA,SYN_SRC
 ; per defender type: partner type (0: none), damage factor in 16ths, its text
 syn_tab:
@@ -148,27 +145,3 @@ syn_hud:
         jp print_str
 syn_hud_end:
         assert syn_hud_end <= TAIL_SYNHUD+48
-
-        org SYN_SRC+SYN_CHUNKS*48       ; back to the overlay
-
-; called as the title screen hands over to the game: the chunks to the tails
-syn_install:
-        ld hl,SYN_SRC
-        ld de,TAIL_SYNDATA
-        ld a,SYN_CHUNKS
-.l:     ld bc,48
-        ldir
-        ex de,hl
-        ld bc,#800-48
-        add hl,bc
-        ld b,a
-        ld a,h
-        cp #87                  ; past the #4000 screen: on to the #C000 one
-        jr nz,.s
-        ld h,#e7
-.s:     ld a,b
-        ex de,hl
-        dec a
-        jr nz,.l
-        scf
-        ret

@@ -48,7 +48,7 @@ load, wind the tape back a little and press PLAY again.
 ## The title screen
 
 The title screen opens with a scene from the game and the main keys, then tells the story
-and shows the defenders and the invaders.
+and shows the defenders, the invaders and the high scores.
 
 | Key | Action |
 | --- | --- |
@@ -62,7 +62,7 @@ and shows the defenders and the invaders.
 ![The game screen](img/game_en.png)
 
 * **The top bar** shows the stage and messages ("build, then press N for the wave", "wave
-  cleared"). When there is nothing to say it shows the title of the game.
+  cleared"). When there is nothing to say it shows the title of the game and your score.
 * **The playfield** is the village. The invaders come along the road; the drones fly their
   own way, straight over walls and trees. Your defenders go on the grass beside them.
 * **The bottom bar** shows the wave (for example `03/10`), your funds (*vrouves*, the money
@@ -102,6 +102,22 @@ is not grass, or you cannot afford the defender.
 * Survive all ten waves and you move on to the next stage. Win the last one, and the vrouves
   are safe: the whole village celebrates at a feast in front of the school. Press SPACE /
   FIRE to go back to the title screen.
+
+## The score
+
+Your score runs through the whole game, from stage to stage:
+
+| | Points |
+| --- | --- |
+| Every invader you stop | the damage it would have done: 4 for a drone, 8 for a guard, 20 for a tank |
+| Every defender you build | its damage: Cretan 6, Yiayia 14, Bride 4, Psssst 5, Cauldron 8, Baker 16 (taken away again if you sell it) |
+| Calling a wave early with N | every second still left on the countdown |
+| A stage won | every vrouve left in your funds |
+
+When the game ends with one of the eight best scores, enter your name: three letters, UP and
+DOWN to pick each one, FIRE (or RIGHT) for the next, LEFT to go back. The table is saved on
+the disk, so leave it in the drive and not write protected. The cassette version counts the
+score but keeps no table.
 
 ## The defenders
 

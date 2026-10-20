@@ -649,18 +649,12 @@ try_build:
         or #80
         or c
         ld (hl),a
-        ld a,(tmp_cost)
-        ld c,a
-        ld b,0
-        ld hl,(funds)
-        or a
-        sbc hl,bc
-        ld (funds),hl
+        call TAIL_SCBUILD       ; pay for it, and its damage as points
         call cur_cell
         call redraw_cell
         ld a,SFX_BUILD
         call sfx_play
-        ld a,HUDF_FUNDS+HUDF_INFO
+        ld a,HUDF_FUNDS+HUDF_INFO+HUDF_TOP
         jp hud_set
 
 try_sell:
@@ -679,19 +673,13 @@ try_sell:
         pop iy
         ld a,(iy+T_TYPE)
         call ttype_ptr
-        ld de,7
-        add hl,de
-        ld c,(hl)
-        ld b,0
-        ld hl,(funds)
-        add hl,bc
-        ld (funds),hl
+        call TAIL_SCSELL        ; half its price back, its points taken away
         ld (iy+T_TYPE),0
         call cur_cell
         call redraw_cell
         ld a,SFX_SELL
         call sfx_play
-        ld a,HUDF_FUNDS+HUDF_INFO
+        ld a,HUDF_FUNDS+HUDF_INFO+HUDF_TOP
         jp hud_set
 
 call_wave_now:                  ; early call: half the seconds left become vrouves
@@ -699,19 +687,34 @@ call_wave_now:                  ; early call: half the seconds left become vrouv
         or a
         ret nz
         ld a,(cd_sec)
+        ld e,a                  ; points: every second left
         srl a
         ld c,a
-        ld b,0
-        ld hl,(funds)
-        add hl,bc
-        ld (funds),hl
-        ld a,HUDF_FUNDS
+        call pay
+        ld a,HUDF_FUNDS+HUDF_TOP
         call hud_set
         jp start_wave
 
 ;------------------------------------------------------------------------------
 ; helpers
 ;------------------------------------------------------------------------------
+; C = vrouves earned, E = points
+pay:
+        ld b,0
+        ld hl,(funds)
+        add hl,bc
+        ld (funds),hl
+        ld c,e
+        ld b,0
+; BC = points, added to the score (it stops at 65535)
+score_add:
+        ld hl,(score)
+        add hl,bc
+        jr nc,.s
+        ld hl,#ffff
+.s:     ld (score),hl
+        ret
+
 ; A * 12 (A < 22).  Uses C.
 mul12:
         ld c,a
@@ -1001,6 +1004,8 @@ wave_update:
         ld a,(wave_num)
         cp NUM_WAVES
         jr nz,.more
+        ld bc,(funds)           ; stage won: the vrouves left are points
+        call score_add
         ld a,1
         ld (game_over),a
         ret
@@ -1355,11 +1360,10 @@ kill_enemy:
         call etype_ptr
         ld de,4
         add hl,de
-        ld c,(hl)
-        ld b,0
-        ld hl,(funds)
-        add hl,bc
-        ld (funds),hl
+        ld c,(hl)               ; the reward
+        inc hl
+        ld e,(hl)               ; points: the damage it would have done
+        call pay
         ld (ix+E_TYPE),0
         ld hl,en_count
         dec (hl)
@@ -1373,7 +1377,7 @@ kill_enemy:
         call spawn_fx
         ld a,SFX_DIE
         call sfx_play
-        ld a,HUDF_FUNDS
+        ld a,HUDF_FUNDS+HUDF_TOP
         jp hud_set
 
 ; tanks dent cauldrons next to the road
@@ -2673,8 +2677,7 @@ hud_top:
         call set_colors
         ld de,8
         call set_at
-        ld a,S_LANGHINT
-        jp print_id
+        jp TAIL_SCSHOW          ; the score
 
 HUD_Y1 equ 184
 HUD_Y2 equ 192

@@ -71,6 +71,21 @@ STRINGS = [
                 "ΕΠΙΛΟΓΗ\n\nΠΟΥΛΗΜΑ\n\nΠΑΥΣΗ\n\nΑΓΓΛΙΚΑ"),
 ]
 
+# texts printed straight from glyph codes, with no entry in the string
+# tables (which take room in the resident code): label -> (english, greek)
+SCORE_TEXT = ("SCORE ", "ΣΚΟΡ ")              # the top bar in a game, from a screen tail
+TITLE_RAW = [                                   # the title overlay: the high scores
+    ("tr_hshdr", "HIGH SCORES", "ΚΑΛΥΤΕΡΑ ΣΚΟΡ"),
+    ("tr_newhs", "NEW HIGH SCORE!", "ΝΕΟ ΡΕΚΟΡ!"),
+    ("tr_name", "ENTER YOUR NAME", "ΓΡΑΨΕ ΤΟ ΟΝΟΜΑ ΣΟΥ"),
+    ("tr_keys", "UP/DOWN: LETTER    FIRE: NEXT", "ΠΑΝΩ/ΚΑΤΩ: ΓΡΑΜΜΑ   FIRE: ΕΠΟΜΕΝΟ"),
+]
+# letters for a name in the high score table, in the order UP/DOWN goes through them
+NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZΓΔΘΛΞΠΣΦΨΩ0123456789 "
+# the table on a fresh disk
+HISCORES = [("VAS", 6000), ("ZON", 5000), ("KRI", 4000), ("YIA", 3000),
+            ("NYF", 2500), ("FOU", 2000), ("PAP", 1500), ("KAT", 1000)]
+
 STORY_EN = (
     "ARMED WITH EU DIRECTIVE 8647/2026, THE "
     "CORPORATE GOLIATHS AT FRANKENSTEIN & "

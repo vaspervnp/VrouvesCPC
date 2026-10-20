@@ -37,6 +37,10 @@ TAIL_SYNFIND    equ #6FD0
 TAIL_SYNLOOP    equ #77D0
 TAIL_SYNDMG     equ #7FD0
 TAIL_SYNHUD     equ #E7D0
+; the score (score.asm), in more of them
+TAIL_SCBUILD    equ #EFD0
+TAIL_SCSELL     equ #F7D0
+TAIL_SCSHOW     equ #FFD0
 BGBUF       equ #8000
 TITLE_AREA  equ #8000
 TAB_PF      equ #B500       ; playfield line -> screen address (lo page, hi page)
@@ -200,6 +204,7 @@ code_end:
 ;------------------------------------------------------------------------------
 bss_start:
 framecnt:   defs 1
+score:      defs 2          ; this game's points, kept until the title has seen them
 last_flip:  defs 1
 back_mask:  defs 1
 keys:       defs 20         ; live state, then latch
@@ -321,9 +326,15 @@ bss_end:
         include "title.asm"
         include "gen/title_text.asm"
         include "gen/title_art.asm"
-        include "synergy.asm"
+        include "tails.asm"
+        if TAPE == 0
+        include "hiscore.asm"
+        endif
 title_end:
         assert title_end <= TAB_PF
+        if TAPE == 0
+        assert title_end <= HS_BUF      ; the high score sector goes there
+        endif
         print "title overlay: ",title_end-TITLE_AREA," bytes"
         SAVE 'TITLE.BIN',TITLE_AREA,title_end-TITLE_AREA
 

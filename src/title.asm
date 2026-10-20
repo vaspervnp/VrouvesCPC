@@ -1,9 +1,19 @@
 ;==============================================================================
-; title.asm - title screen: scene and keys, story, defenders, invaders
+; title.asm - title screen: scene and keys, story, defenders, invaders and,
+; on disk, the high scores
 ;==============================================================================
 TITLE_PAGE_FRAMES equ 450
 
+        if TAPE
+TITLE_PAGES equ 4
+        else
+TITLE_PAGES equ 5
+        endif
+
 title_screen:
+        if TAPE == 0
+        call hs_load
+        endif
         call palette_black
         ld a,#ff
         ld (back_mask),a
@@ -14,6 +24,20 @@ title_screen:
         ld (tpage),a
         call title_page
         call set_palette
+        if TAPE == 0
+        ifdef HSTEST            ; rasm -DHSTEST=1: as if a game had just scored 9999
+        ld hl,9999
+        ld (score),hl
+        endif
+        call hs_check           ; a new high score: the name, then the table
+        ifdef HSTEST            ; and the table read back from the disk
+        xor a
+        ld (HS_BUF),a
+        call hs_load
+        call set_palette
+        call title_page
+        endif
+        endif
         ld hl,0
         ld (ttimer),hl
 .loop:  call wait_frame
@@ -36,7 +60,7 @@ title_screen:
         call key_hit
         jr c,.next
         call fire_hit
-        jp c,syn_install        ; into the game: the neighbour bonus code
+        jp c,tails_install      ; into the game: the code in the screen tails
         ld hl,(ttimer)
         inc hl
         ld (ttimer),hl
@@ -48,7 +72,7 @@ title_screen:
         ld (ttimer),hl
         ld a,(tpage)
         inc a
-        cp 4
+        cp TITLE_PAGES
         jr c,.p
         xor a
 .p:     ld (tpage),a
@@ -104,6 +128,10 @@ title_page:
         call fill_rect
         call text_normal
         ld a,(tpage)
+        if TAPE == 0
+        cp HS_PAGE
+        jp z,hs_show
+        endif
         or a
         jp z,.keys
         dec a

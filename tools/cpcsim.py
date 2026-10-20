@@ -47,8 +47,8 @@ class Crash(Exception):
 class FDC:
     """uPD765 as the CPC sees it (non-DMA, drive 0): just the commands the
     game's loader uses, with no timing: specify, recalibrate, seek, sense
-    interrupt status and read data from a .dsk image."""
-    LEN = {0x03: 3, 0x07: 2, 0x08: 1, 0x0F: 3, 0x06: 9}
+    interrupt status, read data and write data, on a .dsk image in memory."""
+    LEN = {0x03: 3, 0x07: 2, 0x08: 1, 0x0F: 3, 0x06: 9, 0x05: 9}
 
     def __init__(self, dskfile):
         from diskmap import Dsk
@@ -60,8 +60,13 @@ class FDC:
         self.seek_end = False
         self.motor = 0
         self.reads = 0
+        self.writes = 0
+        self.wsec = None        # write data: the sector and the bytes still to come
+        self.wbuf = b""
 
     def msr(self):
+        if self.wsec:
+            return 0xA0         # execution, CPU to FDC
         if self.data:
             return 0xF0
         if self.res:
@@ -77,6 +82,13 @@ class FDC:
         return 0xFF
 
     def write(self, v):
+        if self.wsec:
+            self.wbuf += bytes([v])
+            if len(self.wbuf) == len(self.dsk.sec[self.wsec]):
+                self.dsk.sec[self.wsec] = self.wbuf
+                self.writes += 1
+                self.wsec, self.wbuf = None, b""
+            return
         if self.data or self.res:
             return
         self.cmd.append(v)
@@ -100,6 +112,13 @@ class FDC:
                 self.data = bytes(sec)
                 self.reads += 1
                 self.res = [0x40, 0x80, 0, C, H, R, N]   # end of cylinder: no TC on the CPC
+        elif op == 0x05:
+            C, H, R, N = c[2:6]
+            if self.dsk and self.motor and C == self.pcn and (self.pcn, R) in self.dsk.sec:
+                self.wsec = (self.pcn, R)
+                self.res = [0x40, 0x80, 0, C, H, R, N]
+            else:
+                self.res = [0x40, 0x04, 0, C, H, R, N]
         elif op != 0x03:
             self.res = [0x80]
 

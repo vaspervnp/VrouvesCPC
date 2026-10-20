@@ -9,10 +9,12 @@ python3 tools/gen_assets.py
 STAGES=$(cd build && ls STAGE*.BIN | sort -V)
 rm -f build/vrouves.dsk
 iDSK build/vrouves.dsk -n >/dev/null 2>&1
+# the high score table first, then the stages: the loader reads them from fixed places
+iDSK build/vrouves.dsk -i build/HISCORE.BIN -t 0 >/dev/null 2>&1
 for f in $STAGES; do
     iDSK build/vrouves.dsk -i build/$f -t 0 >/dev/null 2>&1
 done
-python3 tools/diskmap.py build/vrouves.dsk asm src/gen/diskmap.asm $STAGES
+python3 tools/diskmap.py build/vrouves.dsk asm src/gen/diskmap.asm HISCORE.BIN $STAGES
 cd src
 rm -f VROUVES.BIN TITLE.BIN ENDCODE.BIN
 rasm main.asm -o ../build/vrouves -s -sq -v2 ${RASMFLAGS} 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -Ei "error|warning|code\+data|overlay" || true
@@ -33,7 +35,8 @@ iDSK build/vrouves.dsk -i build/REVIVE8B.SCR -t 1 -c C000 -e 0 >/dev/null 2>&1
 iDSK build/vrouves.dsk -i build/SPLASH.SCR -t 1 -c C000 -e 0 >/dev/null 2>&1
 iDSK build/vrouves.dsk -i build/VROUVES.BAS -t 0 >/dev/null 2>&1
 python3 tools/diskmap.py build/vrouves.dsk verify src/gen/diskmap.asm \
-    $(for f in $STAGES; do echo "$f=build/$f"; done) TITLE.BIN=build/TITLE.BIN ENDING.SCR=build/ENDING.SCR
+    HISCORE.BIN=build/HISCORE.BIN $(for f in $STAGES; do echo "$f=build/$f"; done) \
+    TITLE.BIN=build/TITLE.BIN ENDING.SCR=build/ENDING.SCR
 iDSK build/vrouves.dsk -l 2>/dev/null | grep -Ei "\.(BIN|BAS|SCR)"
 
 # the cassette version (no loading screens): VROUVES.BIN in the firmware's format for

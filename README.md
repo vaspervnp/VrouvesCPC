@@ -58,7 +58,16 @@ back a little and press PLAY: the loader waits for the block it wants.
 | L | Switch English / Greek at any time |
 | M | Music on / off |
 
-On the title screen, → (or joystick right) flips between the pages: a scene with the keys, the story, the defenders and the invaders.
+On the title screen, → (or joystick right) flips between the pages: a scene with the keys, the story, the defenders, the invaders and the high scores.
+
+## Score
+
+The score runs through a whole game and shows in the top bar: the damage each invader stopped
+would have done (4 / 8 / 20), the damage of each defender built (taken off again when it is
+sold), the seconds left whenever a wave is called early, and the vrouves left after each stage
+won. A game that ends with one of the eight best scores asks for a three letter name; the table
+is the disk file `HISCORE.BIN` (one sector at a fixed place, written by `hiscore.asm`'s own
+write routine). The cassette version counts the score but keeps no table.
 
 ## Defenders
 
@@ -170,9 +179,9 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 * The firmware is switched off; the game owns all 64K. Memory map: code and data from `#0040`,
   the current stage just below `#4000`, screen buffers at `#4000` and `#C000`, a copy of the
   playfield background at `#8000`, line tables, sprite mask table, dirty-rectangle lists and
-  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`) runs from the hidden
-  48 byte tails of five screen blocks, copied there from the title overlay when a game
-  starts. The title screen's code and texts are an overlay that is loaded
+  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`) and parts of the score
+  (`score.asm`) run from the hidden 48 byte tails of eight screen blocks, copied there from
+  the title overlay when a game starts (`tails.asm`). The title screen's code and texts are an overlay that is loaded
   into the background buffer whenever the title is shown. The ending, `ENDING.SCR`, loads
   straight onto the `#C000` screen; its inks and the few bytes of code that show it sit in
   the hidden tails of the screen blocks (`tools/png_to_scr.py`), so it costs the resident
