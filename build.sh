@@ -39,6 +39,7 @@ python3 tools/diskmap.py build/vrouves.dsk verify src/gen/diskmap.asm \
     HISCORE.BIN=build/HISCORE.BIN $(for f in $STAGES; do echo "$f=build/$f"; done) \
     TITLE.BIN=build/TITLE.BIN ENDING.SCR=build/ENDING.SCR
 iDSK build/vrouves.dsk -l 2>/dev/null | grep -Ei "\.(BIN|BAS|SCR)"
+python3 tools/diskmap.py build/vrouves.dsk ext     # emulators lose standard dsks on a write
 
 # the cassette version (no loading screens): VROUVES.BIN in the firmware's format for
 # RUN"", then the title overlay, the stages and the ending for the game's own tape loader

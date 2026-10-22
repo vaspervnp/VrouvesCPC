@@ -1907,7 +1907,10 @@ def main():
     hs = bytearray(b"VRV1")                     # build/HISCORE.BIN: magic, 8 x (3 glyphs, score)
     for name, pts in texts.HISCORES:
         hs += bytes(font.encode(name)) + bytes([pts & 255, pts >> 8])
-    hs += bytes(512 - len(hs))
+    # 3K: the table is the first sector, and the file takes the rest of
+    # track 0 (C5-C9), so that an emulator that runs on past the sector it
+    # was asked to write only ever hits this file
+    hs += bytes(3072 - len(hs))
     open(os.path.join(ROOT, "build", "HISCORE.BIN"), "wb").write(hs)
     T.append("hs_default: db %s" % ",".join(map(str, hs[:44])))
     with open(os.path.join(ROOT, "src", "gen", "score_text.asm"), "w") as f:

@@ -276,11 +276,13 @@ hs_write:
         call wait_frame
         pop bc
         djnz .sp
+        call fdc_drain          ; no interrupt left over (see disk.asm)
         ld a,7                  ; recalibrate, then seek
         call fdc_out
         xor a
         call fdc_out
         call fdc_wait_seek
+        call fdc_drain
         ld a,#0f
         call fdc_out
         xor a
@@ -288,6 +290,7 @@ hs_write:
         ld a,DISK_HISCORE_TRACK
         call fdc_out
         call fdc_wait_seek
+        call fdc_drain
         ld hl,hs_wcmd
         ld b,9
 .c:     ld a,(hl)
@@ -311,6 +314,7 @@ hs_write:
         jp .x
 .done:  ei
         call fdc_results
+        call fdc_drain          ; and none after it, for the next command
         ld bc,FDC_MOTOR
         xor a
         out (c),a

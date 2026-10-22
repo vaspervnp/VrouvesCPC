@@ -4,8 +4,10 @@ own disk loader (the firmware is switched off while the game runs).
 
     tools/diskmap.py <dsk> asm <out.asm> NAME...   equates for files on the disk,
                                                    plus NEXT_* for the next free block
-    tools/diskmap.py <dsk> seq <track>             put that track's sectors in the order of
-                                                   their ids (no interleave)
+    tools/diskmap.py <dsk> seq <track>|all         put that track's (or every track's)
+                                                   sectors in the order of their ids
+                                                   (no interleave)
+    tools/diskmap.py <dsk> ext                     to an EXTENDED image (see to_extended)
     tools/diskmap.py <dsk> verify <diskmap.asm> NAME=localfile ...
                                                    files are where the equates say
                                                    (TITLE at NEXT, the next ones
@@ -96,6 +98,32 @@ def seq_track(path, track):
     open(path, 'wb').write(d)
 
 
+def to_extended(path):
+    """Retro Virtual Machine (and WinAPE), writing a sector to a standard
+    dsk, save it back as an EXTENDED one holding only the track written: the
+    rest of the disk is lost.  An EXTENDED image is updated as it is."""
+    d = open(path, 'rb').read()
+    if d.startswith(b"EXTENDED"):
+        return
+    assert d.startswith(b"MV - CPC"), "a standard dsk image"
+    ntr, tsize = d[0x30], d[0x32] | d[0x33] << 8
+    hdr = bytearray(256)
+    hdr[0:34] = b"EXTENDED CPC DSK File\r\nDisk-Info\r\n"
+    hdr[0x22:0x30] = b"diskmap.py    "
+    hdr[0x30], hdr[0x31] = ntr, d[0x31]
+    for t in range(ntr):
+        hdr[0x34 + t] = tsize >> 8
+    out = bytearray(hdr)
+    for t in range(ntr):
+        ti = bytearray(d[0x100 + t * tsize:0x100 + (t + 1) * tsize])
+        assert ti.startswith(b"Track-Info"), t
+        for k in range(ti[0x15]):            # each sector's actual length
+            e = 0x18 + k * 8
+            ti[e + 6:e + 8] = (128 << ti[e + 3]).to_bytes(2, "little")
+        out += ti
+    open(path, 'wb').write(out)
+
+
 def main():
     dsk = Dsk(sys.argv[1])
     files = dsk.directory()
@@ -154,8 +182,13 @@ def main():
         # sectors are interleaved, an emulator that writes by a sector's
         # place on the track rather than by its id, or that runs on into the
         # next sector, would hit the directory (C1-C4 on track 0); in id
-        # order the place is the id, and the next sector is the file's own.
-        seq_track(sys.argv[1], int(sys.argv[3]))
+        # order the place is the id, and the sectors after it are the file's
+        # own (HISCORE.BIN takes the rest of the track).
+        tracks = range(open(sys.argv[1], "rb").read()[0x30]) if sys.argv[3] == "all" else [int(sys.argv[3])]
+        for t in tracks:
+            seq_track(sys.argv[1], t)
+    elif mode == "ext":
+        to_extended(sys.argv[1])
     elif mode == "dump":
         for name, bl in files.items():
             print(name, bl, dsk.block_pos(bl[0]) if bl else None)

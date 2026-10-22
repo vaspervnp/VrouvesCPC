@@ -64,6 +64,7 @@ disk_load:
         call wait_frame
         pop bc
         djnz .sp
+        call fdc_drain
         ld a,3                  ; specify: step rate, head times, no DMA
         call fdc_out
         ld a,#a1
@@ -75,7 +76,8 @@ disk_load:
         xor a
         call fdc_out
         call fdc_wait_seek
-.sec:   ld a,#0f                ; seek
+.sec:   call fdc_drain
+        ld a,#0f                ; seek
         call fdc_out
         xor a
         call fdc_out
@@ -163,6 +165,19 @@ dk_eot:     db 0
             db #2a,#ff
 dk_count:   db 0
 dk_dest:    dw 0
+
+; sense interrupt status until none is pending.  Emulators (Retro Virtual
+; Machine) keep the interrupt of a finished read or write and swallow the
+; next command; its parameters then run as commands of their own, which can
+; wreck the disk image.
+fdc_drain:
+        ld a,8
+        call fdc_out
+        call fdc_results
+        ld a,(dk_res)
+        cp #80
+        jr nz,fdc_drain
+        ret
 
 fdc_wait_seek:
         ld a,8                  ; sense interrupt status until the seek ends
