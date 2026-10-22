@@ -4,6 +4,8 @@ own disk loader (the firmware is switched off while the game runs).
 
     tools/diskmap.py <dsk> asm <out.asm> NAME...   equates for files on the disk,
                                                    plus NEXT_* for the next free block
+    tools/diskmap.py <dsk> seq <track>             put that track's sectors in the order of
+                                                   their ids (no interleave)
     tools/diskmap.py <dsk> verify <diskmap.asm> NAME=localfile ...
                                                    files are where the equates say
                                                    (TITLE at NEXT, the next ones
@@ -78,6 +80,22 @@ class Dsk:
         return out
 
 
+def seq_track(path, track):
+    d = bytearray(open(path, 'rb').read())
+    assert d.startswith(b"MV - CPC"), "a standard dsk image"
+    tsize = d[0x32] | d[0x33] << 8
+    off = 0x100 + track * tsize
+    n = d[off + 0x15]
+    infos = [bytes(d[off + 0x18 + k * 8:off + 0x20 + k * 8]) for k in range(n)]
+    size = 128 << d[off + 0x14]
+    data = [bytes(d[off + 0x100 + k * size:off + 0x100 + (k + 1) * size]) for k in range(n)]
+    order = sorted(range(n), key=lambda k: infos[k][2])
+    for j, k in enumerate(order):
+        d[off + 0x18 + j * 8:off + 0x20 + j * 8] = infos[k]
+        d[off + 0x100 + j * size:off + 0x100 + (j + 1) * size] = data[k]
+    open(path, 'wb').write(d)
+
+
 def main():
     dsk = Dsk(sys.argv[1])
     files = dsk.directory()
@@ -131,6 +149,13 @@ def main():
                 print("diskmap: %s is not where the loader expects it (blocks %s)" % (name, bl))
                 bad = 1
         sys.exit(bad)
+    elif mode == "seq":
+        # The high score sector is written by the game.  On a track whose
+        # sectors are interleaved, an emulator that writes by a sector's
+        # place on the track rather than by its id, or that runs on into the
+        # next sector, would hit the directory (C1-C4 on track 0); in id
+        # order the place is the id, and the next sector is the file's own.
+        seq_track(sys.argv[1], int(sys.argv[3]))
     elif mode == "dump":
         for name, bl in files.items():
             print(name, bl, dsk.block_pos(bl[0]) if bl else None)

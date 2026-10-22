@@ -34,6 +34,7 @@ cp assets/revive8b.scr build/REVIVE8B.SCR
 iDSK build/vrouves.dsk -i build/REVIVE8B.SCR -t 1 -c C000 -e 0 >/dev/null 2>&1
 iDSK build/vrouves.dsk -i build/SPLASH.SCR -t 1 -c C000 -e 0 >/dev/null 2>&1
 iDSK build/vrouves.dsk -i build/VROUVES.BAS -t 0 >/dev/null 2>&1
+python3 tools/diskmap.py build/vrouves.dsk seq 0   # the high score track in id order
 python3 tools/diskmap.py build/vrouves.dsk verify src/gen/diskmap.asm \
     HISCORE.BIN=build/HISCORE.BIN $(for f in $STAGES; do echo "$f=build/$f"; done) \
     TITLE.BIN=build/TITLE.BIN ENDING.SCR=build/ENDING.SCR
