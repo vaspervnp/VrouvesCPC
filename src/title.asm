@@ -50,7 +50,15 @@ title_screen:
         ld (lang),a
         call title_static
         call title_page
-.nl:    ld a,K_M
+.nl:    ld a,K_D
+        call key_hit
+        jr nc,.nd
+        ld a,(difficulty)
+        inc a
+        and 3
+        ld (difficulty),a
+        call title_dif
+.nd:    ld a,K_M
         call key_hit
         call c,toggle_music
         ld a,K_RIGHT
@@ -118,7 +126,63 @@ title_static:
         call set_colors
         ld a,T_CREDIT
         ld e,190
-        jp print_id_centered
+        call print_id_centered
+        ; fall through
+
+; under the title: the difficulty, and its lives
+title_dif:
+        call tgt_scr_a
+        ld de,27
+        ld bc,8*256+80
+        xor a
+        call fill_rect
+        call text_normal
+        ld bc,#0700
+        call set_colors
+        ld a,(difficulty)
+        add a,a
+        add a,a
+        ld l,a
+        ld h,0
+        ld de,dif_texts
+        add hl,de
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        ex de,hl
+        ld e,27
+        jp raw_center
+
+dif_texts:
+        dw tr_dif0_en,tr_dif0_gr
+        dw tr_dif1_en,tr_dif1_gr
+        dw tr_dif2_en,tr_dif2_gr
+        dw tr_dif3_en,tr_dif3_gr
+
+; HL = english, BC = greek text (glyph codes), E = line: centred
+raw_center:
+        ld a,(lang)
+        or a
+        jr z,.e
+        ld h,b
+        ld l,c
+.e:     push hl
+        push de
+        call str_len
+        pop de
+        ld a,40
+        sub c
+        and #fe
+        ld (txt_x),a
+        ld a,e
+        ld (txt_y),a
+        pop hl
+        jp print_str
+
 
 title_page:
         call tgt_scr_a

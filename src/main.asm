@@ -90,6 +90,7 @@ K_5         equ 49
 K_4         equ 56
 K_3         equ 57
 K_S         equ 60
+K_D         equ 61
 K_1         equ 64
 K_2         equ 65
 K_ESC       equ 66
@@ -161,11 +162,16 @@ start:
 .stage: ld (stage),a
         call stage_load
 .play:  call game_run
+        call rt_retry           ; lost with a life left: the same stage again
+        jr nc,.play
         ld a,(game_over)        ; won: on to the next stage
-        dec a
         if TAPE
-        jr nz,.play             ; lost: the same stage again, no reload
+        or a
+        jr z,.play              ; quit: the same stage again, no reload
+        dec a
+        jr nz,.reset            ; lost, no lives left: the game is over
         else
+        dec a
         jr nz,.main
         endif
         ld a,(stage)
@@ -176,7 +182,7 @@ start:
         call disk_load
         call ENDING_CODE
         if TAPE
-        di                      ; the end of the tape: reset the CPC
+.reset: di                      ; the end of the tape: reset the CPC
         ld bc,#7f89
         out (c),c
         rst 0
@@ -245,6 +251,7 @@ ttimer:     defs 2
 tmp_i:      defs 1
 tmp_y:      defs 1
 stage:      defs 1
+difficulty: defs 1          ; 0 medium, 1 hard, 2 hardest, 3 easy (title.asm)
 dk_err:     defs 1
 dk_res:     defs 8
 

@@ -401,26 +401,6 @@ hs_show:
         jr nz,.r
         ret
 
-; HL = english, BC = greek text (glyph codes), E = line: centred
-raw_center:
-        ld a,(lang)
-        or a
-        jr z,.e
-        ld h,b
-        ld l,c
-.e:     push hl
-        push de
-        call str_len
-        pop de
-        ld a,40
-        sub c
-        and #fe
-        ld (txt_x),a
-        ld a,e
-        ld (txt_y),a
-        pop hl
-        jp print_str
-
 hs_new:   db #ff                ; the place of the newest entry (#FF none)
 hs_pos:   db 0
 hs_idx:   db 0,0,0

@@ -41,8 +41,9 @@ RUN"
 It has no loading screens. `VROUVES.BIN` loads with the firmware at 1000 baud; then the
 game's own loader (`src/tape.asm`, about 1600 baud, the border striping) reads the title
 screen, and each stage in turn as it is reached, so the tape just runs on: leave it in the
-deck and do not rewind. A lost stage is played again at once, without loading; after the
-last one the ending loads, and SPACE resets the CPC. If a block fails to load, wind the tape
+deck and do not rewind. A stage lost with a life left is played again at once, without
+loading; after the last one the ending loads, and after a game lost for good (or the ending)
+SPACE resets the CPC. If a block fails to load, wind the tape
 back a little and press PLAY: the loader waits for the block it wants.
 
 ## Controls
@@ -58,7 +59,14 @@ back a little and press PLAY: the loader waits for the block it wants.
 | L | Switch English / Greek at any time |
 | M | Music on / off |
 
-On the title screen, → (or joystick right) flips between the pages: a scene with the keys, the story, the defenders, the invaders and the high scores.
+On the title screen, → (or joystick right) flips between the pages: a scene with the keys, the story, the defenders, the invaders and the high scores. D picks the difficulty.
+
+## Difficulty
+
+The difficulty, chosen on the title screen with D and shown under the title, is the number of
+lives for the whole game: Easy 4, Medium 3 (the default), Hard 2, Hardest none. A stage lost
+with a life left costs one and is played again from the start, with the score put back to what
+it was when the stage began; the lives left show in the top bar next to the score.
 
 ## Score
 
@@ -123,7 +131,8 @@ it is built:
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
-next stage; lose, and it is back to the title screen. Win the last stage and the whole village
+next stage; lose, and you play it again if you have a life left (see Difficulty), or it is
+back to the title screen. Win the last stage and the whole village
 celebrates at a feast in front of the school (`assets/ending_sceneFinal.png`); SPACE / FIRE
 goes back to the title screen.
 
@@ -179,8 +188,8 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 * The firmware is switched off; the game owns all 64K. Memory map: code and data from `#0040`,
   the current stage just below `#4000`, screen buffers at `#4000` and `#C000`, a copy of the
   playfield background at `#8000`, line tables, sprite mask table, dirty-rectangle lists and
-  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`) and parts of the score
-  (`score.asm`) run from the hidden 48 byte tails of eight screen blocks, copied there from
+  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`), parts of the score
+  (`score.asm`) and the lives (`lives.asm`) run from the hidden 48 byte tails of eight screen blocks, copied there from
   the title overlay when a game starts (`tails.asm`). The title screen's code and texts are an overlay that is loaded
   into the background buffer whenever the title is shown. The ending, `ENDING.SCR`, loads
   straight onto the `#C000` screen; its inks and the few bytes of code that show it sit in

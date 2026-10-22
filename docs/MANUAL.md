@@ -41,8 +41,9 @@ RUN"
 
 and press PLAY. The cassette version has no loading screens. The title screen loads first,
 then each stage when you reach it, with the border striping: leave the tape in the deck and
-do not rewind it. If you lose a stage, you play it again straight away, with no loading.
-After the last stage comes the ending; SPACE then resets the computer. If a part fails to
+do not rewind it. If you lose a stage with a life left, you play it again straight away,
+with no loading. After the last stage comes the ending, and after a lost game with no lives
+left comes the end of the tape: SPACE then resets the computer. If a part fails to
 load, wind the tape back a little and press PLAY again.
 
 ## The title screen
@@ -54,15 +55,26 @@ and shows the defenders, the invaders and the high scores.
 | --- | --- |
 | SPACE / FIRE | Start the game |
 | → (or joystick right) | Next page |
+| D | Difficulty: Medium, Hard, Hardest, Easy |
 | L | Switch between English and Greek |
 | M | Music on / off |
+
+The difficulty, shown under the title, sets how many lives you get for the whole game:
+
+| Difficulty | Lives |
+| --- | --- |
+| Easy | 4 |
+| Medium | 3 |
+| Hard | 2 |
+| Hardest | none |
 
 ## The game screen
 
 ![The game screen](img/game_en.png)
 
 * **The top bar** shows the stage and messages ("build, then press N for the wave", "wave
-  cleared"). When there is nothing to say it shows the title of the game and your score.
+  cleared"). When there is nothing to say it shows the title of the game, your score and the lives
+  you have left.
 * **The playfield** is the village. The invaders come along the road; the drones fly their
   own way, straight over walls and trees. Your defenders go on the grass beside them.
 * **The bottom bar** shows the wave (for example `03/10`), your funds (*vrouves*, the money
@@ -98,14 +110,17 @@ is not grass, or you cannot afford the defender.
 * Selling a defender gives back about half its price.
 * Every invader that reaches the building steals greens: a drone costs 4 HP, a guard 8, a
   tank 20. The sacks of vrouves disappear one by one as the HP drops. At 0 HP the stage is
-  lost and you go back to the title screen.
+  lost. With a life left, one life goes and you play the same stage again from the start,
+  with your score as it was when the stage began. With none left, the game is over and you go
+  back to the title screen.
 * Survive all ten waves and you move on to the next stage. Win the last one, and the vrouves
   are safe: the whole village celebrates at a feast in front of the school. Press SPACE /
   FIRE to go back to the title screen.
 
 ## The score
 
-Your score runs through the whole game, from stage to stage:
+Your score runs through the whole game, from stage to stage, and shows in the top bar next
+to the lives you have left (`SCORE 01903 LIVES 3`) whenever the bar has no message to show:
 
 | | Points |
 | --- | --- |
@@ -113,6 +128,11 @@ Your score runs through the whole game, from stage to stage:
 | Every defender you build | its damage: Cretan 6, Yiayia 14, Bride 4, Psssst 5, Cauldron 8, Baker 16 (taken away again if you sell it) |
 | Calling a wave early with N | every second still left on the countdown |
 | A stage won | every vrouve left in your funds |
+
+A lost stage gives no points: when you play it again with one of your lives, the score goes
+back to what it was when the stage began. The game ends when you win the last stage, when you
+lose a stage with no lives left, or when you quit with ESC while paused. There is one table
+for all four difficulties, so the easier levels, with more lives, make a high score easier.
 
 When the game ends with one of the eight best scores, enter your name: three letters, UP and
 DOWN to pick each one, FIRE (or RIGHT) for the next, LEFT to go back. The table is saved on

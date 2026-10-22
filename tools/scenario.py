@@ -78,7 +78,9 @@ def wait_load(s):
             s.run_frames(25)
 
 
-def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym"):
+def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym", difficulty=0):
+    """the game started from the title; difficulty: times 'D' is pressed there
+    (0 medium, 1 hard, 2 hardest, 3 easy)"""
     if TAPE:
         s = CPC("build/tape/VROUVES.BIN", "build/tape/vrouves.sym", cdtfile="build/vrouves.cdt")
         title = open("build/tape/TITLE.BIN", "rb").read()
@@ -87,6 +89,10 @@ def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym"):
     else:
         s = CPC(binf, sym)
     s.run_frames(60)
+    if difficulty:
+        s.run_frames(150)               # the title up and drawn
+    for _ in range(difficulty):
+        s.tap('D', frames=4, gap=25)
     s.tap('SPACE')
     wait_load(s)
     while not s.byte('msg_on') or s.ink[1] == 0x54:     # game set up and showing its message

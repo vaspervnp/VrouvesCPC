@@ -60,14 +60,48 @@ def won_stage():
     return s
 
 
-def lost_game():
-    """stage 1 won, stage 2 lost with no defenders: a score for the table"""
-    s = scenario.start()
-    scenario.play_stage(s, scenario.PLANS[0], verbose=False)
-    scenario.next_stage(s)
+def lose(s):
+    """the stage lost: no defenders, every wave called at once"""
     while not s.byte('game_over'):
         s.tap('N')
         s.run_frames(100)
+
+
+def lives():
+    """medium: 3 lives.  A lost stage is played again, the score back to
+    what it was when the stage began; the fourth loss ends the game"""
+    s = scenario.start()
+    check("lives on medium", s.byte('rt_lives'), 3)
+    scenario.play_stage(s, scenario.PLANS[0], verbose=False)
+    scenario.next_stage(s)
+    begun = s.word('score')
+    for left in (2, 1, 0):
+        lose(s)
+        for _ in range(100):        # the banner, then the stage again
+            s.tap('SPACE')
+            s.run_frames(20)
+            if not s.byte('game_over'):
+                break
+        s.run_frames(50)
+        check("lost: the stage again, lives left", (s.byte('stage'), s.byte('rt_lives')), (1, left))
+        check("  the score as the stage began", s.word('score'), begun)
+    lose(s)
+    for _ in range(100):            # no life left: back to the title
+        s.tap('SPACE')
+        s.run_frames(20)
+        if s.peek(0xB000, 4) == b"VRV1":
+            break
+    check("the fourth loss: the title", s.peek(0xB000, 4), b"VRV1")
+    for n, want in ((1, 2), (2, 0), (3, 4)):
+        check("lives after 'D' x%d" % n, scenario.start(difficulty=n).byte('rt_lives'), want)
+
+
+def lost_game():
+    """hardest: stage 1 won, stage 2 lost with no defenders: a score for the table"""
+    s = scenario.start(difficulty=2)
+    scenario.play_stage(s, scenario.PLANS[0], verbose=False)
+    scenario.next_stage(s)
+    lose(s)
     sc = s.word('score')
     print("stage 2 lost, the game ends with score %d" % sc)
     for _ in range(100):            # the banner, then the title and its table load
@@ -97,6 +131,7 @@ def lost_game():
 if __name__ == "__main__":
     parts()
     won_stage()
+    lives()
     lost_game()
     print("score:", "OK" if ok else "FAILED")
     sys.exit(0 if ok else 1)
