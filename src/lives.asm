@@ -21,14 +21,14 @@ rt_chk:   dw 0                  ; the score when this stage began
 rt_a_end:
         assert rt_a_end <= TAIL_SYNFIND+48
 
-        org syn_hud_end,SYN_SRC+4*48+syn_hud_end-TAIL_SYNHUD
+        org syn_dmg_end,SYN_SRC+3*48+syn_dmg_end-TAIL_SYNDMG
 rt_lost:
         ld a,(rt_lives)
         sub 1
         ret c
         jp rt_lost2
 rt_b_end:
-        assert rt_b_end <= TAIL_SYNHUD+48
+        assert rt_b_end <= TAIL_SYNDMG+48
 
         org syn_data_end,SYN_SRC+syn_data_end-TAIL_SYNDATA
 rt_lost2:

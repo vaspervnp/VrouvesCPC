@@ -102,6 +102,10 @@ it is built:
 | Baker | a Cretan | -50% |
 | Psssst | a Cretan | -20% |
 
+At most three defenders have a bonus at a time: those that have one keep it while their
+partner stays, and when one is lost it passes to the next in line (`syn_update`). Penalties
+always count.
+
 ## Invaders
 
 * **Bio-drones** – fast and fragile; they fly a shortcut straight over the walls. Yiayia and the cauldron cannot reach them.

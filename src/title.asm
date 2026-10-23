@@ -11,6 +11,7 @@ TITLE_PAGES equ 5
         endif
 
 title_screen:
+        call build_tables
         if TAPE == 0
         call hs_load
         endif
@@ -86,6 +87,81 @@ title_screen:
 .p:     ld (tpage),a
         call title_page
         jr .loop
+
+; the game's tables, built whenever the title shows (they live above the
+; title overlay, so this code need not stay resident): line addresses (low
+; bytes on one page, high bytes on the next), sprite masks, squares
+build_tables:
+        ; playfield line -> screen #C000 + (y+PF_Y) address
+        ld a,#ff
+        ld (tgt_mask),a
+        xor a
+        ld (tgt_tab),a
+        ld e,PF_Y
+        ld bc,TAB_PF
+.pf:    push bc
+        ld d,0
+        call line_addr
+        pop bc
+        ld a,l
+        ld (bc),a
+        inc b
+        ld a,h
+        ld (bc),a
+        dec b
+        inc c
+        inc e
+        ld a,e
+        cp PF_Y+PF_H
+        jr nz,.pf
+        ; playfield line -> background buffer
+        ld hl,TAB_BG
+        ld de,BGBUF
+        ld b,PF_H
+.bg:    ld (hl),e
+        inc h
+        ld (hl),d
+        dec h
+        inc l
+        push hl
+        ld hl,80
+        add hl,de
+        ex de,hl
+        pop hl
+        djnz .bg
+        ; sprite mask table: pen 0 pixels are transparent
+        ld hl,MASKTAB
+.m:     ld c,0
+        ld a,l
+        and #aa
+        jr nz,.m1
+        ld c,#aa
+.m1:    ld a,l
+        and #55
+        jr nz,.m2
+        ld a,c
+        or #55
+        ld c,a
+.m2:    ld (hl),c
+        inc l
+        jr nz,.m
+        ld hl,SQUARES           ; table of squares 0..63
+        ld de,0
+        ld bc,1
+.sq:    ld (hl),e
+        inc hl
+        ld (hl),d
+        inc hl
+        ex de,hl
+        add hl,bc
+        ex de,hl
+        inc bc
+        inc bc
+        ld a,l
+        cp lo(SQUARES+128)
+        jr nz,.sq
+        ret
+
 
 title_static:
         call tgt_scr_a

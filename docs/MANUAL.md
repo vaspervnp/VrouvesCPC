@@ -166,8 +166,14 @@ next to its partner – left, right, above or below, not diagonally – hits har
 | Baker | a Cretan | **–50%** |
 | Psssst | a Cretan | **–20%** |
 
+Only three defenders at a time can have a bonus. They keep it for as long as they stay next
+to their partner; a fourth one gets nothing, until one of the three is sold or loses its
+partner, and then the bonus passes on to the next defender waiting for one. The penalties
+always count.
+
 Before you build, the info line shows the bonus the defender would get on the cursor cell:
-green for a bonus, red for a penalty.
+green for a bonus, red for a penalty. When three defenders already have a bonus, no bonus is
+shown.
 
 ## The invaders
 

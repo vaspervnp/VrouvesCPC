@@ -5,6 +5,8 @@
 ;   a Yiayia next to a Baker       +20%
 ;   a Baker next to a Cretan       -50%
 ;   Psssst next to a Cretan        -20%
+; Only three defenders at a time get a bonus (syn_update, game.asm); the
+; penalties always count.
 ; Before a defender is built, the bonus it would get there shows at the end
 ; of the info line, green or red.
 ;
@@ -91,20 +93,17 @@ syn_loop_end:
 
         org TAIL_SYNDMG,SYN_SRC+144
 ; tower_think, instead of ld a,(hl) / ld (tr_dmg),a: HL = the damage in the
-; tower's stats, IY = tower.  Preserves HL; uses A, BC, DE.
+; tower's stats, IY = tower, with its factor from syn_update.  Preserves HL;
+; uses A, BC, DE.
 syn_dmg:
         ld a,(hl)
         ld (tr_dmg),a
+        ld b,(iy+T_SYN)
+        inc b
+        dec b
+        ret z
         push hl
-        ld a,(iy+T_TYPE)
-        ld d,(iy+T_COL)
-        ld e,(iy+T_ROW)
-        call syn_find
-        jr z,.x
-        inc hl
-        ld b,(hl)               ; damage * factor / 16, rounded
-        ld a,(tr_dmg)
-        ld e,a
+        ld e,a                  ; damage * factor / 16, rounded
         ld d,0
         ld hl,8
 .m:     add hl,de
@@ -115,7 +114,7 @@ syn_dmg:
         add hl,hl
         ld a,h
         ld (tr_dmg),a
-.x:     pop hl
+        pop hl
         ret
 syn_dmg_end:
         assert syn_dmg_end <= TAIL_SYNDMG+48
@@ -130,6 +129,8 @@ syn_hud:
         ret z
         inc hl
         ld a,(hl)               ; factor: above 16 a bonus, below a penalty
+        call syn_room
+        ret nc                  ; a bonus, but three defenders have one
         inc hl
         ld l,(hl)
         ld h,hi(syn_tab)

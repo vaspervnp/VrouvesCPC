@@ -57,6 +57,7 @@ T_CD    equ 3
 T_CX    equ 4
 T_CY    equ 5
 T_DIS   equ 6
+T_SYN   equ 7               ; neighbour factor in 16ths, 0 none (syn_update)
 TW_SZ   equ 8
 MAX_TW  equ 32
 
@@ -638,6 +639,7 @@ try_build:
         ld (iy+T_CY),a
         ld (iy+T_CD),8
         ld (iy+T_DIS),0
+        ld (iy+T_SYN),0
         call cur_cell
         ld a,(hl)               ; 2 = blocked cell (only psssst hovers there)
         and 2
@@ -650,6 +652,7 @@ try_build:
         or c
         ld (hl),a
         call TAIL_SCBUILD       ; pay for it, and its damage as points
+        call syn_update
         call cur_cell
         call redraw_cell
         ld a,SFX_BUILD
@@ -675,12 +678,74 @@ try_sell:
         call ttype_ptr
         call TAIL_SCSELL        ; half its price back, its points taken away
         ld (iy+T_TYPE),0
+        call syn_update
         call cur_cell
         call redraw_cell
         ld a,SFX_SELL
         call sfx_play
         ld a,HUDF_FUNDS+HUDF_INFO+HUDF_TOP
         jp hud_set
+
+; after a defender is built or sold: each one's neighbour factor, into
+; T_SYN.  Penalties always count; bonuses go to three defenders at most:
+; those that have one keep it while they still qualify, then the others in
+; table order while there is room.
+SYN_MAX equ 3
+syn_update:
+        xor a
+        ld (syn_cnt),a
+        dec a                   ; pass 1: those with a bonus now
+        call .pass
+        xor a                   ; pass 2: the rest
+.pass:  ld (syn_pass),a
+        ld iy,towers
+        ld b,MAX_TW
+.t:     push bc
+        ld a,(iy+T_TYPE)
+        or a
+        jr z,.n
+        ld a,(iy+T_SYN)
+        cp 17                   ; NC: a bonus
+        ccf
+        sbc a,a                 ; #FF with a bonus, 0 without
+        ld hl,syn_pass
+        cp (hl)
+        jr nz,.n
+        ld a,(iy+T_TYPE)
+        ld d,(iy+T_COL)
+        ld e,(iy+T_ROW)
+        call TAIL_SYNFIND
+        ld a,0
+        jr z,.set               ; no partner next door
+        inc hl
+        ld a,(hl)
+        cp 17
+        jr c,.set               ; a penalty
+        ld c,a
+        ld hl,syn_cnt
+        ld a,(hl)
+        cp SYN_MAX
+        ld a,0
+        jr nc,.set              ; no room for another bonus
+        inc (hl)
+        ld a,c
+.set:   ld (iy+T_SYN),a
+.n:     ld bc,TW_SZ
+        add iy,bc
+        pop bc
+        djnz .t
+        ret
+
+; syn_hud: A = the factor a new defender would get.  Carry: show it (a
+; penalty, or a bonus with room for one).  Preserves A.
+syn_room:
+        cp 17
+        ret c
+        ld b,a
+        ld a,(syn_cnt)
+        cp SYN_MAX
+        ld a,b
+        ret
 
 call_wave_now:                  ; early call: half the seconds left become vrouves
         ld a,(wave_state)

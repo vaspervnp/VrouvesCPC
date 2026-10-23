@@ -122,23 +122,7 @@ start:
         ld (hl),#ff
         ldir
         call hw_init
-        call build_tables
-        call dirty_reset
-        ld hl,SQUARES           ; table of squares 0..63
-        ld de,0
-        ld bc,1
-.sq:    ld (hl),e
-        inc hl
-        ld (hl),d
-        inc hl
-        ex de,hl
-        add hl,bc
-        ex de,hl
-        inc bc
-        inc bc
-        ld a,l
-        cp lo(SQUARES+128)
-        jr nz,.sq
+        call dirty_reset        ; the tables are built by the title (title.asm)
         ld hl,#a5f3
         ld (seed),hl
         ld a,1
@@ -308,6 +292,8 @@ end_wait:   defs 1
 es_base:    defs 2
 stamp:      defs 1
 STAMPMAP:   defs 110
+syn_cnt:    defs 1          ; defenders with a neighbour bonus (syn_update)
+syn_pass:   defs 1
 tr_budget:  defs 1
 ticks_due:  defs 1
 frame_acc:  defs 1
