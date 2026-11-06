@@ -7,6 +7,10 @@ own disk loader (the firmware is switched off while the game runs).
     tools/diskmap.py <dsk> seq <track>|all         put that track's (or every track's)
                                                    sectors in the order of their ids
                                                    (no interleave)
+    tools/diskmap.py <dsk> loader <bin> <sym> LABEL=NAME ...
+                                                   the loader's descriptors in the game
+                                                   (track, sector, count at LABEL) point
+                                                   at those files, and read all of them
     tools/diskmap.py <dsk> ext                     to an EXTENDED image (see to_extended)
     tools/diskmap.py <dsk> verify <diskmap.asm> NAME=localfile ...
                                                    files are where the equates say
@@ -187,6 +191,26 @@ def main():
         tracks = range(open(sys.argv[1], "rb").read()[0x30]) if sys.argv[3] == "all" else [int(sys.argv[3])]
         for t in tracks:
             seq_track(sys.argv[1], t)
+    elif mode == "loader":
+        code = open(sys.argv[3], 'rb').read()
+        syms = {}
+        for line in open(sys.argv[4]):
+            p = line.split()
+            if len(p) >= 2 and p[1].startswith('#'):
+                syms[p[0].upper()] = int(p[1][1:], 16)
+        bad = 0
+        for spec in sys.argv[5:]:
+            label, name = spec.split('=')
+            off = syms[label.upper()] - 0x40                # VROUVES.BIN loads at #0040
+            got = tuple(code[off:off + 3])
+            bl = files[name]
+            t, s = dsk.block_pos(bl[0])
+            size = len(b"".join(dsk.read_block(b) for b in bl))
+            if got[:2] != (t, s) or got[2] * SECTOR_SIZE < min(size, 32 * SECTOR_SIZE) - 1023:
+                print("diskmap: %s reads track %d sector #%X x%d, but %s is at track %d "
+                      "sector #%X" % (label, got[0], got[1], got[2], name, t, s))
+                bad = 1
+        sys.exit(bad)
     elif mode == "ext":
         to_extended(sys.argv[1])
     elif mode == "dump":
