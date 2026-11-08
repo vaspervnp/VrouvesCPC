@@ -33,7 +33,8 @@ class Toon:
                 bpy.data.objects.remove(ob, do_unlink=True)
             bpy.data.scenes.remove(old)
         sc = self.sc = bpy.data.scenes.new(scene_name)
-        bpy.context.window.scene = sc
+        if bpy.context.window:          # none when Blender runs in the background (-b)
+            bpy.context.window.scene = sc
         for eng in ("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT"):
             try:
                 sc.render.engine = eng
@@ -317,4 +318,4 @@ class Toon:
 
     def render(self, path):
         self.sc.render.filepath = path
-        bpy.ops.render.render(write_still=True)
+        bpy.ops.render.render(write_still=True, scene=self.sc.name)

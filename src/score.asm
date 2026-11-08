@@ -75,3 +75,14 @@ sc_show:
         jp print_num
 sc_show_end:
         assert sc_show_end <= TAIL_SCSHOW+48
+
+; sc_show's texts: "SCORE ", then " LIVES ", after the code of two chunks
+        org sc_build_end,SYN_SRC+5*48+sc_build_end-TAIL_SCBUILD
+        include "gen/score_text_en.asm"
+sc_txt_en_end:
+        assert sc_txt_en_end <= TAIL_SCBUILD+48
+
+        org sc_sell_end,SYN_SRC+6*48+sc_sell_end-TAIL_SCSELL
+        include "gen/score_text_gr.asm"
+sc_txt_gr_end:
+        assert sc_txt_gr_end <= TAIL_SCSELL+48

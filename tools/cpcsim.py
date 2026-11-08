@@ -24,7 +24,7 @@ SLICE = T_FRAME // 6 // 64 * 64
 KEYS = {
     'UP': 0, 'RIGHT': 1, 'DOWN': 2, 'ENTER': 6, 'LEFT': 8, 'COPY': 9, 'RETURN': 18,
     'P': 27, 'O': 34, 'L': 36, 'M': 38, 'H': 44, 'N': 46, 'SPACE': 47,
-    '6': 48, '5': 49, '4': 56, '3': 57, 'S': 60, 'D': 61, 'X': 63, '1': 64, '2': 65, 'ESC': 66,
+    '7': 41, '6': 48, '5': 49, '4': 56, '3': 57, 'S': 60, 'D': 61, 'X': 63, '1': 64, '2': 65, 'ESC': 66,
     'Q': 67, 'A': 69, 'DEL': 79, 'J_UP': 72, 'J_DOWN': 73, 'J_LEFT': 74, 'J_RIGHT': 75,
     'J_FIRE1': 77,
 }
@@ -208,6 +208,7 @@ class CPC:
         self.t = 0              # CPU ticks run so far (4 per us)
         self._step = 0
         self.overlay = (0x8000, self.syms.get('TITLE_END', 0x8000))
+        self.extra = (self.syms.get('FIRE_LYRA', 0x4000), 0x4000)     # the Lyra area of a stage
 
     # ---------------------------------------------------------------- I/O
     def _in(self, port):
@@ -280,6 +281,7 @@ class CPC:
         # code also runs from the hidden tails of the screen blocks (#x7D0-#x7FF)
         if not (0x38 <= pc < self.code_end or
                 self.overlay[0] <= pc < self.overlay[1] or
+                self.extra[0] <= pc < self.extra[1] or
                 (0x4000 <= pc < 0x8000 or pc >= 0xC000) and pc & 0x7FF >= 0x7D0):
             raise Crash("PC out of code: #%04X (SP #%04X) frame %d" % (pc, sp, self.frame))
         if not (0xBE00 <= sp <= 0xC000):

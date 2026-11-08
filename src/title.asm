@@ -383,17 +383,19 @@ title_art_draw:
 
 def_list:
         dw spr_cretan
-        db T_CAST1,54
+        db T_CAST1,50
         dw spr_yiayia
-        db T_CAST2,73
+        db T_CAST2,66
         dw spr_bride
-        db T_CAST3,92
+        db T_CAST3,82
         dw spr_psssst
-        db T_CAST4,111
+        db T_CAST4,98
         dw spr_cauldron
-        db T_CAST5,130
+        db T_CAST5,114
         dw spr_baker
-        db T_CAST6,149
+        db T_CAST6,130
+        dw spr_lyra_t
+        db T_CAST7,146
         dw 0
 
 inv_list:

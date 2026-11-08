@@ -3,7 +3,7 @@
 
     tools/scenario.py stress      many towers, later waves, look for crashes
     tools/scenario.py full        a normal game from wave 1 with a build plan
-    tools/scenario.py stage       just the stage the build starts at
+    tools/scenario.py stage [n]   just one stage: the first, or stage n
 """
 import os
 import sys
@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from cpcsim import CPC, Crash  # noqa: E402
 
-TYPES = {1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6'}
+TYPES = {1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7'}
 
 
 class Player:
@@ -78,9 +78,9 @@ def wait_load(s):
             s.run_frames(25)
 
 
-def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym", difficulty=0):
+def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym", difficulty=0, stage=1):
     """the game started from the title; difficulty: times 'D' is pressed there
-    (0 medium, 1 hard, 2 hardest, 3 easy)"""
+    (0 medium, 1 hard, 2 hardest, 3 easy); stage: the one it starts at"""
     if TAPE:
         s = CPC("build/tape/VROUVES.BIN", "build/tape/vrouves.sym", cdtfile="build/vrouves.cdt")
         title = open("build/tape/TITLE.BIN", "rb").read()
@@ -89,6 +89,8 @@ def start(binf="build/VROUVES.BIN", sym="build/vrouves.sym", difficulty=0):
     else:
         s = CPC(binf, sym)
     s.run_frames(60)
+    if stage != 1:      # the operand of "ld a,START_STAGE-1", just before .stage
+        s.m.set_memory_block(s.sym('start.stage') - 1, bytes([stage - 1]))
     if difficulty:
         s.run_frames(150)               # the title up and drawn
     for _ in range(difficulty):
@@ -129,7 +131,7 @@ def stress():
     return 0
 
 
-COST = {1: 35, 2: 50, 3: 70, 4: 80, 5: 110, 6: 60}
+COST = {1: 35, 2: 50, 3: 70, 4: 80, 5: 110, 6: 60, 7: 90}
 
 # a sensible build order for Stage 01
 FULL_PLAN = [(1, 3, 2), (1, 16, 2), (2, 3, 3), (3, 14, 3), (6, 9, 3), (1, 12, 5), (5, 3, 5),
@@ -168,7 +170,13 @@ PLAN7 = [(1, 11, 10), (1, 9, 10), (3, 9, 6), (6, 11, 12), (2, 11, 9), (1, 9, 2),
          (4, 12, 4), (6, 9, 5), (2, 13, 10), (5, 3, 6), (3, 4, 2), (1, 15, 2), (6, 7, 5),
          (3, 11, 6), (5, 15, 4), (2, 7, 6), (3, 14, 10), (1, 9, 9), (6, 11, 5),
          (3, 5, 5)]
-PLANS = [FULL_PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6, PLAN7]
+# and for Stage 08, the sheepfold
+PLAN8 = [(1, 4, 5), (1, 3, 6), (7, 3, 5), (6, 5, 6), (2, 16, 2), (1, 6, 6), (7, 6, 10), (5, 8, 11), (4, 4, 6), (3, 3, 3), (2, 16, 3), (6, 4, 3), (7, 5, 8), (1, 6, 5), (5, 15, 9), (3, 6, 8), (4, 5, 5), (2, 6, 11), (6, 6, 9), (7, 15, 2), (3, 15, 3), (1, 7, 6), (5, 3, 0), (6, 5, 3), (3, 1, 3), (7, 5, 11), (2, 4, 0), (4, 7, 9), (3, 5, 9), (1, 5, 10)]
+# and for Stage 09, the olive press
+PLAN9 = [(1, 9, 7), (1, 8, 5), (1, 10, 5), (4, 8, 7), (7, 7, 5), (6, 8, 4), (2, 10, 4), (4, 10, 7), (5, 2, 7), (3, 10, 7), (1, 11, 5), (6, 7, 4), (4, 8, 8), (5, 11, 9), (3, 11, 4), (2, 8, 8), (7, 6, 5), (4, 10, 8), (6, 13, 5), (3, 6, 4), (1, 12, 4), (5, 2, 10), (4, 9, 9), (3, 12, 5), (2, 9, 8), (6, 6, 5), (1, 13, 4), (3, 6, 7), (7, 13, 7), (5, 17, 10)]
+# and for Stage 10, the wedding
+PLAN10 = [(1, 11, 3), (1, 11, 8), (1, 3, 6), (7, 11, 6), (4, 10, 6), (6, 10, 8), (2, 5, 11), (4, 10, 5), (5, 6, 11), (1, 4, 6), (6, 9, 6), (4, 8, 6), (5, 9, 11), (7, 7, 6), (2, 10, 11), (4, 9, 5), (6, 6, 6), (1, 11, 5), (5, 11, 2), (4, 8, 5), (6, 6, 8), (2, 11, 9), (7, 3, 9), (1, 5, 6), (5, 16, 11), (6, 5, 8), (4, 7, 8), (2, 13, 11), (1, 6, 5), (7, 12, 6)]
+PLANS = [FULL_PLAN, PLAN2, PLAN3, PLAN4, PLAN5, PLAN6, PLAN7, PLAN8, PLAN9, PLAN10]
 
 
 def stress_plan(s):
@@ -180,7 +188,7 @@ def full_plan(s):
     return PLANS[s.byte('stage')]
 
 
-SUBSTITUTE = {2: [1], 3: [1, 4], 5: [4, 1], 6: [1]}
+SUBSTITUTE = {2: [1], 3: [1, 4], 5: [4, 1], 6: [1], 7: [4, 1]}
 
 
 def available(s, plan):
@@ -254,8 +262,8 @@ def full(plan=None, verbose=True):
 
 
 def one_stage():
-    s = start()
-    play_stage(s, full_plan(s), verbose=False)
+    s = start(stage=int(sys.argv[2]) if len(sys.argv) > 2 else 1)
+    play_stage(s, full_plan(s), verbose="-v" in sys.argv)
     print("stage %d:" % (s.byte('stage') + 1), "WON" if s.byte('game_over') == 1 else "LOST",
           status(s))
     return 0

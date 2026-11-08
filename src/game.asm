@@ -67,6 +67,9 @@ TT_BRIDE  equ 3
 TT_PSSSST equ 4
 TT_CAULDRON equ 5
 TT_BAKER  equ 6
+TT_LYRA   equ 7
+
+stage_road2 equ stage_unlock+4  ; first segment of the second road, 0 for none
 
 ; projectile record (10 bytes)
 P_TYPE  equ 0
@@ -108,6 +111,7 @@ FX_BASH  equ 3
 FX_POOF  equ 4
 FX_BOOM  equ 5
 FX_ZAP   equ 6
+FX_NOTE  equ 7
 
 HUDF_WAVE   equ 1
 HUDF_INFO   equ 2
@@ -141,9 +145,10 @@ ttype_tab:
         db 80,36,10,5,1,PT_LASER,SFX_LASER,40           ; psssst
         db 110,22,32,8,0,0,SFX_PUFF,55                  ; cauldron
         db 60,34,36,16,1,PT_DAKOS,SFX_THROW,30          ; baker
+        db 90,26,26,4,1,0,SFX_LYRA,45                   ; lyra player (lyra.asm)
 
 tower_sprites:
-        dw spr_cretan,spr_yiayia,spr_bride,spr_psssst,spr_cauldron,spr_baker
+        dw spr_cretan,spr_yiayia,spr_bride,spr_psssst,spr_cauldron,spr_baker,spr_lyra
 
 
 proj_sprites:
@@ -166,9 +171,14 @@ fx_tab:
         db 12,0,0,0
         dw spr_zap_a,spr_spark_b
         db 6,0,0,0
+        dw spr_note_a,spr_note_b
+        db 10,0,0,0
 
 sel_keys:
-        db K_1,K_2,K_3,K_4,K_5,K_6
+        db K_1,K_2,K_3,K_4,K_5,K_6,K_7
+; cursor_input: bit 0 up, 1 down, 2 left, 3 right, in turn
+dir_keys:
+        db K_UP,K_DOWN,K_LEFT,K_RIGHT,J_UP,J_DOWN,J_LEFT,J_RIGHT,K_Q,K_A,K_O,K_P
 
 ;------------------------------------------------------------------------------
 ; main game loop
@@ -256,8 +266,6 @@ game_init:
         ld bc,ENT_END-ENT_START-1
         ld (hl),0
         ldir
-        call make_mirrors
-        call make_dispatch
         ld hl,ESTATE0           ; nothing drawn yet on either screen
         ld de,ESTATE0+1
         ld bc,ESTATE_SIZE*2-1
@@ -308,7 +316,7 @@ game_init:
         if DEBUG
         ld a,DEBUG-1            ; -DDEBUG=n starts at wave n
         ld (wave_num),a
-        ld a,#3f                ; and has every defender
+        ld a,#7f                ; and has every defender
         ld (stage_unlock),a
         else
         ld hl,(stage_unlock+1)  ; the defenders this stage brings
@@ -414,7 +422,7 @@ handle_input:
         ret nz
         call cursor_input
         ld hl,sel_keys
-        ld bc,#0601
+        ld bc,#0701
 .sk:    ld a,(hl)
         call key_hit
         jr nc,.nk
@@ -476,56 +484,20 @@ toggle_pause:
         jp hud_set
 
 cursor_input:
-        ld c,0
-        ld a,K_UP
+        ld hl,dir_keys
+        ld bc,#0c00             ; 12 keys; C = the directions held
+        ld d,#11                ; up, down, left, right, up, ...
+.k:     ld a,(hl)
+        inc hl
         call key_down
-        jr nc,.k1
-        set 0,c
-.k1:     ld a,J_UP
-        call key_down
-        jr nc,.k2
-        set 0,c
-.k2:     ld a,K_DOWN
-        call key_down
-        jr nc,.k3
-        set 1,c
-.k3:     ld a,J_DOWN
-        call key_down
-        jr nc,.k4
-        set 1,c
-.k4:     ld a,K_LEFT
-        call key_down
-        jr nc,.k5
-        set 2,c
-.k5:     ld a,J_LEFT
-        call key_down
-        jr nc,.k6
-        set 2,c
-.k6:     ld a,K_RIGHT
-        call key_down
-        jr nc,.k7
-        set 3,c
-.k7:     ld a,J_RIGHT
-        call key_down
-        jr nc,.k8
-        set 3,c
-.k8:     ld a,K_Q
-        call key_down
-        jr nc,.q1
-        set 0,c
-.q1:    ld a,K_A
-        call key_down
-        jr nc,.q2
-        set 1,c
-.q2:    ld a,K_O
-        call key_down
-        jr nc,.q3
-        set 2,c
-.q3:    ld a,K_P
-        call key_down
-        jr nc,.q4
-        set 3,c
-.q4:    ld a,c
+        jr nc,.n
+        ld a,d
+        and 15
+        or c
+        ld c,a
+.n:     rlc d
+        djnz .k
+        ld a,c
         or a
         jr nz,.held
         ld (rep_t),a
@@ -1217,8 +1189,22 @@ spawn_enemy:
         inc a
         ld (gen_ctr),a
         ld (ix+E_GEN),a
-        call enemy_path
-        ld a,(hl)
+        call enemy_path         ; NZ: a walker
+        jr z,.r1
+        ld a,(ix+E_GEN)         ; every other one takes the second road, if any
+        rrca
+        jr nc,.r1
+        ld a,(stage_road2)      ; its first segment, past the first road's end
+        or a
+        jr z,.r1
+        ld (ix+E_SEG),a
+        ld c,a
+        add a,a
+        add a,c
+        ld c,a
+        ld b,0
+        add hl,bc               ; its header, just before
+.r1:    ld a,(hl)
         ld (ix+E_X),a
         inc hl
         ld a,(hl)
@@ -1574,6 +1560,8 @@ tower_think:
         jp z,fire_yiayia
         cp TT_CAULDRON
         jp z,fire_cauldron
+        cp TT_LYRA
+        jp z,fire_lyra
         ld a,(tr_dmg)
         ld c,a
         ld b,0
@@ -2188,101 +2176,6 @@ draw_enemies:
         pop bc
         djnz .l
         ret
-
-; mirrored enemy frames into the hidden tails of the #C000 screen blocks
-make_mirrors:
-        ld hl,mirror_tab
-        ld b,4
-.s:     push bc
-        ld e,(hl)
-        inc hl
-        ld d,(hl)
-        inc hl
-        ld c,(hl)
-        inc hl
-        ld a,(hl)
-        inc hl
-        push hl
-        ld h,a
-        ld l,c
-        inc hl
-        inc hl
-        inc hl
-        ex de,hl                ; HL = source, DE = end of the first row
-        ld b,12
-.r:     push bc
-        ld b,4
-.c:     ld a,(hl)               ; swap the two pixels of the byte
-        rrca
-        and #55
-        ld c,a
-        ld a,(hl)
-        rlca
-        and #aa
-        or c
-        inc hl
-        ld (de),a
-        dec de
-        djnz .c
-        ex de,hl
-        ld bc,8
-        add hl,bc
-        ex de,hl
-        pop bc
-        djnz .r
-        pop hl
-        pop bc
-        djnz .s
-        ret
-
-; Enemy frames are drawn row by row by small handlers, one per kind of row.
-; For each pattern of row kinds make_dispatch writes 12 CALLs and a RET into
-; the hidden tail of a #4000 screen block (#47D0, #4FD0, ...), so drawing a
-; frame does no decoding at all.
-make_dispatch:
-        ld hl,disp_cls
-        ld d,#47
-.p:     ld e,#d0
-        ld b,12
-.r:     ld a,b
-        and 3
-        jr nz,.k
-        ld c,(hl)               ; 2 bits per row, MSB first
-        inc hl
-.k:     rlc c
-        rlc c
-        ld a,c
-        and 3
-        add a,a
-        push hl
-        ld hl,row_handlers
-        add a,l
-        ld l,a
-        jr nc,.n
-        inc h
-.n:     ld a,#cd                ; CALL handler
-        ld (de),a
-        inc de
-        ld a,(hl)
-        ld (de),a
-        inc de
-        inc hl
-        ld a,(hl)
-        ld (de),a
-        inc de
-        pop hl
-        djnz .r
-        ld a,#c9                ; RET
-        ld (de),a
-        ld a,d
-        add a,8
-        ld d,a
-        cp #47+DISP_COUNT*8
-        jr nz,.p
-        ret
-
-row_handlers:
-        dw er_m4,er_f4,er_mid,er_z
 
 ; HL = 48 bytes of 8x12 enemy picture, D,E = x,y on the back buffer,
 ; A = high byte of its dispatch block

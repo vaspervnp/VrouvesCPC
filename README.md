@@ -51,7 +51,7 @@ back a little and press PLAY: the loader waits for the block it wants.
 | Key | Action |
 | --- | --- |
 | Cursor keys / Q A O P / joystick | Move the build cursor |
-| 1 – 6 | Choose a defender |
+| 1 – 7 | Choose a defender |
 | SPACE / RETURN / ENTER / COPY / FIRE | Build on the cursor tile |
 | S / DEL | Sell the defender under the cursor (half price back) |
 | N | Call the next wave now (half the seconds left on the countdown are paid as a bonus) |
@@ -87,9 +87,12 @@ write routine). The cassette version counts the score but keeps no table.
 | 3 | Bride | 70 | 3 | Rapid pistol, 1 in 4 shots is a triple-damage critical |
 | 6 | Baker | 60 | 4 | Hurls dakos (barley rusks) with splash damage |
 | 5 | Cauldron | 110 | 5 | Toxic "unlicensed lipids and ascorbic acids": area damage that ignores armour, slows walkers |
+| 7 | Lyra player | 90 | 8 | His tune hits every invader around him, walkers and drones, and charms the drones into slowing down; small damage, armour counts |
 
-The village joins the fight bit by bit: the Kafenio is held by the Cretan and Psssst, and every
-following stage brings one more defender, announced when the stage begins.
+The village joins the fight bit by bit: the Kafenio is held by the Cretan and Psssst, every
+following stage up to the school brings one more defender, and the Lyra player comes at the
+sheepfold (stage 8), each announced when the stage begins. At the wedding (stage 10) the Bride
+is at the altar and cannot be built.
 
 Neighbours matter. A defender right next to its partner (left, right, above or below, not
 diagonally) hits harder or softer; the bonus shows on the info line, green or red, before
@@ -101,10 +104,13 @@ it is built:
 | Yiayia | a Baker | +20% |
 | Baker | a Cretan | -50% |
 | Psssst | a Cretan | -20% |
+| Lyra player | another Lyra player | -50% |
+| Lyra player | a Yiayia | +50% |
 
 At most three defenders have a bonus at a time: those that have one keep it while their
 partner stays, and when one is lost it passes to the next in line (`syn_update`). Penalties
-always count.
+always count. The pairs are a list (`syn_tab` in `synergy.asm`), and the first that applies
+counts: a Lyra player next to both another one and a Yiayia gets the -50%.
 
 ## Invaders
 
@@ -129,16 +135,27 @@ always count.
 6. **The village pitch** – the greens wait on the touchline by the coach and the team bench,
    below stands full of villagers. The road runs around the pitch, which is buildable grass;
    the drones fly straight across it.
-7. **The cemetery church** – the last stand, at the little stone chapel among the graves and
-   cypresses, with the priest and a yiayia in black by the oil lamps. The road winds between
-   the graves, where nothing can be built.
+7. **The cemetery church** – the little stone chapel among the graves and cypresses, with the
+   priest and a yiayia in black by the oil lamps. The road winds between the graves, where
+   nothing can be built.
+8. **The sheepfold** – high on the mountain, in the yard of the mitato, the shepherd's stone
+   hut. The road winds down in hairpins between rocks, dry-stone walls and sheep, and the
+   waves bring swarms of drones. The Lyra player joins in.
+9. **The olive press** – by the millstone and the storage jars. The walkers come along two
+   roads, one from each side, every other one taking the second; the roads meet below the
+   yard. Each road is short, so the waves are smaller.
+10. **The Bride's wedding** – the last stand, in the church courtyard of stage 2 decked out for
+    the wedding, the groom at the door, the road winding between the guests' tables. No Bride
+    here, and a column of tanks in the last wave.
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
 next stage; lose, and you play it again if you have a life left (see Difficulty), or it is
 back to the title screen. Win the last stage and the whole village
-celebrates at a feast in front of the school (`assets/ending_sceneFinal.png`); SPACE / FIRE
-goes back to the title screen.
+celebrates at the Bride's wedding (`assets/wedding_sceneFinal.png`); SPACE / FIRE goes back to
+the title screen. The picture is rendered in Blender by `tools/wedding_blender.py` (with the
+shared `tools/blender_toon.py`; `blender -b --python tools/wedding_blender.py -- out.png`) and
+turned into CPC colours by `tools/make_ending.py`.
 
 ## Building
 
@@ -149,13 +166,20 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
   sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
   the music and sound effects; `src/gen/title_text.asm` and `src/gen/title_art.asm`, the texts and the packed
   first-page picture only the title screen needs;
-  and one file per stage, `build/STAGE1.BIN` to `STAGE7.BIN`: the map rendered to 8×12
+  and one file per stage, `build/STAGE1.BIN` to `STAGE10.BIN`: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
-  stage's own texts, the defenders it has and how tough its invaders are, in a fixed layout. Preview PNGs go to `build/preview/`.
+  stage's own texts, the defenders it has, how tough its invaders are and where its second
+  road starts, in a fixed layout. Preview PNGs go to `build/preview/`. The stages with the
+  Lyra player keep the top of the stage area free for him: `src/gen/extra.asm` has his
+  picture, sound and texts.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
   landed (`src/gen/diskmap.asm`), assembles, adds the title overlay `TITLE.BIN` and
-  `VROUVES.BIN`, and checks that every file is where the loader will look for it. Then it
-  assembles again with `-DTAPE=1` and has `tools/make_cdt.py` write the cassette image.
+  `VROUVES.BIN`, and checks that every file is where the loader will look for it. The
+  assembly also gives `LYRA.BIN`, the Lyra player's code and data (`src/lyra.asm`), which
+  `tools/put_extra.py` writes into the top of stages 8–10 before the disk is made again with
+  the same files in the same places. Then it assembles again with `-DTAPE=1` (its own
+  `LYRA.BIN`, in the tape copies of the stages) and has `tools/make_cdt.py` write the
+  cassette image.
 * `src/main.asm` is the entry point and memory map; `hw.asm` (interrupts, keyboard, AY
   sound), `gfx.asm` (double buffering, sprites, dirty rectangles, text), `game.asm`,
   `disk.asm` (the disk loader), `tape.asm` (the cassette loader, instead of it with
@@ -177,7 +201,10 @@ memory wait states), `tools/costs.py <wave>` the time per game activity,
 `tools/ghosts.py` checks that no sprite leftovers remain on either screen between waves,
 `tools/enemycheck.py [stress]` checks at every flip that every enemy is fully drawn, and
 `tools/scenario.py full` plays a whole game, all stages, with a build order per stage,
-printing progress per wave — handy for balancing. The tools work on whichever stage the build
+printing progress per wave — handy for balancing, and `tools/scenario.py stage <n> [-v]` plays
+just stage n. `tools/lyracheck.py` checks the Lyra player, the two roads of the olive press and
+the wedding without the Bride, `tools/syncheck.py` the neighbour bonus and
+`tools/scorecheck.py` the score and the lives. The tools work on whichever stage the build
 starts at.
 
 ### Testing in Caprice32
@@ -192,9 +219,12 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
 * The firmware is switched off; the game owns all 64K. Memory map: code and data from `#0040`,
   the current stage just below `#4000`, screen buffers at `#4000` and `#C000`, a copy of the
   playfield background at `#8000`, line tables, sprite mask table, dirty-rectangle lists and
-  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`), parts of the score
-  (`score.asm`) and the lives (`lives.asm`) run from the hidden 48 byte tails of eight screen blocks, copied there from
-  the title overlay when a game starts (`tails.asm`). The title screen's code and texts are an overlay that is loaded
+  entity tables up to `#BEFF`. The neighbour bonus (`synergy.asm`) and parts of the score
+  (`score.asm`) run from the hidden 48 byte tails of eight screen blocks, copied there from
+  the title overlay when a game starts (`tails.asm`), which also builds the enemy dispatch
+  blocks and the mirrored frames in the other eight tails then, once a game. The Lyra player
+  (`lyra.asm`, with his picture, sound and texts) is not resident either: he lives at the top
+  of the stage area, in the files of the stages that have him. The title screen's code and texts are an overlay that is loaded
   into the background buffer whenever the title is shown. The ending, `ENDING.SCR`, loads
   straight onto the `#C000` screen; its inks and the few bytes of code that show it sit in
   the hidden tails of the screen blocks (`tools/png_to_scr.py`), so it costs the resident
@@ -227,5 +257,5 @@ screenshot folder, typing the given autocmd script. `tools/script.py` composes s
   opaque, middle opaque, middle opaque with empty edges, masked), opaque bytes are copied with
   `LDI`, and for every pattern of rows the game writes a list of 12 `CALL`s into the hidden tail
   of a `#4000` screen block, so nothing is decoded while drawing. Left-facing frames are
-  mirrored at start-up into the hidden tails of the `#C000` screen. A guard takes about 2900 T
+  mirrored when a game starts into the hidden tails of the `#C000` screen. A guard takes about 2900 T
   states instead of 4080, a tank 2050–2300.

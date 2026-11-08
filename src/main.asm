@@ -89,6 +89,7 @@ K_6         equ 48
 K_5         equ 49
 K_4         equ 56
 K_3         equ 57
+K_7         equ 41
 K_S         equ 60
 K_D         equ 61
 K_1         equ 64
@@ -177,6 +178,7 @@ start:
         include "hw.asm"
         include "gfx.asm"
         include "game.asm"
+        include "lives.asm"
         if TAPE == 0
         include "disk.asm"
         endif
@@ -238,6 +240,8 @@ stage:      defs 1
 difficulty: defs 1          ; 0 medium, 1 hard, 2 hardest, 3 easy (title.asm)
 dk_err:     defs 1
 dk_res:     defs 8
+rt_lives:   defs 1          ; lives left (lives.asm)
+rt_chk:     defs 2          ; the score when this stage began
 
 ; cleared by game_init
 game_vars:
@@ -330,6 +334,18 @@ title_end:
         endif
         print "title overlay: ",title_end-TITLE_AREA," bytes"
         SAVE 'TITLE.BIN',TITLE_AREA,title_end-TITLE_AREA
+
+;------------------------------------------------------------------------------
+; the Lyra area: the top of the stage area, in the stage files that have the
+; Lyra player (build.sh puts LYRA.BIN there; their tiles stop below it)
+;------------------------------------------------------------------------------
+        org EXTRA_AREA
+        include "lyra.asm"
+        include "gen/extra.asm"
+extra_end:
+        assert extra_end <= #4000
+        print "lyra area: ",extra_end-EXTRA_AREA," of ",#4000-EXTRA_AREA," bytes"
+        SAVE 'LYRA.BIN',EXTRA_AREA,extra_end-EXTRA_AREA
 
 ;------------------------------------------------------------------------------
 ; the ending: ENDING.SCR, a full Mode 0 screen loaded onto #C000 after the last

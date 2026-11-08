@@ -20,7 +20,7 @@ OUT = os.path.join(ROOT, "docs", "img")
 
 SPRITES = {
     "cretan": art.CRETAN, "yiayia": art.YIAYIA, "bride": art.BRIDE,
-    "psssst": art.PSSSST, "cauldron": art.CAULDRON, "baker": art.BAKER,
+    "psssst": art.PSSSST, "cauldron": art.CAULDRON, "baker": art.BAKER, "lyra": art.LYRA,
     "drone": art.DRONE_A, "guard": art.GUARD_A, "tank": art.TANK_V_A,
 }
 

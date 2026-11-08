@@ -5,6 +5,8 @@
 ;   a Yiayia next to a Baker       +20%
 ;   a Baker next to a Cretan       -50%
 ;   Psssst next to a Cretan        -20%
+;   a Lyra player next to another  -50%
+;   a Lyra player next to a Yiayia +50%
 ; Only three defenders at a time get a bonus (syn_update, game.asm); the
 ; penalties always count.
 ; Before a defender is built, the bonus it would get there shows at the end
@@ -15,14 +17,16 @@
 ; on the #C000 one), which nothing else uses during a game: see tails.asm.
 ;==============================================================================
         org TAIL_SYNDATA,SYN_SRC
-; per defender type: partner type (0: none), damage factor in 16ths, its text
+; pairs: defender type, partner type, damage factor in 16ths, its text;
+; the first that applies counts
 syn_tab:
-        db 0,0,0                                ; cretan
-        db TT_BAKER,19,lo(syn_t20p)             ; yiayia
-        db TT_CRETAN,24,lo(syn_t50p)            ; bride
-        db TT_CRETAN,13,lo(syn_t20m)            ; psssst
-        db 0,0,0                                ; cauldron
-        db TT_CRETAN,8,lo(syn_t50m)             ; baker
+        db TT_YIAYIA,TT_BAKER,19,lo(syn_t20p)
+        db TT_BRIDE,TT_CRETAN,24,lo(syn_t50p)
+        db TT_PSSSST,TT_CRETAN,13,lo(syn_t20m)
+        db TT_BAKER,TT_CRETAN,8,lo(syn_t50m)
+        db TT_LYRA,TT_LYRA,8,lo(syn_t50m)
+        db TT_LYRA,TT_YIAYIA,24,lo(syn_t50p)
+        db 0
 syn_t50p: db G_PLUS,G_5,G_0,G_PCT,#ff
 syn_t20p: db G_PLUS,G_2,G_0,G_PCT,#ff
 syn_t50m: db G_MINUS,G_5,G_0,G_PCT,#ff
@@ -32,24 +36,31 @@ syn_data_end:
         assert hi(syn_data_end-1) == hi(syn_tab)
 
         org TAIL_SYNFIND,SYN_SRC+48
-; A = type, D,E = col,row -> NZ and HL = its syn_tab entry when a partner
-; is next door, Z when not.  Uses A, BC.
+; A = type, D,E = col,row -> NZ and HL = the partner byte of its syn_tab
+; pair when a partner is next door, Z when not.  Uses A, BC.
 syn_find:
-        dec a
-        ld l,a
-        add a,a
-        add a,l
-        add a,lo(syn_tab)
-        ld l,a
-        ld h,hi(syn_tab)
-        ld a,(hl)
+        ld c,a
+        ld hl,syn_tab
+.e:     ld a,(hl)
+        inc hl
         or a
         ret z
-        ld (syn_loop+2),a       ; the partner, into the CP below
+        cp c
+        jr nz,.s
+        ld a,(hl)
+        ld (syn_loop+2),a       ; the partner, into the CP there
+        push bc
         push hl
         ld hl,towers
         ld b,MAX_TW
-        jp syn_loop
+        call syn_loop
+        pop hl
+        pop bc
+        ret nz
+.s:     inc hl
+        inc hl
+        inc hl
+        jr .e
 syn_find_end:
         assert syn_find_end <= TAIL_SYNFIND+48
 
@@ -82,11 +93,9 @@ syn_loop:
         add a,TW_SZ
         ld l,a
         djnz syn_loop
-        pop hl
         xor a
         ret
-.hit:   pop hl
-        or 1
+.hit:   or 1
         ret
 syn_loop_end:
         assert syn_loop_end <= TAIL_SYNLOOP+48
