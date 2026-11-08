@@ -260,6 +260,7 @@ en_count:   defs 1
 gen_ctr:    defs 1
 game_over:  defs 1
 quit:       defs 1
+quit_ask:   defs 1          ; ESC pressed once: a second one quits
 paused:     defs 1
 cur_c:      defs 1
 cur_r:      defs 1

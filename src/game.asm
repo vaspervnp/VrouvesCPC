@@ -368,7 +368,8 @@ end_game:
         call banner_show
         ld a,SFX_WAVE
         call sfx_play
-        ld a,40
+        ld a,12                 ; drawn frames (about a second) before fire counts:
+                                ; a SPACE meant for building does not skip the banner
         ld (end_wait),a
 .l:     call kbd_update
         call hud_refresh        ; the last changes reach both screens
@@ -410,13 +411,20 @@ handle_input:
         ld a,K_ESC
         call key_hit
         jr nc,.ne
-        ld a,(paused)
+        ld a,(quit_ask)
         or a
-        jr z,.pz
-        ld a,1                  ; ESC while paused: back to the title
+        jr z,.qa
+        ld a,1                  ; ESC again: back to the title
         ld (quit),a
         ret
-.pz:    call toggle_pause
+.qa:    ld a,(paused)           ; the first ESC pauses and asks
+        or a
+        call z,toggle_pause
+        ld a,1
+        ld (quit_ask),a
+        ld a,B_QUIT
+        ld c,B_PAUSE2           ; H: continue, ESC: quit
+        call banner_show
 .ne:    ld a,(paused)
         or a
         ret nz
@@ -479,6 +487,8 @@ toggle_pause:
         call banner_show
         jr .st
 .resume:
+        xor a                   ; and no more asking to quit
+        ld (quit_ask),a
         call banner_clear
 .st:    ld a,HUDF_STATUS
         jp hud_set

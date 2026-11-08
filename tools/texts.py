@@ -43,6 +43,7 @@ STRINGS = [
     ("B_NEWDEF", "A NEW DEFENDER JOINS THE VILLAGE!", "ΝΕΟΣ ΑΜΥΝΤΙΚΟΣ ΣΤΟ ΧΩΡΙΟ!"),
     ("B_BRIDE", "THE BRIDE IS AT THE ALTAR!", "Η ΝΥΦΗ ΣΤΕΦΑΝΩΝΕΤΑΙ!"),
     ("B_BRIDE2", "HOLD THEM OFF WITHOUT HER!", "ΚΡΑΤΗΣΤΕ ΤΟΥΣ ΜΑΚΡΙΑ ΧΩΡΙΣ ΑΥΤΗ!"),
+    ("B_QUIT", "QUIT THIS GAME?", "ΕΞΟΔΟΣ ΑΠΟ ΤΟ ΠΑΙΧΝΙΔΙ;"),
     ("B_SPACE", "PRESS SPACE / FIRE", "ΠΑΤΗΣΤΕ SPACE / FIRE"),
     ("B_PAUSE", "PAUSED", "ΠΑΥΣΗ"),
     ("B_PAUSE2", "H: CONTINUE    ESC: QUIT", "H: ΣΥΝΕΧΕΙΑ    ESC: ΕΞΟΔΟΣ"),

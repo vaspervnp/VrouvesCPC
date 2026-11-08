@@ -55,7 +55,8 @@ back a little and press PLAY: the loader waits for the block it wants.
 | SPACE / RETURN / ENTER / COPY / FIRE | Build on the cursor tile |
 | S / DEL | Sell the defender under the cursor (half price back) |
 | N | Call the next wave now (half the seconds left on the countdown are paid as a bonus) |
-| H | Pause / continue (ESC while paused quits to the title) |
+| H | Pause / continue |
+| ESC | Quit to the title: it asks first, a second ESC quits (H continues) |
 | L | Switch English / Greek at any time |
 | M | Music on / off |
 

@@ -92,7 +92,8 @@ The difficulty, shown under the title, sets how many lives you get for the whole
 | SPACE / RETURN / ENTER / COPY / FIRE | Build the chosen defender on the cursor |
 | S / DEL | Sell the defender under the cursor |
 | N | Call the next wave now |
-| H | Pause / continue; ESC while paused quits to the title screen |
+| H | Pause / continue |
+| ESC | Quit to the title screen: the game pauses and asks, a second ESC quits, H plays on |
 | L | Switch between English and Greek, at any time |
 | M | Music on / off |
 
@@ -131,7 +132,7 @@ to the lives you have left (`SCORE 01903 LIVES 3`) whenever the bar has no messa
 
 A lost stage gives no points: when you play it again with one of your lives, the score goes
 back to what it was when the stage began. The game ends when you win the last stage, when you
-lose a stage with no lives left, or when you quit with ESC while paused. There is one table
+lose a stage with no lives left, or when you quit with ESC. There is one table
 for all four difficulties, so the easier levels, with more lives, make a high score easier.
 
 When the game ends with one of the eight best scores, enter your name: three letters, UP and
