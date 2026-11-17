@@ -7,6 +7,7 @@
 ;   Psssst next to a Cretan        -20%
 ;   a Lyra player next to another  -50%
 ;   a Lyra player next to a Yiayia +50%
+;   a Shepherd next to a Lyra player +50%
 ; Only three defenders at a time get a bonus (syn_update, game.asm); the
 ; penalties always count.
 ; Before a defender is built, the bonus it would get there shows at the end
@@ -26,7 +27,8 @@ syn_tab:
         db TT_BAKER,TT_CRETAN,8,lo(syn_t50m)
         db TT_LYRA,TT_LYRA,8,lo(syn_t50m)
         db TT_LYRA,TT_YIAYIA,24,lo(syn_t50p)
-        db 0
+        db TT_SHEPHERD,TT_LYRA,24,lo(syn_t50p)
+syn_tab_end:                    ; (no room for an end mark: syn_find looks for this)
 syn_t50p: db G_PLUS,G_5,G_0,G_PCT,#ff
 syn_t20p: db G_PLUS,G_2,G_0,G_PCT,#ff
 syn_t50m: db G_MINUS,G_5,G_0,G_PCT,#ff
@@ -41,10 +43,11 @@ syn_data_end:
 syn_find:
         ld c,a
         ld hl,syn_tab
-.e:     ld a,(hl)
-        inc hl
-        or a
+.e:     ld a,l
+        cp lo(syn_tab_end)
         ret z
+        ld a,(hl)
+        inc hl
         cp c
         jr nz,.s
         ld a,(hl)

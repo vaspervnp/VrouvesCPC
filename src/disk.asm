@@ -19,19 +19,27 @@ ENDING_BLOCK equ DISK_NEXT_BLOCK+floor((title_end-TITLE_AREA+1023)/1024)
 disk_ending:
         db floor(ENDING_BLOCK*2/9),#C1+(ENDING_BLOCK*2)%9,32
         dw #C000
-; disk_stages: one descriptor per stage file, in src/gen/diskmap.asm
-
-; A = stage (0..)
+; A = stage (0..): the stage files follow one another on the disk, each as
+; long (tools/diskmap.py), so its descriptor is worked out
 stage_load:
-        ld l,a
-        add a,a
-        add a,a
-        add a,l
-        ld l,a
-        ld h,0
-        ld de,disk_stages
-        add hl,de
-        ; fall through
+        ld c,a
+        ld b,DISK_STAGE_STRIDE
+        ld a,DISK_STAGE_LSECTOR
+.m:     add a,c                 ; logical sector: first + stage * stride
+        djnz .m
+        ld c,-1
+.t:     inc c                   ; 9 sectors a track
+        sub 9
+        jr nc,.t
+        add a,#c1+9
+        ld (stage_desc+1),a
+        ld a,c
+        ld (stage_desc),a
+        ld hl,stage_desc
+        jr disk_load
+stage_desc:
+        db 0,0,STAGE_SECTORS
+        dw STAGE_AREA
 
 ; HL = descriptor.  The screen is blacked out and the music held while
 ; loading; whole sectors are read, so up to 511 bytes past the end of the

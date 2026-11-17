@@ -5,9 +5,9 @@
 TITLE_PAGE_FRAMES equ 450
 
         if TAPE
-TITLE_PAGES equ 4
-        else
 TITLE_PAGES equ 5
+        else
+TITLE_PAGES equ 6
         endif
 
 title_screen:
@@ -278,6 +278,9 @@ title_page:
         jp z,.story
         dec a
         jr z,.def
+        dec a
+        ld hl,def_list2         ; the defenders who come later
+        jr z,.def2
         ld bc,#0900
         call set_colors
         ld a,T_ENEHDR
@@ -285,12 +288,14 @@ title_page:
         call print_id_centered
         ld hl,inv_list
         jr .cast
-.def:   ld bc,#0800
+.def:   ld hl,def_list
+.def2:  push hl
+        ld bc,#0800
         call set_colors
         ld a,T_DEFHDR
         ld e,43
         call print_id_centered
-        ld hl,def_list
+        pop hl
 .cast:  ld e,(hl)
         inc hl
         ld d,(hl)
@@ -383,19 +388,25 @@ title_art_draw:
 
 def_list:
         dw spr_cretan
-        db T_CAST1,50
+        db T_CAST1,54
         dw spr_yiayia
-        db T_CAST2,66
+        db T_CAST2,73
         dw spr_bride
-        db T_CAST3,82
+        db T_CAST3,92
         dw spr_psssst
-        db T_CAST4,98
+        db T_CAST4,111
         dw spr_cauldron
-        db T_CAST5,114
+        db T_CAST5,130
+        dw 0
+def_list2:
         dw spr_baker
-        db T_CAST6,130
+        db T_CAST6,54
         dw spr_lyra_t
-        db T_CAST7,146
+        db T_CAST7,73
+        dw spr_shepherd_t
+        db T_CAST8,92
+        dw spr_priest_t
+        db T_CAST9,111
         dw 0
 
 inv_list:

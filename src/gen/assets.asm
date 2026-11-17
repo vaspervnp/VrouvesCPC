@@ -64,7 +64,7 @@ font:
     db #07,#04,#02,#02,#04,#07,#02,#07,#05,#05,#07,#02
     db #05,#05,#07,#02,#02,#02,#02,#05,#05,#05,#02,#05
 
-NUM_STAGES equ 10
+NUM_STAGES equ 20
 NUM_SACKS equ 5
 NUM_WAVES equ 10
 
@@ -266,44 +266,50 @@ S_NAME4 equ 13
 S_NAME5 equ 14
 S_NAME6 equ 15
 S_NAME7 equ 16
-S_INFO1 equ 17
-S_INFO2 equ 18
-S_INFO3 equ 19
-S_INFO4 equ 20
-S_INFO5 equ 21
-S_INFO6 equ 22
-S_INFO7 equ 23
-B_CALL equ 24
-B_CLEAR equ 25
-B_NEXT equ 26
-B_FINAL equ 27
-B_NEWDEF equ 28
-B_BRIDE equ 29
-B_BRIDE2 equ 30
-B_QUIT equ 31
-B_SPACE equ 32
-B_PAUSE equ 33
-B_PAUSE2 equ 34
-T_START equ 35
-T_CREDIT equ 36
-T_DEFHDR equ 37
-T_ENEHDR equ 38
-T_CAST1 equ 39
-T_CAST2 equ 40
-T_CAST3 equ 41
-T_CAST4 equ 42
-T_CAST5 equ 43
-T_CAST6 equ 44
-T_CAST7 equ 45
-T_ENE1 equ 46
-T_ENE2 equ 47
-T_ENE3 equ 48
-T_CTRL equ 49
-T_CTRL2 equ 50
-T_STORY equ 51
-B_STAGE equ 52
-B_WIN equ 53
-B_LOSE equ 54
+S_NAME8 equ 17
+S_NAME9 equ 18
+S_INFO1 equ 19
+S_INFO2 equ 20
+S_INFO3 equ 21
+S_INFO4 equ 22
+S_INFO5 equ 23
+S_INFO6 equ 24
+S_INFO7 equ 25
+S_INFO8 equ 26
+S_INFO9 equ 27
+B_CALL equ 28
+B_CLEAR equ 29
+B_NEXT equ 30
+B_FINAL equ 31
+B_NEWDEF equ 32
+B_BRIDE equ 33
+B_BRIDE2 equ 34
+B_QUIT equ 35
+B_SPACE equ 36
+B_PAUSE equ 37
+B_PAUSE2 equ 38
+B_STAGE equ 39
+B_WIN equ 40
+B_LOSE equ 41
+T_START equ 42
+T_CREDIT equ 43
+T_DEFHDR equ 44
+T_ENEHDR equ 45
+T_CAST1 equ 46
+T_CAST2 equ 47
+T_CAST3 equ 48
+T_CAST4 equ 49
+T_CAST5 equ 50
+T_CAST6 equ 51
+T_CAST7 equ 52
+T_CAST8 equ 53
+T_CAST9 equ 54
+T_ENE1 equ 55
+T_ENE2 equ 56
+T_ENE3 equ 57
+T_CTRL equ 58
+T_CTRL2 equ 59
+T_STORY equ 60
 NUM_GLYPHS equ 70
 G_PLUS equ 52
 G_MINUS equ 45
@@ -312,29 +318,30 @@ G_0 equ 27
 G_2 equ 29
 G_5 equ 32
 pair_table:
-    db #05,#00,#0F,#00,#14,#08,#14,#01,#0F,#19,#13,#00,#27,#00,#48,#46
-    db #14,#47,#09,#01,#05,#0E,#26,#00,#05,#09,#12,#05,#05,#12,#42,#00
-    db #0B,#01,#29,#00,#0C,#0C,#05,#04,#03,#08,#10,#01,#0E,#00,#10,#09
-    db #0D,#01,#4F,#00,#0F,#0E,#41,#09,#49,#00,#41,#05,#01,#16,#14,#09
-    db #01,#58,#2D,#00,#0D,#0F,#42,#14,#32,#00,#0F,#17,#08,#00,#09,#00
-    db #10,#0F,#05,#0B,#13,#13,#1B,#4C,#0F,#0C,#01,#0E,#25,#00,#13,#49
-    db #05,#57,#08,#01,#07,#46,#14,#00,#04,#05,#09,#0E,#05,#29,#3F,#09
-    db #10,#08,#19,#00,#03,#0F,#0B,#76,#02,#09,#77,#4B,#42,#62,#0E,#05
-    db #01,#0B,#15,#12,#0E,#6B,#42,#4E,#0F,#3F,#08,#42,#75,#78,#61,#84
-    db #13,#64,#8E,#59,#8F,#57,#42,#45,#91,#3E,#92,#08,#93,#81,#83,#06
-    db #95,#66,#96,#50,#97,#29,#42,#7C,#12,#09,#04,#12,#01,#12,#01,#00
-    db #41,#01,#8C,#1B,#4C,#4D,#8D,#1B,#90,#88,#A2,#51,#05,#63,#A4,#99
-    db #10,#53,#01,#13,#10,#0C,#14,#4A,#4A,#42,#04,#00,#52,#47,#A3,#4E
-    db #AD,#4D,#94,#89,#05,#13,#15,#0E,#49,#0E,#9B,#60,#02,#86,#B4,#54
-    db #07,#00,#0D,#05,#14,#0F,#06,#50,#3C,#5F,#0B,#19,#43,#4A,#BC,#10
-    db #BD,#0E,#0F,#55,#3C,#08,#05,#10,#0D,#50,#0F,#29,#06,#00,#3F,#8B
-    db #0C,#05,#0F,#15,#17,#64,#00,#00,#15,#13,#53,#01,#13,#14,#0D,#46
-    db #16,#09,#06,#09,#BB,#5E,#0E,#19,#D1,#43,#56,#6D,#18,#45,#00,#67
-    db #59,#00,#08,#05,#0F,#10,#08,#5E,#5A,#87,#DA,#5A,#6F,#0B,#DC,#C5
-    db #A6,#13,#DE,#4B,#02,#9A,#03,#01,#51,#01,#09,#0C,#CE,#58,#E4,#01
-    db #03,#46,#42,#46,#65,#0B,#0F,#42,#3C,#4F,#1A,#73,#52,#00,#14,#05
-    db #01,#19,#0F,#C4,#17,#59,#F0,#04,#F1,#7B,#5A,#0F,#16,#46,#14,#54
-    db #0F,#6D,#0E,#14,#4C,#4E,#6C,#DD,#F9,#5F,#00,#98,#3C,#01,#06,#0F
+    db #05,#00,#0F,#00,#14,#08,#14,#01,#14,#47,#48,#46,#27,#00,#13,#00
+    db #05,#0E,#0F,#19,#0C,#0C,#29,#00,#26,#00,#09,#01,#09,#00,#05,#12
+    db #42,#00,#0F,#0E,#05,#04,#0B,#01,#09,#0E,#09,#42,#12,#05,#01,#16
+    db #49,#00,#41,#05,#05,#09,#03,#08,#10,#01,#01,#50,#13,#14,#0E,#0F
+    db #41,#5B,#10,#09,#13,#49,#01,#0E,#07,#46,#53,#00,#10,#0F,#00,#08
+    db #2D,#00,#3E,#08,#0B,#0F,#58,#51,#05,#51,#05,#29,#0D,#01,#32,#00
+    db #1B,#4C,#0D,#0F,#68,#6A,#66,#5E,#13,#5D,#7A,#71,#42,#45,#7C,#6F
+    db #06,#63,#7E,#4E,#7F,#29,#0B,#72,#01,#4D,#0E,#05,#08,#00,#4C,#4B
+    db #7D,#81,#82,#80,#65,#17,#09,#50,#41,#01,#25,#00,#4A,#4B,#86,#42
+    db #05,#5F,#8E,#42,#01,#12,#08,#42,#7B,#88,#92,#52,#8F,#73,#6D,#87
+    db #05,#13,#14,#00,#12,#09,#5A,#07,#0F,#0C,#14,#0F,#93,#8C,#01,#0B
+    db #13,#08,#3F,#09,#10,#08,#55,#19,#00,#06,#04,#05,#15,#12,#14,#4F
+    db #19,#3F,#8D,#4A,#05,#0B,#14,#09,#0D,#05,#03,#0F,#02,#09,#4C,#4A
+    db #13,#13,#0E,#00,#01,#09,#01,#00,#02,#05,#3F,#91,#0F,#54,#60,#47
+    db #78,#1C,#79,#1C,#04,#12,#B8,#57,#42,#42,#04,#00,#0F,#3F,#0B,#B3
+    db #09,#16,#05,#19,#60,#0F,#57,#01,#78,#1B,#79,#1B,#10,#5C,#10,#0C
+    db #06,#4E,#42,#14,#19,#43,#59,#1A,#4F,#42,#0F,#10,#00,#6E,#00,#9C
+    db #0D,#89,#0D,#A6,#0D,#C1,#0F,#12,#15,#0E,#5C,#01,#49,#0E,#02,#9D
+    db #0C,#0F,#3C,#6B,#0B,#19,#43,#4F,#D9,#10,#01,#10,#3C,#08,#05,#10
+    db #45,#0E,#59,#54,#0D,#4E,#14,#05,#9E,#05,#43,#4E,#A8,#BD,#17,#5D
+    db #00,#00,#13,#05,#B0,#12,#09,#0C,#0D,#46,#D8,#74,#3C,#53,#0E,#C8
+    db #C9,#69,#05,#54,#18,#45,#0F,#42,#5A,#00,#0F,#06,#42,#48,#58,#00
+    db #01,#14,#08,#74,#61,#A4,#F8,#61,#12,#0F,#C4,#13,#FB,#4D,#02,#98
+FIRST_T equ 42
 strtab_en:
     dw se_S_TITLE
     dw se_S_LANGHINT
@@ -353,6 +360,8 @@ strtab_en:
     dw se_S_NAME5
     dw se_S_NAME6
     dw se_S_NAME7
+    dw se_S_NAME8
+    dw se_S_NAME9
     dw se_S_INFO1
     dw se_S_INFO2
     dw se_S_INFO3
@@ -360,6 +369,8 @@ strtab_en:
     dw se_S_INFO5
     dw se_S_INFO6
     dw se_S_INFO7
+    dw se_S_INFO8
+    dw se_S_INFO9
     dw se_B_CALL
     dw se_B_CLEAR
     dw se_B_NEXT
@@ -371,23 +382,6 @@ strtab_en:
     dw se_B_SPACE
     dw se_B_PAUSE
     dw se_B_PAUSE2
-    dw se_T_START
-    dw se_T_CREDIT
-    dw se_T_DEFHDR
-    dw se_T_ENEHDR
-    dw se_T_CAST1
-    dw se_T_CAST2
-    dw se_T_CAST3
-    dw se_T_CAST4
-    dw se_T_CAST5
-    dw se_T_CAST6
-    dw se_T_CAST7
-    dw se_T_ENE1
-    dw se_T_ENE2
-    dw se_T_ENE3
-    dw se_T_CTRL
-    dw se_T_CTRL2
-    dw se_T_STORY
     dw se_B_STAGE
     dw se_B_WIN
     dw se_B_LOSE
@@ -409,6 +403,8 @@ strtab_gr:
     dw sg_S_NAME5
     dw sg_S_NAME6
     dw sg_S_NAME7
+    dw sg_S_NAME8
+    dw sg_S_NAME9
     dw sg_S_INFO1
     dw sg_S_INFO2
     dw sg_S_INFO3
@@ -416,6 +412,8 @@ strtab_gr:
     dw sg_S_INFO5
     dw sg_S_INFO6
     dw sg_S_INFO7
+    dw sg_S_INFO8
+    dw sg_S_INFO9
     dw sg_B_CALL
     dw sg_B_CLEAR
     dw sg_B_NEXT
@@ -427,179 +425,162 @@ strtab_gr:
     dw sg_B_SPACE
     dw sg_B_PAUSE
     dw sg_B_PAUSE2
-    dw sg_T_START
-    dw sg_T_CREDIT
-    dw sg_T_DEFHDR
-    dw sg_T_ENEHDR
-    dw sg_T_CAST1
-    dw sg_T_CAST2
-    dw sg_T_CAST3
-    dw sg_T_CAST4
-    dw sg_T_CAST5
-    dw sg_T_CAST6
-    dw sg_T_CAST7
-    dw sg_T_ENE1
-    dw sg_T_ENE2
-    dw sg_T_ENE3
-    dw sg_T_CTRL
-    dw sg_T_CTRL2
-    dw sg_T_STORY
     dw sg_B_STAGE
     dw sg_B_WIN
     dw sg_B_LOSE
 sg_T_CREDIT equ se_T_CREDIT
 se_S_TITLE:
-    db #C6,#14,#2B,#4B,#07,#47,#FD,#12,#00,#16,#12,#C7,#16,#B0,#FF
+    db #0C,#05,#14,#2B,#4D,#07,#47,#06,#D1,#00,#16,#FA,#15,#16,#96,#FF
 se_S_LANGHINT:
-    db #DF,#2B,#0C,#2B,#00,#FD,#12,#00,#07,#53,#6F,#FF
+    db #FC,#2B,#0C,#2B,#A2,#D1,#00,#07,#5C,#A8,#FF
 se_S_WAVE:
-    db #C8,#05,#FF
+    db #E5,#05,#FF
 se_S_FUNDS:
-    db #06,#B1,#04,#13,#FF
+    db #06,#D2,#04,#13,#FF
 se_S_HP:
     db #08,#10,#FF
 se_S_NEXT:
-    db #85,#18,#79,#FF
+    db #83,#18,#97,#FF
 se_S_GO:
-    db #C9,#07,#0F,#57,#00,#FF
+    db #E6,#07,#0F,#51,#00,#FF
 se_S_PAUSE:
-    db #00,#5B,#CA,#46,#FF
+    db #00,#62,#15,#13,#46,#FF
 se_S_READY:
-    db #00,#CB,#04,#7F,#FF
+    db #00,#D3,#04,#19,#00,#FF
 se_S_SELL:
-    db #31,#13,#6A,#13,#05,#58,#00,#34,#FF
+    db #31,#13,#75,#E7,#50,#00,#34,#FF
 se_S_NAME1:
-    db #03,#53,#B2,#FF
+    db #03,#5C,#D4,#FF
 se_S_NAME2:
-    db #19,#4F,#19,#4F,#FF
+    db #19,#53,#19,#53,#FF
 se_S_NAME3:
-    db #E0,#7A,#FF
+    db #FD,#A3,#FF
 se_S_NAME4:
-    db #10,#70,#70,#14,#FF
+    db #10,#AE,#13,#64,#FF
 se_S_NAME5:
-    db #E1,#15,#0C,#B3,#FF
+    db #03,#01,#15,#0C,#B9,#FF
 se_S_NAME6:
-    db #B5,#FF
+    db #D5,#55,#FF
 se_S_INFO1:
-    db #31,#1C,#6A,#03,#53,#49,#5C,#1E,#20,#4C,#08,#B1,#65,#0E,#B6,#9A,#06,#C6,#E2,#09
-    db #12,#34,#07,#0E,#04,#FF
+    db #31,#1C,#75,#03,#5C,#49,#AF,#1E,#20,#4C,#08,#D2,#14,#99,#00,#98,#06,#0C,#05,#52
+    db #E8,#34,#07,#0E,#04,#FF
 se_S_INFO2:
-    db #31,#1D,#6A,#19,#4F,#19,#5F,#20,#71,#75,#06,#06,#34,#6E,#14,#51,#13,#0C,#6B,#13
+    db #31,#1D,#75,#19,#53,#19,#6B,#20,#76,#68,#06,#06,#34,#6C,#14,#52,#13,#D6,#17,#13
     db #FF
 se_S_INFO3:
-    db #31,#1E,#6A,#E0,#04,#46,#22,#71,#5D,#CC,#72,#51,#03,#9A,#65,#E1,#0C,#13,#FF
+    db #31,#1E,#75,#FD,#04,#46,#22,#76,#67,#64,#9A,#52,#03,#98,#A9,#03,#01,#0C,#13,#FF
 se_S_INFO4:
-    db #31,#1F,#6A,#10,#70,#70,#79,#23,#71,#0C,#A7,#54,#51,#B7,#0C,#14,#4B,#9C,#68,#87
-    db #FF
+    db #31,#1F,#75,#10,#AE,#13,#64,#00,#23,#76,#0C,#01,#13,#55,#52,#AA,#0C,#14,#4D,#90
+    db #77,#A4,#FF
 se_S_INFO5:
-    db #31,#20,#6A,#E1,#15,#0C,#9B,#0F,#5C,#1C,#1C,#71,#B8,#18,#09,#03,#00,#03,#0C,#C7
-    db #04,#E2,#CB,#FF
+    db #31,#20,#75,#03,#01,#15,#0C,#B9,#00,#1C,#1C,#76,#9B,#18,#09,#03,#00,#03,#D6,#15
+    db #04,#52,#01,#D3,#FF
 se_S_INFO6:
-    db #31,#21,#6A,#B5,#00,#21,#71,#08,#87,#0C,#4B,#04,#86,#0F,#13,#51,#13,#A8,#A7,#08
-    db #FF
+    db #31,#21,#75,#D5,#55,#00,#21,#76,#08,#A4,#0C,#4D,#04,#01,#70,#13,#52,#13,#C5,#01
+    db #9E,#FF
 se_B_CALL:
-    db #02,#15,#E3,#04,#51,#48,#50,#00,#DF,#5C,#FD,#12,#00,#4D,#C8,#05,#FF
+    db #02,#15,#E9,#04,#52,#48,#4E,#00,#FC,#0E,#A2,#D1,#00,#4B,#E5,#05,#FF
 se_B_CLEAR:
-    db #C8,#46,#03,#C6,#01,#53,#04,#57,#00,#02,#60,#15,#4B,#16,#12,#C7,#16,#B0,#29,#FF
+    db #E5,#46,#03,#0C,#05,#90,#71,#00,#02,#57,#15,#4D,#16,#FA,#15,#16,#96,#29,#FF
 se_B_NEXT:
-    db #0E,#4C,#85,#18,#79,#C8,#46,#88,#FF
+    db #0E,#4C,#83,#18,#97,#E5,#46,#88,#FF
 se_B_FINAL:
-    db #06,#7B,#01,#0C,#00,#C8,#76,#08,#54,#46,#80,#CD,#4D,#B2,#0B,#13,#29,#FF
+    db #06,#5A,#01,#0C,#00,#E5,#72,#08,#55,#46,#AB,#EA,#4B,#D4,#0B,#13,#29,#FF
 se_B_NEWDEF:
-    db #9D,#85,#17,#00,#7A,#B9,#04,#54,#00,#0A,#0F,#7B,#4B,#4D,#E5,#07,#7C,#FF
+    db #B1,#83,#17,#00,#A3,#C6,#04,#55,#00,#0A,#0F,#5A,#4D,#4B,#16,#89,#01,#07,#73,#FF
 se_B_QUIT:
-    db #11,#15,#09,#79,#48,#09,#4B,#07,#01,#B7,#2A,#FF
+    db #11,#15,#09,#97,#48,#09,#4D,#07,#01,#AA,#2A,#FF
 se_B_SPACE:
-    db #DF,#13,#5B,#E6,#2E,#00,#CF,#53,#FF
+    db #FC,#13,#62,#03,#46,#2E,#A2,#09,#5C,#FF
 se_B_PAUSE:
-    db #5B,#CA,#59,#FF
+    db #62,#15,#13,#58,#FF
 se_B_PAUSE2:
-    db #08,#4C,#03,#60,#65,#0E,#15,#46,#C9,#00,#B0,#03,#4C,#11,#15,#09,#14,#FF
+    db #08,#4C,#03,#57,#14,#5A,#15,#46,#E6,#00,#96,#03,#4C,#11,#15,#09,#14,#FF
 sg_S_TITLE:
-    db #9E,#CD,#BA,#02,#10,#4A,#02,#05,#42,#FF
+    db #8A,#EA,#D7,#02,#10,#4F,#B2,#42,#FF
 sg_S_LANGHINT:
-    db #9E,#48,#69,#46,#2B,#0C,#2B,#00,#BA,#01,#3C,#3C,#7D,#56,#FF
+    db #8A,#48,#C7,#46,#2B,#0C,#2B,#00,#D7,#01,#3C,#3C,#9F,#59,#FF
 sg_S_WAVE:
-    db #D0,#FF
+    db #EB,#FF
 sg_S_FUNDS:
-    db #02,#10,#4A,#02,#05,#42,#FF
+    db #02,#10,#4F,#B2,#42,#FF
 sg_S_HP:
     db #1A,#45,#08,#FF
 sg_S_NEXT:
-    db #E7,#C9,#FF
+    db #42,#46,#E6,#FF
 sg_S_GO:
-    db #9E,#0D,#76,#00,#FF
+    db #8A,#0D,#72,#00,#FF
 sg_S_PAUSE:
-    db #00,#9E,#19,#42,#6C,#FF
+    db #00,#8A,#19,#42,#84,#FF
 sg_S_READY:
-    db #00,#05,#B8,#09,#68,#FF
+    db #00,#05,#9B,#09,#77,#FF
 sg_S_SELL:
-    db #31,#13,#6A,#41,#4A,#3F,#9D,#34,#FF
+    db #31,#13,#75,#41,#4F,#3F,#B1,#34,#FF
 sg_S_NAME1:
-    db #0B,#7E,#E8,#E9,#FF
+    db #0B,#A0,#A9,#70,#42,#FF
 sg_S_NAME2:
-    db #EA,#EA,#FF
+    db #EC,#EC,#FF
 sg_S_NAME3:
-    db #D2,#08,#FF
+    db #ED,#08,#FF
 sg_S_NAME4:
-    db #44,#42,#42,#69,#FF
+    db #44,#BA,#C7,#FF
 sg_S_NAME5:
-    db #56,#EB,#09,#FF
+    db #EE,#09,#FF
 sg_S_NAME6:
-    db #BE,#01,#7E,#42,#FF
+    db #DA,#0E,#DB,#91,#FF
 sg_S_INFO1:
-    db #31,#1C,#6A,#0B,#7E,#E8,#BF,#1E,#20,#4C,#A9,#43,#6F,#09,#E2,#05,#5B,#42,#34,#C0
-    db #FF
+    db #31,#1C,#75,#0B,#A0,#A9,#70,#56,#1E,#20,#4C,#A5,#43,#A8,#09,#52,#01,#05,#62,#42
+    db #34,#DC,#FF
 sg_S_INFO2:
-    db #31,#1D,#6A,#EA,#BA,#20,#71,#5E,#3C,#0B,#4A,#5B,#51,#43,#10,#50,#01,#10,#52,#FF
+    db #31,#1D,#75,#EC,#D7,#20,#76,#74,#3C,#0B,#4F,#62,#52,#43,#10,#4E,#DB,#60,#FF
 sg_S_INFO3:
-    db #31,#1E,#6A,#D2,#6C,#22,#71,#61,#69,#0F,#7D,#51,#0B,#5D,#65,#56,#FF
+    db #31,#1E,#75,#ED,#84,#22,#76,#66,#9B,#9F,#52,#0B,#67,#A9,#59,#FF
 sg_S_INFO4:
-    db #31,#1F,#6A,#44,#42,#42,#69,#00,#23,#71,#3F,#52,#1A,#C1,#00,#56,#62,#3E,#45,#5B
-    db #0B,#45,#0E,#FF
+    db #31,#1F,#75,#44,#BA,#42,#97,#23,#76,#3F,#60,#1A,#DD,#00,#59,#5E,#3E,#45,#62,#0B
+    db #DE,#FF
 sg_S_INFO5:
-    db #31,#20,#6A,#56,#EB,#6D,#1C,#1C,#71,#B8,#40,#09,#0B,#47,#42,#19,#0E,#85,#43,#0F
-    db #51,#63,#5D,#0F,#18,#08,#FF
+    db #31,#20,#75,#EE,#54,#1C,#1C,#76,#9B,#40,#09,#0B,#47,#42,#19,#0E,#83,#43,#0F,#52
+    db #5F,#67,#0F,#18,#08,#FF
 sg_S_INFO6:
-    db #31,#21,#6A,#BE,#01,#7E,#55,#21,#71,#63,#49,#EC,#0E,#49,#0B,#AA,#29,#FF
+    db #31,#21,#75,#DA,#0E,#01,#A0,#56,#21,#76,#5F,#49,#EF,#0E,#49,#0B,#CA,#29,#FF
 sg_B_CALL:
-    db #18,#65,#E7,#D3,#9E,#62,#5C,#BA,#4E,#D0,#FF
+    db #18,#14,#5B,#46,#DF,#8A,#5E,#AF,#D7,#4A,#EB,#FF
 sg_B_CLEAR:
-    db #4E,#D0,#00,#01,#41,#0F,#0B,#10,#AA,#48,#81,#0D,#41,#60,#AA,#29,#FF
+    db #4A,#EB,#00,#01,#41,#0F,#0B,#10,#CA,#48,#81,#0D,#41,#57,#CA,#29,#FF
 sg_B_NEXT:
-    db #0E,#4C,#05,#41,#0F,#C2,#47,#D0,#00,#14,#45,#5B,#FF
+    db #0E,#4C,#05,#41,#0F,#E0,#47,#EB,#00,#14,#45,#62,#FF
 sg_B_FINAL:
-    db #ED,#7D,#0B,#47,#D0,#57,#C1,#18,#60,#49,#6D,#62,#B2,#0B,#42,#29,#FF
+    db #E1,#9F,#0B,#47,#EB,#51,#DD,#18,#57,#49,#54,#5E,#D4,#0B,#42,#29,#FF
 sg_B_NEWDEF:
-    db #85,#BF,#01,#0D,#19,#0E,#E8,#BF,#89,#D4,#5D,#C3,#FF
+    db #83,#0F,#56,#01,#0D,#19,#0E,#A9,#70,#56,#42,#4A,#F0,#67,#0F,#29,#FF
 sg_B_QUIT:
-    db #05,#40,#0F,#3D,#BF,#01,#41,#47,#4E,#9E,#09,#18,#0E,#09,#3D,#09,#28,#FF
+    db #05,#40,#0F,#3D,#0F,#56,#01,#41,#47,#4A,#8A,#09,#18,#0E,#09,#3D,#09,#28,#FF
 sg_B_SPACE:
-    db #9E,#48,#69,#46,#13,#5B,#E6,#2E,#00,#CF,#53,#FF
+    db #8A,#48,#C7,#46,#13,#62,#03,#46,#2E,#A2,#09,#5C,#FF
 sg_B_PAUSE:
-    db #9E,#19,#42,#08,#FF
+    db #8A,#19,#42,#08,#FF
 sg_B_PAUSE2:
-    db #08,#4C,#42,#19,#85,#18,#05,#5F,#C9,#00,#B0,#03,#4C,#05,#40,#0F,#3D,#E9,#FF
+    db #08,#4C,#42,#19,#83,#18,#05,#6B,#E6,#00,#96,#03,#4C,#05,#40,#0F,#3D,#F1,#FF
 
-STAGE_AREA equ #2E44
-STAGE_SIZE equ 4540
+STAGE_AREA equ #2E2E
+STAGE_SIZE equ 4562
 tilemap equ STAGE_AREA+0
 cellmap equ STAGE_AREA+280
 sack_cells equ STAGE_AREA+560
 stage_flag equ STAGE_AREA+580
 stage_unlock equ STAGE_AREA+582
-path_ground equ STAGE_AREA+587
-path_air equ STAGE_AREA+645
-wave_table equ STAGE_AREA+664
-se_B_STAGE equ STAGE_AREA+763
-sg_B_STAGE equ STAGE_AREA+774
-se_B_WIN equ STAGE_AREA+788
-sg_B_WIN equ STAGE_AREA+804
-se_B_LOSE equ STAGE_AREA+822
-sg_B_LOSE equ STAGE_AREA+831
-tiles equ STAGE_AREA+844
+path_ground equ STAGE_AREA+588
+path_air equ STAGE_AREA+652
+wave_table equ STAGE_AREA+671
+se_B_STAGE equ STAGE_AREA+770
+sg_B_STAGE equ STAGE_AREA+784
+se_B_WIN equ STAGE_AREA+800
+sg_B_WIN equ STAGE_AREA+819
+se_B_LOSE equ STAGE_AREA+838
+sg_B_LOSE equ STAGE_AREA+851
+tiles equ STAGE_AREA+866
 
-EXTRA_AREA equ #3E50
+EXTRA_AREA equ #3CD0
 music_durs:
     db #06,#0C,#12,#18,#30
 music_a_notes:
@@ -646,6 +627,8 @@ SFX_WAVE equ 11
 SFX_CRUSH equ 12
 SFX_MOVE equ 13
 SFX_LYRA equ 14
+SFX_SLING equ 15
+SFX_BELL equ 16
 sfx_table:
     dw sfx_0
     dw sfx_1
@@ -662,8 +645,11 @@ sfx_table:
     dw sfx_12
     dw sfx_13
     dw sfx_14
+    dw sfx_15
+    dw sfx_16
 sfx_prio:
-    db #01,#01,#01,#01,#02,#02,#03,#06,#04,#04,#04,#07,#05,#00,#01
+    db #01,#01,#01,#01,#02,#02,#03,#06,#04,#04,#04,#07,#05,#00,#01,#01
+    db #02
 sfx_0:
     db #0D,#06,#00,#00,#0A,#09,#00,#00,#07,#0C,#00,#00,#04,#0F,#00,#00
     db #FF

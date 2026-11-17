@@ -706,16 +706,21 @@ pair_ptr:
 
 ; A = string id -> HL
 get_str:
-        ld l,a
+        ld de,strtab_en
+        cp FIRST_T              ; the title's own (T_*): their table is in the overlay
+        jr c,.r
+        sub FIRST_T
+        ld de,tstrtab_en
+.r:     ld l,a
         ld h,0
         add hl,hl
+        add hl,de
         ld a,(lang)
         or a
-        ld de,strtab_en
         jr z,.e
-        ld de,strtab_gr
-.e:     add hl,de
-        ld a,(hl)
+        ld de,strtab_gr-strtab_en
+        add hl,de
+.e:     ld a,(hl)
         inc hl
         ld h,(hl)
         ld l,a

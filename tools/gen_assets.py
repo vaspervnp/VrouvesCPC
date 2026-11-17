@@ -23,7 +23,7 @@ OUT_EXTRA = os.path.join(ROOT, "src", "gen", "extra.asm")
 # the Lyra area: the top of the stage area, in the stage files that have the
 # Lyra player (his code, pictures, sound and texts: main.asm); their tiles
 # stop below it
-EXTRA_ROOM = 9 * 48
+EXTRA_ROOM = 17 * 48
 PREVIEW = os.path.join(ROOT, "build", "preview")
 
 MW, MH = 20, 14          # map size in cells
@@ -293,6 +293,335 @@ GROUND10 = [(0, 1), (12, 1), (12, 4), (2, 4), (2, 7), (12, 7), (12, 10), (2, 10)
             (2, 12), (17, 12), (17, 6)]
 AIR10 = [(0, 12), (6, 6), (17, 6)]
 SACKS10 = SACKS2
+
+
+# ------------------------------------------------------------------ stages 10-19
+# from the Android version (VrouvesAndroid/tools/make_stages.py): between the olive
+# press and the wedding.  New map cells, where only Psssst can go: '~' water,
+# 'H' beehive, 'V' vine, 'B' hay bale, 'M' windmill
+MAP_DAIRY = [
+    "KKKKKP..T...S....T.T",
+    "KKKKKP.....R.....Y..",
+    "KKKKKP..............",
+    "KKKKKP....S........T",
+    "PPPPPP....WWWW....S.",
+    "T.T................T",
+    "....R..T...S........",
+    "T......WWWW........T",
+    "..S...............R.",
+    "T..................T",
+    ".........T....S.....",
+    "T.....WWWWW.....R..T",
+    "....................",
+    "T.S..T...R...T..S..T",
+]
+GROUND_DAIRY = [(19, 12), (3, 12), (3, 9), (16, 9), (16, 2), (7, 2), (7, 4), (6, 4)]
+AIR_DAIRY = [(19, 6), (14, 11), (9, 11), (6, 8), (6, 4)]
+SACKS_DAIRY = [(5, 1), (5, 3), (1, 4), (3, 4), (5, 4)]
+WAVES_DAIRY = [
+    [(2, 7, 40)],
+    [(1, 13, 20), (2, 4, 31)],
+    [(2, 10, 26), (1, 9, 18)],
+    [(2, 10, 22), (3, 4, 53)],
+    [(1, 17, 13), (2, 9, 20)],
+    [(2, 14, 16), (3, 5, 42)],
+    [(1, 19, 11), (2, 13, 15), (3, 4, 35)],
+    [(3, 8, 31), (2, 14, 13), (1, 15, 10)],
+    [(1, 22, 9), (2, 15, 12), (3, 8, 26)],
+    [(2, 19, 10), (1, 20, 8), (3, 19, 15)],
+]
+
+MAP_WATERMILL = [
+    "T..Y..T...~...T...YT",
+    "..G.......~.........",
+    "..........~.....S..T",
+    "T.........~....R....",
+    "..T.......~~........",
+    "T.S.......~~..T....Y",
+    "...................T",
+    "T....T.......S.....T",
+    "....R.....J....S...T",
+    "T....S.....T..PKKKKK",
+    "..............PKKKKK",
+    "T.R.......T...PKKKKK",
+    "Y..S..........PKKKKK",
+    "T..T..Y..T....PPPPPP",
+]
+GROUND_WATERMILL = [(0, 2), (7, 2), (7, 6), (2, 6), (2, 10), (11, 10), (11, 12), (13, 12)]
+GROUND2_WATERMILL = [(19, 1), (13, 1), (13, 4), (18, 4), (18, 6), (2, 6), (2, 10), (11, 10), (11, 12), (13, 12)]
+AIR_WATERMILL = [(0, 0), (7, 7), (7, 12), (13, 12)]
+SACKS_WATERMILL = [(14, 10), (14, 11), (14, 13), (16, 13), (18, 13)]
+WAVES_WATERMILL = [
+    [(2, 7, 38)],
+    [(1, 14, 19), (2, 4, 29)],
+    [(2, 11, 25), (1, 10, 17)],
+    [(2, 11, 21), (3, 4, 50)],
+    [(1, 18, 13), (2, 10, 19)],
+    [(2, 14, 16), (3, 5, 40)],
+    [(1, 20, 10), (2, 14, 15), (3, 4, 34)],
+    [(3, 9, 29), (2, 15, 13), (1, 16, 9)],
+    [(1, 23, 8), (2, 16, 12), (3, 9, 25)],
+    [(2, 20, 9), (1, 22, 7), (3, 20, 15)],
+]
+
+MAP_CAVE = [
+    "R.RR..RKKKKKKRR.R..R",
+    "..R...RKKKKKKR..R.T.",
+    "T...R.RKKKKKKR.R....",
+    "..R....PPPPPP....R..",
+    "R..................T",
+    "..R..R............R.",
+    "T..................R",
+    "..R...R....R.......R",
+    "R..........R....R...",
+    ".............R....R.",
+    "R.R..........R.....T",
+    "....................",
+    "..R..T....R....T..R.",
+    "R..T..R..R.R..T..R.R",
+]
+GROUND_CAVE = [(19, 11), (10, 11), (10, 9), (3, 9), (3, 6), (16, 6), (16, 4), (13, 4), (13, 3)]
+GROUND2_CAVE = [(0, 11), (10, 11), (10, 9), (3, 9), (3, 6), (16, 6), (16, 4), (13, 4), (13, 3)]
+AIR_CAVE = [(0, 13), (4, 9), (15, 9), (10, 4)]
+SACKS_CAVE = [(7, 3), (8, 3), (10, 3), (11, 3), (12, 3)]
+WAVES_CAVE = [
+    [(2, 8, 36)],
+    [(1, 14, 18), (2, 5, 28)],
+    [(2, 11, 24), (1, 10, 16)],
+    [(2, 11, 20), (3, 5, 48)],
+    [(1, 19, 12), (2, 10, 18)],
+    [(2, 15, 15), (3, 6, 38)],
+    [(1, 21, 10), (2, 14, 14), (3, 5, 32)],
+    [(3, 10, 28), (2, 16, 12), (1, 17, 9)],
+    [(1, 25, 8), (2, 17, 11), (3, 10, 24)],
+    [(2, 21, 9), (1, 23, 7), (3, 21, 14)],
+]
+
+MAP_MONASTERY = [
+    "T..Y..T..Y..T..Y..T.",
+    ".G.....T.....R....Y.",
+    "T...S.....Y....C...T",
+    "Y..................T",
+    "....................",
+    "T......KKKKK.......T",
+    "Y......KKKKK..R....Y",
+    "T......KKKKK.......T",
+    "......PPPPPPP.......",
+    "T....T.........G...T",
+    "....................",
+    "T.Y.....T....S.....T",
+    "....................",
+    "T..T..Y..T..Y..T..YT",
+]
+GROUND_MONASTERY = [(0, 12), (17, 12), (17, 3), (3, 3), (3, 10), (13, 10), (13, 8)]
+AIR_MONASTERY = [(19, 13), (15, 9), (15, 4), (13, 6), (13, 8)]
+SACKS_MONASTERY = [(6, 8), (7, 8), (9, 8), (11, 8), (12, 8)]
+WAVES_MONASTERY = [
+    [(2, 8, 36)],
+    [(1, 14, 18), (2, 5, 28)],
+    [(2, 11, 24), (1, 10, 16)],
+    [(2, 11, 20), (3, 5, 48)],
+    [(1, 19, 12), (2, 10, 18)],
+    [(2, 15, 15), (3, 6, 38)],
+    [(1, 21, 10), (2, 14, 14), (3, 5, 32)],
+    [(3, 10, 28), (2, 16, 12), (1, 17, 9)],
+    [(1, 25, 8), (2, 17, 11), (3, 10, 24)],
+    [(2, 21, 9), (1, 23, 7), (3, 21, 14)],
+]
+
+MAP_APIARY = [
+    "T...T.H.Y..H.T..H..T",
+    "...............H..Y.",
+    "T..H....H.......H..T",
+    "......H....H.......H",
+    "H..............H..T.",
+    "...H.....H....PKKKKK",
+    "T.....H.......PKKKKK",
+    "...........H..PKKKKK",
+    "H.....H.......PKKKKK",
+    "...H.....H...HPPPPPP",
+    "T............T....H.",
+    "......H.....H...T...",
+    ".............H..H..T",
+    "T..Y..T..Y..T..Y..YT",
+]
+GROUND_APIARY = [(1, 0), (1, 12), (4, 12), (4, 1), (7, 1), (7, 12), (10, 12), (10, 1), (13, 1), (13, 6)]
+AIR_APIARY = [(0, 13), (6, 7), (11, 2), (17, 2), (13, 6)]
+SACKS_APIARY = [(14, 5), (14, 7), (14, 9), (16, 9), (18, 9)]
+WAVES_APIARY = [
+    [(2, 8, 36)],
+    [(1, 15, 18), (2, 5, 28)],
+    [(2, 12, 24), (1, 11, 16)],
+    [(2, 12, 20), (3, 5, 48)],
+    [(1, 20, 12), (2, 11, 18)],
+    [(2, 16, 15), (3, 6, 38)],
+    [(1, 22, 10), (2, 15, 14), (3, 5, 32)],
+    [(3, 10, 28), (2, 17, 12), (1, 18, 9)],
+    [(1, 26, 8), (2, 18, 11), (3, 10, 24)],
+    [(2, 22, 9), (1, 24, 7), (3, 22, 14)],
+]
+
+MAP_DISTILLERY = [
+    "T..Y...T..J...T..Y.T",
+    "....................",
+    "T.....G......J.....T",
+    "..J..T....T......T..",
+    "T..................T",
+    ".....J...T....J.....",
+    "T.......G.....T...JT",
+    "....................",
+    "T.J....T......J....T",
+    "..T...J...........J.",
+    "T......PPPPPPP.....T",
+    "..T....PKKKKKP..J...",
+    "T..J...PKKKKKP....YT",
+    "Y..T...PKKKKKP..T..Y",
+]
+GROUND_DISTILLERY = [(0, 1), (18, 1), (18, 4), (2, 4), (2, 7), (16, 7), (16, 10), (14, 10)]
+AIR_DISTILLERY = [(0, 0), (0, 3), (7, 10), (14, 10)]
+SACKS_DISTILLERY = [(7, 11), (7, 13), (13, 11), (13, 13), (13, 10)]
+WAVES_DISTILLERY = [
+    [(2, 8, 34)],
+    [(1, 15, 17), (2, 5, 27)],
+    [(2, 12, 23), (1, 11, 15)],
+    [(2, 12, 19), (3, 5, 46)],
+    [(1, 20, 11), (2, 11, 17)],
+    [(2, 16, 14), (3, 6, 36)],
+    [(1, 22, 10), (2, 15, 13), (3, 5, 30)],
+    [(3, 10, 27), (2, 17, 11), (1, 18, 9)],
+    [(1, 26, 8), (2, 18, 10), (3, 10, 23)],
+    [(2, 22, 9), (1, 24, 7), (3, 22, 13)],
+]
+
+MAP_WINDMILLS = [
+    "T..M.....T..M.PKKKKK",
+    "..............PKKKKK",
+    "T...R..M......PKKKKK",
+    "...T......R...PKKKKK",
+    "M.......M.....PPPPPP",
+    "...T...R...T.....M..",
+    "T.........M...R....T",
+    "..M.......T.....M...",
+    "T..R..........R....T",
+    ".....M.......M....R.",
+    "................T...",
+    "T....T..M.......M..T",
+    ".................R..",
+    "T..M..T..R..T..M..T.",
+]
+GROUND_WINDMILLS = [(0, 9), (2, 9), (2, 12), (13, 12), (13, 10), (10, 10), (10, 8), (7, 8), (7, 6), (4, 6), (4, 4), (1, 4), (1, 1), (12, 1), (12, 3), (13, 3)]
+AIR_WINDMILLS = [(12, 13), (4, 5), (6, 3), (13, 3)]
+SACKS_WINDMILLS = [(14, 0), (14, 2), (15, 4), (17, 4), (19, 4)]
+WAVES_WINDMILLS = [
+    [(2, 8, 34)],
+    [(1, 16, 17), (2, 5, 27)],
+    [(2, 13, 23), (1, 12, 15)],
+    [(2, 13, 19), (3, 5, 46)],
+    [(1, 21, 11), (2, 12, 17)],
+    [(2, 17, 14), (3, 6, 36)],
+    [(1, 23, 10), (2, 16, 13), (3, 5, 30)],
+    [(3, 10, 27), (2, 18, 11), (1, 19, 9)],
+    [(1, 27, 8), (2, 19, 10), (3, 10, 23)],
+    [(2, 23, 9), (1, 25, 7), (3, 23, 13)],
+]
+
+MAP_THRESHING = [
+    "T..B..T..YY..T..B..T",
+    "....................",
+    "T.B..T...G...B......",
+    "....................",
+    "...B..T..YY..T.....T",
+    "........KKKK..B.....",
+    "T.......KKKK.......T",
+    ".....B..PKKP.G......",
+    "T.......PPPP.......T",
+    ".....G...BB..T......",
+    "Y..................Y",
+    "....B..T..YY..T..B..",
+    "T..................T",
+    "Y..T..B..T..T..B..TY",
+]
+GROUND_THRESHING = [(0, 1), (18, 1), (18, 12), (1, 12), (1, 3), (16, 3), (16, 10), (3, 10), (3, 5), (6, 5), (6, 8), (7, 8)]
+AIR_THRESHING = [(19, 13), (14, 8), (7, 8)]
+SACKS_THRESHING = [(8, 7), (11, 7), (8, 8), (10, 8), (11, 8)]
+WAVES_THRESHING = [
+    [(2, 8, 34)],
+    [(1, 15, 17), (2, 5, 27)],
+    [(2, 12, 23), (1, 11, 15)],
+    [(2, 12, 19), (3, 5, 46)],
+    [(1, 20, 11), (2, 11, 17)],
+    [(2, 16, 14), (3, 6, 36)],
+    [(1, 22, 10), (2, 15, 13), (3, 5, 30)],
+    [(3, 10, 27), (2, 17, 11), (1, 18, 9)],
+    [(1, 26, 8), (2, 18, 10), (3, 10, 23)],
+    [(2, 22, 9), (1, 24, 7), (3, 22, 13)],
+]
+
+MAP_VINEYARD = [
+    "T..Y..T..T..Y..T..YT",
+    "....T...............",
+    "Y.....T..VVV.VVV.T..",
+    "..T.................",
+    "PPPPP.T..VVV.VVV...Y",
+    "KKKKP...............",
+    "KKKKP.....T....J...T",
+    "KKKKP..T.....T......",
+    "KKKKP...............",
+    "PPPPP.Y..VVV.VVV...T",
+    "..T.................",
+    "Y.....T..VVV.VVV.T..",
+    "....T...............",
+    "T..Y..T..T..Y..T..YT",
+]
+GROUND_VINEYARD = [(19, 1), (7, 1), (7, 3), (17, 3), (17, 5), (5, 5)]
+GROUND2_VINEYARD = [(19, 12), (7, 12), (7, 10), (17, 10), (17, 8), (5, 8)]
+AIR_VINEYARD = [(19, 13), (13, 7), (5, 7)]
+SACKS_VINEYARD = [(4, 5), (4, 6), (4, 8), (2, 4), (2, 9)]
+WAVES_VINEYARD = [
+    [(2, 8, 32)],
+    [(1, 16, 16), (2, 5, 25)],
+    [(2, 13, 22), (1, 12, 14)],
+    [(2, 13, 18), (3, 5, 43)],
+    [(1, 21, 11), (2, 12, 16)],
+    [(2, 17, 14), (3, 6, 34)],
+    [(1, 23, 9), (2, 16, 13), (3, 5, 29)],
+    [(3, 10, 25), (2, 18, 11), (1, 19, 8)],
+    [(1, 27, 7), (2, 19, 10), (3, 10, 22)],
+    [(2, 23, 8), (1, 25, 6), (3, 23, 13)],
+]
+
+MAP_SUMMIT = [
+    "R.R.R..RKKKKR..R.R.R",
+    "..R..R..KKKK..R..R..",
+    "R....R.RKKKKR.R....R",
+    "..R....PPPPPP..R..R.",
+    "R............R.....R",
+    ".....R....R....R..G.",
+    "R..................R",
+    "..R..R...R...R..R...",
+    "R..................R",
+    "....R...R....R..R...",
+    "R..................R",
+    "..R..R...R..R...R...",
+    "...................R",
+    "R..R..R..R..R..R..RR",
+]
+GROUND_SUMMIT = [(0, 12), (17, 12), (17, 10), (2, 10), (2, 8), (17, 8), (17, 6), (2, 6), (2, 4), (9, 4)]
+AIR_SUMMIT = [(18, 13), (9, 4)]
+SACKS_SUMMIT = [(7, 3), (8, 3), (10, 3), (11, 3), (12, 3)]
+WAVES_SUMMIT = [
+    [(2, 9, 32)],
+    [(1, 16, 16), (2, 6, 25)],
+    [(2, 13, 22), (1, 12, 14)],
+    [(2, 13, 18), (3, 6, 43)],
+    [(1, 22, 11), (2, 12, 16)],
+    [(2, 18, 14), (3, 7, 34)],
+    [(1, 24, 9), (2, 16, 13), (3, 6, 29)],
+    [(3, 11, 25), (2, 19, 11), (1, 20, 8)],
+    [(1, 29, 7), (2, 20, 10), (3, 11, 22)],
+    [(2, 24, 8), (1, 26, 6), (3, 24, 13)],
+]
+
 
 
 def carve_path(grid, wps):
@@ -1441,15 +1770,15 @@ def table_cell(cv, grid, c, r):
     cv.set(x0 + 2, y0 + 6, R)
     cv.set(x0 + 2, y0 + 7, r_)
     # the guests: heads seen from above, hair and a shoulder of their clothes
-    for k, gx in enumerate((1, 5)):
-        hair = "krkyke"[(c + r + k) % 6]
-        cloth = "BRkeBp"[(c * 2 + r + k) % 6]
+    for k, gx in enumerate((1, 5)):     # few kinds of guest: every tile costs room
+        hair = "kyrk"[((c + r) % 2) * 2 + k]
+        cloth = "BRkp"[((c + r) % 2) * 2 + k]
         cv.set(x0 + gx, y0 + 0, art.CH[hair])
         cv.set(x0 + gx + 1, y0 + 0, art.CH[hair])
         cv.set(x0 + gx, y0 + 1, art.CH[cloth])
         cv.set(x0 + gx + 1, y0 + 1, s)
     for k, gx in enumerate((3,)):
-        hair = "ykrk"[(c + r) % 4]
+        hair = "yk"[(c + r) % 2]
         cv.set(x0 + gx, y0 + 10, s)
         cv.set(x0 + gx + 1, y0 + 10, art.CH[hair])
         cv.set(x0 + gx, y0 + 11, art.CH[hair])
@@ -1637,6 +1966,422 @@ def wedding_base(cv, with_sacks):
     wedding_yard(cv, with_sacks)
 
 
+# ------------------------------------------------------------------ stages 10-19: decorations
+BEEHIVE = [
+    "........",
+    "..y.....",
+    ".kkkkkk.",
+    ".kWWWWk.",
+    ".kyyyyk.",
+    ".kWWWWk.",
+    ".kWkkWk.",
+    ".kWWWWk.",
+    ".kyyyyk.",
+    ".kkkkkk.",
+    "..k..k..",
+    "........",
+]
+VINE = [
+    "...r....",
+    ".llrll..",
+    "lltrltl.",
+    ".ltrtll.",
+    "..lrl...",
+    ".BBrBB..",
+    ".BBrBB..",
+    "..BrB...",
+    "...r....",
+    "...r....",
+    "..rrr...",
+    "........",
+]
+HAY = [
+    "........",
+    "........",
+    "...kkk..",
+    "..kyoyk.",
+    ".kyoyoyk",
+    ".koyoyok",
+    ".kyoyoyk",
+    ".koyoyok",
+    "..kyoyk.",
+    "...kkk..",
+    "........",
+    "........",
+]
+WINDMILL = [
+    "W..r..W.",
+    ".W.r.W..",
+    "..WrW...",
+    "rrrkrrrr",
+    "..WkW...",
+    ".WkkkW..",
+    "W.kWkW.W",
+    "..kWWk..",
+    "..kWWk..",
+    "..kWBk..",
+    "..kWBk..",
+    "..kkkk..",
+]
+MILK = [".kkk.", "keWek", "kWWWk", "kWeWk", "kWWWk", "kkkkk"]
+BARREL = [".kkkk.", "krrrrk", "kkkkkk", "krrrrk", "krrrrk", "kkkkkk", "krrrrk", ".kkkk."]
+CHEESE = ["kkkk", "kyyk", "kkkk"]
+JAR_S = [".kk.", "korr", "korr", ".kk."]
+
+
+def water_cell(cv, grid, c, r):
+    """a stream: ripples on blue, its banks where the next cell is dry"""
+    K, B, C, Wh, r_ = (art.CH[k] for k in "kBcWr")
+    x0, y0 = c * TW, r * TH
+    cv.rect(x0, y0, x0 + TW - 1, y0 + TH - 1, B)
+    for (x, y) in ((1, 2), (2, 2), (5, 6), (6, 6), (2, 9), (3, 9)):
+        cv.set(x0 + x, y0 + y, C)
+    cv.set(x0 + 6, y0 + 2, Wh)
+
+    def w(cc, rr):
+        return not (0 <= cc < MW and 0 <= rr < MH) or grid[rr][cc] == '~'
+    if not w(c - 1, r):
+        for y in range(TH):
+            cv.set(x0, y0 + y, r_)
+    if not w(c + 1, r):
+        for y in range(TH):
+            cv.set(x0 + TW - 1, y0 + y, r_)
+
+
+def wall_w(cv, x0, y0, x1, y1):
+    """a whitewashed wall with a black edge"""
+    cv.rect(x0, y0, x1, y1, art.CH['k'])
+    cv.rect(x0 + 1, y0, x1 - 1, y1, art.CH['W'])
+
+
+def wall_s(cv, x0, y0, x1, y1):
+    """rough grey stone, as at the olive press"""
+    K, E, Wh = art.CH['k'], art.CH['e'], art.CH['W']
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            row = (y - y0) // 4
+            cv.set(x, y, K if (y - y0) % 4 == 3 or (x + row * 3) % 8 == 7 else
+                   Wh if (x * 3 + y) % 17 == 0 else E)
+    for y in range(y0, y1 + 1):
+        cv.set(x0, y, K)
+        cv.set(x1, y, K)
+
+
+def roof_t(cv, x0, y0, x1, y1):
+    """red tiles"""
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, art.CH['r'] if (y - y0) % 3 == 2 else art.CH['R'])
+    for x in range(x0, x1 + 1):
+        cv.set(x, y1 + 1, art.CH['k'])
+
+
+def sign(cv, x0, y0, x1, text, bg='B'):
+    cv.rect(x0, y0, x1, y0 + 9, art.CH['k'])
+    cv.rect(x0 + 1, y0 + 1, x1 - 1, y0 + 8, art.CH[bg])
+    cv.text(text, (x0 + x1 + 2) // 2 - len(text) * 2, y0 + 2, art.CH['W'])
+
+
+def door(cv, xc, y0, y1, w=3):
+    cv.rect(xc - w, y0, xc + w, y1, art.CH['k'])
+    cv.rect(xc - w + 1, y0 + 1, xc + w - 1, y1, art.CH['r'])
+
+
+def pole(cv, flag):
+    fx, fy = flag[0] * 2, flag[1]
+    for y in range(fy, fy + 15):
+        cv.set(fx, y, art.CH['k'] if y == fy + 14 else art.CH['r'])
+
+
+def yard(cv, cells, style="stone"):
+    if style == "stone":
+        stone_floor(cv, cells)
+        return
+    O, r_, y_ = art.CH['o'], art.CH['r'], art.CH['y']
+    for (c, r) in cells:
+        x0, y0 = c * TW, r * TH
+        cv.rect(x0, y0, x0 + TW - 1, y0 + TH - 1, O)
+        for (x, y) in ((1, 2), (5, 5), (2, 9), (6, 10)):
+            cv.set(x0 + x, y0 + y, r_)
+        cv.set(x0 + 4, y0 + 7, y_)
+
+
+def edge(cv, cells):
+    """a black line round a set of cells, where they meet the rest"""
+    K = art.CH['k']
+    s = set(cells)
+    for (c, r) in cells:
+        x0, y0 = c * TW, r * TH
+        if (c, r - 1) not in s and r > 0:
+            for x in range(TW):
+                cv.set(x0 + x, y0, K)
+        if (c, r + 1) not in s and r < MH - 1:
+            for x in range(TW):
+                cv.set(x0 + x, y0 + TH - 1, K)
+        if (c - 1, r) not in s and c > 0:
+            for y in range(TH):
+                cv.set(x0, y0 + y, K)
+        if (c + 1, r) not in s and c < MW - 1:
+            for y in range(TH):
+                cv.set(x0 + TW - 1, y0 + y, K)
+
+
+def cells_of(grid, ch):
+    return [(c, r) for r in range(MH) for c in range(MW) if grid[r][c] == ch]
+
+
+# ------------------------------------------------------------------ stages 10-19: the buildings
+STAGES_FLAG_DAIRY = (2, 2)
+
+
+def dairy_base(cv, with_sacks):
+    """the cheese dairy: whitewashed, red tiles, churns and cheeses in the yard"""
+    roof_t(cv, 0, 0, 39, 15)
+    wall_w(cv, 0, 17, 39, 47)
+    sign(cv, 0, 20, 39, "ΤΥΡΟΚΟΜΕΙΟ")
+    for x in (4, 14, 24):
+        cv.rect(x, 33, x + 5, 40, art.CH['k'])
+        cv.rect(x + 1, 34, x + 4, 39, art.CH['c'])
+    door(cv, 34, 33, 47)
+    pole(cv, STAGES_FLAG_DAIRY)
+    ycells = [(5, r) for r in range(4)] + [(c, 4) for c in range(6)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    cv.blit(MILK, 41, 4)
+    cv.blit(MILK, 41, 26)
+    for x in (9, 21):
+        cv.blit(CHEESE, x, 50)
+    if with_sacks:
+        sacks_on(cv, SACKS_DAIRY)
+
+
+STAGES_FLAG_WATERMILL = (74, 110)
+
+
+def watermill_base(cv, with_sacks):
+    """the watermill: stone, its wheel turning in the race on the yard side"""
+    x0, y0, x1, y1 = 120, 108, 159, 155
+    roof_t(cv, x0, y0, x1, y0 + 11)
+    wall_s(cv, x0, y0 + 13, x1, y1)
+    sign(cv, x0 + 2, y0 + 15, x1 - 2, "ΜΥΛΟΣ")
+    door(cv, 140, y1 - 12, y1)
+    cx, cy = 128, 141            # the wheel
+    for y in range(cy - 8, cy + 9):
+        for x in range(cx - 5, cx + 6):
+            d = math.hypot((x - cx) * 2, y - cy)
+            if d <= 9:
+                cv.set(x, y, art.CH['k'] if d > 8 or (x - cx) * (y - cy) == 0 else art.CH['r'])
+    pole(cv, STAGES_FLAG_WATERMILL)
+    ycells = [(14, r) for r in range(9, 14)] + [(c, 13) for c in range(15, 20)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    cv.blit(MILK, 113, 110)
+    if with_sacks:
+        sacks_on(cv, SACKS_WATERMILL)
+
+
+STAGES_FLAG_CAVE = (47, 1)
+
+
+def cave_base(cv, with_sacks):
+    """the Sfendoni cave: a rock face with its dark mouth"""
+    x0, x1, y1 = 56, 103, 35
+    wall_s(cv, x0, 0, x1, y1)
+    mx = (x0 + x1) // 2
+    for y in range(8, y1 + 1):          # the mouth, an arch
+        for x in range(x0 + 8, x1 - 7):
+            if math.hypot((x - mx) * 1.3, max(0, 22 - y)) < 18:
+                cv.set(x, y, art.CH['k'])
+    for x in range(x0 + 14, x1 - 12, 5):     # stalactites
+        cv.set(x, 10 + (x % 3), art.CH['e'])
+        cv.set(x, 11 + (x % 3), art.CH['e'])
+    sign(cv, mx - 18, 1, mx + 18, "ΣΦΕΝΔΟΝΗ", 'r')
+    pole(cv, STAGES_FLAG_CAVE)
+    ycells = [(c, 3) for c in range(7, 13)]
+    yard(cv, ycells, "dirt")
+    edge(cv, ycells)
+    if with_sacks:
+        sacks_on(cv, SACKS_CAVE)
+
+
+STAGES_FLAG_MONASTERY = (41, 50)
+
+
+def monastery_base(cv, with_sacks):
+    """the monastery: stone cells round a church with its dome, the abbot in the court"""
+    x0, y0, x1, y1 = 56, 60, 95, 95
+    wall_s(cv, x0, y0, x1, y1)
+    roof_t(cv, x0 + 1, y0, x1 - 1, y0 + 8)
+    cx, cy = (x0 + x1) // 2, y0 + 20            # the dome
+    for y in range(cy - 10, cy + 3):
+        for x in range(cx - 7, cx + 8):
+            d = math.hypot((x - cx) * 2, (y - cy) * 1.2)
+            if d <= 13 and y <= cy + 2:
+                cv.set(x, y, art.CH['k'] if d > 12 else art.CH['B'])
+    for (dx, dy) in ((0, -14), (0, -13), (-1, -12), (0, -12), (1, -12), (0, -11)):
+        cv.set(cx + dx, cy + dy, art.CH['y'])
+    door(cv, cx, y1 - 10, y1, 4)
+    pole(cv, STAGES_FLAG_MONASTERY)
+    ycells = [(c, 8) for c in range(6, 13)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    cv.blit(PRIEST, 49, 96)
+    if with_sacks:
+        sacks_on(cv, SACKS_MONASTERY)
+
+
+STAGES_FLAG_APIARY = (74, 62)
+
+
+def apiary_base(cv, with_sacks):
+    """the beekeeper's hut: stone, a yellow sign, jars of honey in the yard"""
+    x0, y0, x1, y1 = 120, 60, 159, 107
+    roof_t(cv, x0, y0, x1, y0 + 14)
+    wall_s(cv, x0, y0 + 16, x1, y1)
+    sign(cv, x0 + 6, y0 + 19, x1 - 6, "ΜΕΛΙ", 'o')
+    door(cv, x0 + 10, y1 - 13, y1)
+    for x in (x0 + 22, x0 + 31):
+        cv.rect(x, y1 - 14, x + 5, y1 - 8, art.CH['k'])
+        cv.rect(x + 1, y1 - 13, x + 4, y1 - 9, art.CH['c'])
+    pole(cv, STAGES_FLAG_APIARY)
+    ycells = [(14, r) for r in range(5, 10)] + [(c, 9) for c in range(15, 20)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    for (x, y) in ((114, 63), (114, 87)):
+        cv.blit(JAR_S, x, y)
+    if with_sacks:
+        sacks_on(cv, SACKS_APIARY)
+
+
+STAGES_FLAG_DISTILLERY = (34, 133)
+
+
+def distillery_base(cv, with_sacks):
+    """the raki still: a copper kazani on its fire, under a reed roof"""
+    x0, y0, x1, y1 = 64, 132, 103, 167
+    yard(cv, [(c, r) for c in range(8, 13) for r in range(11, 14)], "dirt")
+    for y in range(y0, y0 + 7):                 # the reed roof on its posts
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, art.CH['h'] if (x + y) % 3 else art.CH['o'])
+    for x in range(x0, x1 + 1):
+        cv.set(x, y0 + 7, art.CH['k'])
+    for x in (x0 + 1, x1 - 1):
+        cv.rect(x, y0 + 8, x, y1, art.CH['r'])
+    cx, cy = 84, 152                            # the copper still
+    for y in range(cy - 9, cy + 7):
+        for x in range(cx - 7, cx + 8):
+            d = math.hypot((x - cx) * 2, (y - cy) * 1.5)
+            if d <= 14:
+                cv.set(x, y, art.CH['k'] if d > 13 else art.CH['o'] if (x - cx) * 2 + (y - cy) > 4 else art.CH['y'])
+    cv.rect(cx + 8, cy - 8, cx + 14, cy - 7, art.CH['o'])     # the pipe
+    cv.rect(cx + 13, cy - 7, cx + 14, cy + 4, art.CH['o'])
+    for x in range(cx - 6, cx + 7, 3):          # the fire
+        cv.set(x, cy + 8, art.CH['R'])
+        cv.set(x + 1, cy + 9, art.CH['y'])
+    cv.blit(BARREL, x0 + 3, y1 - 9)
+    pole(cv, STAGES_FLAG_DISTILLERY)
+    ycells = [(7, r) for r in range(10, 14)] + [(13, r) for r in range(10, 14)] + \
+        [(c, 10) for c in range(8, 13)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    if with_sacks:
+        sacks_on(cv, SACKS_DISTILLERY)
+
+
+STAGES_FLAG_WINDMILLS = (75, 20)
+
+
+def windmills_base(cv, with_sacks):
+    """the big windmill: a round white tower, its cap and four sails"""
+    x0, x1, y1 = 120, 159, 47
+    cx, cy = 140, 14
+    for y in range(8, y1 + 1):                  # the tower
+        for x in range(x0 + 6, x1 - 5):
+            if abs(x - cx) * 2 <= 26 - (y1 - y) // 4:
+                cv.set(x, y, art.CH['W'])
+    rim = [(x, y) for y in range(8, y1 + 1) for x in range(x0, x1 + 1)
+           if cv.get(x, y) == art.CH['W'] and (cv.get(x - 1, y) != art.CH['W'] or cv.get(x + 1, y) != art.CH['W'])]
+    for (x, y) in rim:
+        cv.set(x, y, art.CH['k'])
+    door(cv, cx, y1 - 10, y1)
+    for y in range(4, 14):                      # the cap
+        for x in range(cx - 8, cx + 9):
+            if abs(x - cx) * 2 <= (y - 3) * 2:
+                cv.set(x, y, art.CH['r'])
+    for k in range(-16, 17):                    # the sails
+        for (dx, dy) in ((k, k // 2), (k, -k // 2)):
+            cv.set(cx + dx, cy + dy, art.CH['k'] if k % 4 == 0 else art.CH['W'])
+    pole(cv, STAGES_FLAG_WINDMILLS)
+    ycells = [(14, r) for r in range(5)] + [(c, 4) for c in range(15, 20)]
+    yard(cv, ycells, "dirt")
+    edge(cv, ycells)
+    if with_sacks:
+        sacks_on(cv, SACKS_WINDMILLS)
+
+
+STAGES_FLAG_THRESHING = (40, 59)
+
+
+def threshing_base(cv, with_sacks):
+    """the threshing floor: a ring of stone, sheaves on it, the granary behind"""
+    roof_t(cv, 64, 60, 95, 66)
+    wall_w(cv, 64, 68, 95, 83)
+    door(cv, 80, 72, 83)
+    cx, cy = 80, 89                             # the round floor
+    for y in range(80, 108):
+        for x in range(64, 96):
+            d = math.hypot((x - cx) * 2, (y - cy - 4) * 1.6)
+            if d <= 28 and y >= 84:
+                cv.set(x, y, art.CH['k'] if d > 26 else art.CH['e'] if d > 22 else art.CH['y'] if (x + y) % 4 else art.CH['o'])
+    pole(cv, STAGES_FLAG_THRESHING)
+    if with_sacks:
+        sacks_on(cv, SACKS_THRESHING)
+
+
+STAGES_FLAG_VINEYARD = (2, 61)
+
+
+def vineyard_base(cv, with_sacks):
+    """the winery: stone, barrels at the door, a vine over it"""
+    x0, y0, x1, y1 = 0, 60, 31, 107
+    roof_t(cv, x0, y0, x1, y0 + 12)
+    wall_s(cv, x0, y0 + 14, x1, y1)
+    sign(cv, x0 + 3, y0 + 17, x1 - 3, "ΚΡΑΣΙ", 'R')
+    door(cv, 24, y1 - 14, y1)
+    cv.blit(BARREL, 3, y1 - 9)
+    cv.blit(BARREL, 10, y1 - 9)
+    pole(cv, STAGES_FLAG_VINEYARD)
+    ycells = [(c, 4) for c in range(5)] + [(4, r) for r in range(5, 9)] + [(c, 9) for c in range(5)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    if with_sacks:
+        sacks_on(cv, SACKS_VINEYARD)
+
+
+STAGES_FLAG_SUMMIT = (40, 2)
+
+
+def summit_base(cv, with_sacks):
+    """the chapel of the Holy Cross on the summit of Psiloritis, of dry stone"""
+    x0, x1, y1 = 64, 95, 35
+    wall_s(cv, x0, 6, x1, y1)
+    for y in range(6, 14):                      # its flat stone roof, snow on it
+        for x in range(x0, x1 + 1):
+            cv.set(x, y, art.CH['W'] if y < 9 else art.CH['e'])
+    mx = (x0 + x1) // 2
+    door(cv, mx, 22, y1, 4)
+    cv.rect(mx - 1, 15, mx + 1, 15, art.CH['y'])
+    for y in range(0, 6):                       # the cross
+        cv.set(mx - 6, y, art.CH['k'])
+    cv.rect(mx - 8, 1, mx - 4, 1, art.CH['k'])
+    pole(cv, STAGES_FLAG_SUMMIT)
+    ycells = [(c, 3) for c in range(7, 13)]
+    yard(cv, ycells)
+    edge(cv, ycells)
+    if with_sacks:
+        sacks_on(cv, SACKS_SUMMIT)
+
+
 class Stage:
     toughness = 0       # invaders have the health of this many waves later
     ground2 = None      # a second road for the walkers: every other one takes it
@@ -1717,14 +2462,84 @@ STAGES = [
           base=olive_press_base, flag=STAGES_FLAG9, waves="WAVES9",
           strings={
               "B_STAGE": ("STAGE 09: THE OLIVE PRESS", "ΠΙΣΤΑ 09: ΤΟ ΛΙΟΤΡΙΒΙ"),
-              "B_WIN": ("OLIVE PRESS SAVED! NOW, TO THE WEDDING!",
-                        "ΤΟ ΛΙΟΤΡΙΒΙ ΣΩΘΗΚΕ! ΣΤΟ ΓΑΜΟ!"),
+              "B_WIN": ("OLIVE PRESS SAVED! NOW, TO THE DAIRY!",
+                        "ΤΟ ΛΙΟΤΡΙΒΙ ΣΩΘΗΚΕ! ΣΤΟ ΤΥΡΟΚΟΜΕΙΟ!"),
               "B_LOSE": ("THE OLIVE PRESS HAS FALLEN!", "ΤΟ ΛΙΟΤΡΙΒΙ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_DAIRY, ground=GROUND_DAIRY, air=AIR_DAIRY, sacks=SACKS_DAIRY,
+          base=dairy_base, flag=STAGES_FLAG_DAIRY, waves="WAVES_DAIRY", toughness=2,
+          strings={
+              "B_STAGE": ("STAGE 10: THE CHEESE DAIRY", "ΠΙΣΤΑ 10: ΤΟ ΤΥΡΟΚΟΜΕΙΟ"),
+              "B_WIN": ("DAIRY SAVED! NOW, TO THE WATERMILL!", "ΤΟ ΤΥΡΟΚΟΜΕΙΟ ΣΩΘΗΚΕ! ΣΤΟΝ ΝΕΡΟΜΥΛΟ!"),
+              "B_LOSE": ("THE CHEESE DAIRY HAS FALLEN!", "ΤΟ ΤΥΡΟΚΟΜΕΙΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_WATERMILL, ground=GROUND_WATERMILL, ground2=GROUND2_WATERMILL, air=AIR_WATERMILL, sacks=SACKS_WATERMILL,
+          base=watermill_base, flag=STAGES_FLAG_WATERMILL, waves="WAVES_WATERMILL", toughness=2,
+          strings={
+              "B_STAGE": ("STAGE 11: THE WATERMILL", "ΠΙΣΤΑ 11: Ο ΝΕΡΟΜΥΛΟΣ"),
+              "B_WIN": ("WATERMILL SAVED! NOW, TO THE CAVE!", "Ο ΝΕΡΟΜΥΛΟΣ ΣΩΘΗΚΕ! ΣΤΟ ΣΠΗΛΑΙΟ!"),
+              "B_LOSE": ("THE WATERMILL HAS FALLEN!", "Ο ΝΕΡΟΜΥΛΟΣ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_CAVE, ground=GROUND_CAVE, ground2=GROUND2_CAVE, air=AIR_CAVE, sacks=SACKS_CAVE,
+          base=cave_base, flag=STAGES_FLAG_CAVE, waves="WAVES_CAVE", toughness=3,
+          strings={
+              "B_STAGE": ("STAGE 12: THE SFENDONI CAVE", "ΠΙΣΤΑ 12: ΤΟ ΣΠΗΛΑΙΟ ΣΦΕΝΔΟΝΗ"),
+              "B_WIN": ("CAVE SAVED! NOW, TO THE MONASTERY!", "ΤΟ ΣΠΗΛΑΙΟ ΣΩΘΗΚΕ! ΣΤΟ ΜΟΝΑΣΤΗΡΙ!"),
+              "B_LOSE": ("THE CAVE HAS FALLEN!", "ΤΟ ΣΠΗΛΑΙΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_MONASTERY, ground=GROUND_MONASTERY, air=AIR_MONASTERY, sacks=SACKS_MONASTERY,
+          base=monastery_base, flag=STAGES_FLAG_MONASTERY, waves="WAVES_MONASTERY", toughness=0,
+          strings={
+              "B_STAGE": ("STAGE 13: THE MONASTERY", "ΠΙΣΤΑ 13: ΤΟ ΜΟΝΑΣΤΗΡΙ"),
+              "B_WIN": ("MONASTERY SAVED! NOW, TO THE BEEHIVES!", "ΤΟ ΜΟΝΑΣΤΗΡΙ ΣΩΘΗΚΕ! ΣΤΑ ΜΕΛΙΣΣΙΑ!"),
+              "B_LOSE": ("THE MONASTERY HAS FALLEN!", "ΤΟ ΜΟΝΑΣΤΗΡΙ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_APIARY, ground=GROUND_APIARY, air=AIR_APIARY, sacks=SACKS_APIARY,
+          base=apiary_base, flag=STAGES_FLAG_APIARY, waves="WAVES_APIARY", toughness=3,
+          strings={
+              "B_STAGE": ("STAGE 14: THE BEEHIVES", "ΠΙΣΤΑ 14: ΤΑ ΜΕΛΙΣΣΙΑ"),
+              "B_WIN": ("BEEHIVES SAVED! NOW, TO THE RAKI STILL!", "ΤΑ ΜΕΛΙΣΣΙΑ ΣΩΘΗΚΑΝ! ΣΤΟ ΡΑΚΟΚΑΖΑΝΟ!"),
+              "B_LOSE": ("THE BEEHIVES HAVE FALLEN!", "ΤΑ ΜΕΛΙΣΣΙΑ ΧΑΘΗΚΑΝ!"),
+          }),
+    Stage(map=MAP_DISTILLERY, ground=GROUND_DISTILLERY, air=AIR_DISTILLERY, sacks=SACKS_DISTILLERY,
+          base=distillery_base, flag=STAGES_FLAG_DISTILLERY, waves="WAVES_DISTILLERY", toughness=2,
+          strings={
+              "B_STAGE": ("STAGE 15: THE RAKI STILL", "ΠΙΣΤΑ 15: ΤΟ ΡΑΚΟΚΑΖΑΝΟ"),
+              "B_WIN": ("RAKI STILL SAVED! TO THE WINDMILLS!", "ΤΟ ΡΑΚΟΚΑΖΑΝΟ ΣΩΘΗΚΕ! ΣΤΟΥΣ ΜΥΛΟΥΣ!"),
+              "B_LOSE": ("THE RAKI STILL HAS FALLEN!", "ΤΟ ΡΑΚΟΚΑΖΑΝΟ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_WINDMILLS, ground=GROUND_WINDMILLS, air=AIR_WINDMILLS, sacks=SACKS_WINDMILLS,
+          base=windmills_base, flag=STAGES_FLAG_WINDMILLS, waves="WAVES_WINDMILLS", toughness=3,
+          strings={
+              "B_STAGE": ("STAGE 16: THE WINDMILLS", "ΠΙΣΤΑ 16: ΟΙ ΑΝΕΜΟΜΥΛΟΙ"),
+              "B_WIN": ("WINDMILLS SAVED! ON TO THE THRESHING!", "ΟΙ ΑΝΕΜΟΜΥΛΟΙ ΣΩΘΗΚΑΝ! ΣΤΟ ΑΛΩΝΙ!"),
+              "B_LOSE": ("THE WINDMILLS HAVE FALLEN!", "ΟΙ ΑΝΕΜΟΜΥΛΟΙ ΕΠΕΣΑΝ!"),
+          }),
+    Stage(map=MAP_THRESHING, ground=GROUND_THRESHING, air=AIR_THRESHING, sacks=SACKS_THRESHING,
+          base=threshing_base, flag=STAGES_FLAG_THRESHING, waves="WAVES_THRESHING", toughness=0,
+          strings={
+              "B_STAGE": ("STAGE 17: THE THRESHING FLOOR", "ΠΙΣΤΑ 17: ΤΟ ΑΛΩΝΙ"),
+              "B_WIN": ("THRESHING FLOOR SAVED! TO THE VINEYARD!", "ΤΟ ΑΛΩΝΙ ΣΩΘΗΚΕ! ΣΤΟ ΑΜΠΕΛΙ!"),
+              "B_LOSE": ("THE THRESHING FLOOR HAS FALLEN!", "ΤΟ ΑΛΩΝΙ ΕΠΕΣΕ!"),
+          }),
+    Stage(map=MAP_VINEYARD, ground=GROUND_VINEYARD, ground2=GROUND2_VINEYARD, air=AIR_VINEYARD, sacks=SACKS_VINEYARD,
+          base=vineyard_base, flag=STAGES_FLAG_VINEYARD, waves="WAVES_VINEYARD", toughness=1,
+          strings={
+              "B_STAGE": ("STAGE 18: THE VINEYARD", "ΠΙΣΤΑ 18: ΤΟ ΑΜΠΕΛΙ"),
+              "B_WIN": ("VINEYARD SAVED! NOW, UP PSILORITIS!", "ΤΟ ΑΜΠΕΛΙ ΣΩΘΗΚΕ! ΣΤΟΝ ΨΗΛΟΡΕΙΤΗ!"),
+              "B_LOSE": ("THE VINEYARD HAS FALLEN!", "ΤΟ ΑΜΠΕΛΙ ΧΑΘΗΚΕ!"),
+          }),
+    Stage(map=MAP_SUMMIT, ground=GROUND_SUMMIT, air=AIR_SUMMIT, sacks=SACKS_SUMMIT,
+          base=summit_base, flag=STAGES_FLAG_SUMMIT, waves="WAVES_SUMMIT", toughness=3,
+          strings={
+              "B_STAGE": ("STAGE 19: THE SUMMIT CHAPEL", "ΠΙΣΤΑ 19: ΤΟ ΞΩΚΛΗΣΙ ΤΗΣ ΚΟΡΥΦΗΣ"),
+              "B_WIN": ("SUMMIT SAVED! NOW, TO THE WEDDING!", "Η ΚΟΡΥΦΗ ΣΩΘΗΚΕ! ΣΤΟ ΓΑΜΟ!"),
+              "B_LOSE": ("THE SUMMIT CHAPEL HAS FALLEN!", "ΤΟ ΞΩΚΛΗΣΙ ΕΠΕΣΕ!"),
           }),
     Stage(map=MAP10, ground=GROUND10, air=AIR10, sacks=SACKS10, base=wedding_base,
           flag=STAGES_FLAG2, waves="WAVES10", toughness=1,
           strings={
-              "B_STAGE": ("STAGE 10: THE BRIDE'S WEDDING", "ΠΙΣΤΑ 10: Ο ΓΑΜΟΣ ΤΗΣ ΝΥΦΗΣ"),
+              "B_STAGE": ("STAGE 20: THE BRIDE'S WEDDING", "ΠΙΣΤΑ 20: Ο ΓΑΜΟΣ ΤΗΣ ΝΥΦΗΣ"),
               "B_WIN": ("WEDDING SAVED! LONG LIVE THE COUPLE!",
                         "Ο ΓΑΜΟΣ ΣΩΘΗΚΕ! ΖΗΤΩ ΤΟ ΖΕΥΓΑΡΙ!"),
               "B_LOSE": ("THE WEDDING HAS FALLEN!", "Ο ΓΑΜΟΣ ΧΑΛΑΣΕ!"),
@@ -1733,9 +2548,10 @@ STAGES = [
 STAGE_STRINGS = ["B_STAGE", "B_WIN", "B_LOSE"]
 
 # defenders each stage has (types 1 cretan, 2 yiayia, 3 bride, 4 psssst,
-# 5 cauldron, 6 baker, 7 lyra player) and the two lines of the announcement
-# at its start
+# 5 cauldron, 6 baker, 7 lyra player, 8 shepherd, 9 priest) and the two lines
+# of the announcement at its start
 ALL6 = {1, 2, 3, 4, 5, 6}
+ALL8 = ALL6 | {7, 8}
 UNLOCKS = [
     ({1, 4}, ("S_INFO1", "S_INFO4")),
     ({1, 2, 4}, ("B_NEWDEF", "S_INFO2")),
@@ -1746,7 +2562,12 @@ UNLOCKS = [
     (ALL6, None),
     (ALL6 | {7}, ("B_NEWDEF", "S_INFO7")),
     (ALL6 | {7}, None),
-    (ALL6 - {3} | {7}, ("B_BRIDE", "B_BRIDE2")),     # the wedding: the Bride is at the altar
+    (ALL8, ("B_NEWDEF", "S_INFO8")),            # 10, the cheese dairy: the Shepherd
+    (ALL8, None),
+    (ALL8, None),
+    (ALL8 | {9}, ("B_NEWDEF", "S_INFO9")),      # 13, the monastery: the Priest
+] + [(ALL8 | {9}, None)] * 6 + [
+    (ALL8 - {3}, ("B_BRIDE", "B_BRIDE2")),      # the wedding: the Bride and the Priest are at the altar
 ]
 
 
@@ -1763,6 +2584,8 @@ def render_background(stage, grid, with_sacks=True):
                 rock_cell(cv, c, r)
             elif t == 'D':
                 table_cell(cv, grid, c, r)
+            elif t == '~':
+                water_cell(cv, grid, c, r)
             elif t in 'KP':
                 pass
             else:
@@ -1781,6 +2604,8 @@ def render_background(stage, grid, with_sacks=True):
                     cv.blit(SHEEP if (c + r) % 2 else art.mirror(SHEEP), c * TW, r * TH)
                 elif t == 'J':
                     cv.blit(JAR, c * TW, r * TH)
+                elif t in 'HVBM':
+                    cv.blit({'H': BEEHIVE, 'V': VINE, 'B': HAY, 'M': WINDMILL}[t], c * TW, r * TH)
     stage.base(cv, with_sacks)
     return cv
 
@@ -1866,10 +2691,13 @@ SFX = {
     "SFX_MOVE": [(80, 0, 6)],
     "SFX_LYRA": [(71, 0, 11), (71, 0, 10), (60, 0, 11), (60, 0, 10), (53, 0, 10),
                  (53, 0, 9), (47, 0, 8), (47, 0, 6)],
+    "SFX_SLING": [(0, 12, 9), (0, 8, 11), (0, 5, 10), (0, 3, 7), (0, 2, 4)],
+    "SFX_BELL": [(142, 0, 15), (142, 0, 13), (150, 0, 12), (142, 0, 10), (150, 0, 9), (142, 0, 7),
+                 (150, 0, 5), (142, 0, 3)],
 }
-EXTRA_SFX = {"SFX_LYRA"}        # in the Lyra area
+EXTRA_SFX = {"SFX_LYRA", "SFX_SLING", "SFX_BELL"}       # in the Lyra area
 SFX_PRIO = {"SFX_MOVE": 0, "SFX_PISTOL": 1, "SFX_RIFLE": 1, "SFX_LASER": 1, "SFX_THROW": 1,
-            "SFX_PUFF": 2, "SFX_BASH": 2, "SFX_LYRA": 1, "SFX_DIE": 3, "SFX_SELL": 4, "SFX_BUILD": 4,
+            "SFX_PUFF": 2, "SFX_BASH": 2, "SFX_LYRA": 1, "SFX_SLING": 1, "SFX_BELL": 2, "SFX_DIE": 3, "SFX_SELL": 4, "SFX_BUILD": 4,
             "SFX_ERROR": 4, "SFX_CRUSH": 5, "SFX_HURT": 6, "SFX_WAVE": 7}
 
 # ------------------------------------------------------------------ waves
@@ -2222,7 +3050,7 @@ def main():
         print("stage %d: %d tiles" % (len(built), len(tile_list)))
     # fixed layout: every section as big as the biggest stage needs
     sections = [("tilemap", 280), ("cellmap", 280), ("sack_cells", 20), ("stage_flag", 2),
-                ("stage_unlock", 5),
+                ("stage_unlock", 6),
                 ("path_ground", max(len(b_["pg"]) for b_ in built)),
                 ("path_air", max(len(b_["pa"]) for b_ in built)),
                 ("wave_table", 2 * len(WAVES1)),
@@ -2294,7 +3122,7 @@ def main():
 
     all_strings = list(texts.STRINGS)
     for sid, en, gr in all_strings:
-        if sid in ("S_INFO2", "S_INFO3", "S_INFO4", "S_INFO6", "S_INFO7"):     # the neighbour bonus
+        if sid in ("S_INFO2", "S_INFO3", "S_INFO4", "S_INFO6", "S_INFO7", "S_INFO8"):     # the neighbour bonus
             assert max(len(en), len(gr)) <= 34, sid                  # goes in columns 36-39
     for sid, en, gr in all_strings:
         if sid.startswith("T_CAST") or sid.startswith("T_ENE"):
@@ -2303,6 +3131,9 @@ def main():
                     assert len(line) <= 35, line
     all_strings.append(("T_STORY", texts.wrap(texts.STORY_EN), texts.wrap(texts.STORY_GR)))
     all_strings += [(sid, None, None) for sid in STAGE_STRINGS]
+    # the title's strings last: their table is in the title overlay (get_str)
+    all_strings = ([x for x in all_strings if not x[0].startswith("T_")] +
+                   [x for x in all_strings if x[0].startswith("T_")])
     for sid, en, gr in all_strings:
         if gr is None:
             gr = en
@@ -2381,10 +3212,17 @@ def main():
     for a, b in pairs:
         flat += [a, b]
     A.extend(db_lines(flat, 16))
+    first_t = next(i for i, sid in enumerate(ids) if sid.startswith("T_"))
+    emit("FIRST_T equ %d" % first_t)
     emit("strtab_en:")
-    A.extend("    dw se_" + sid for sid in ids)
+    A.extend("    dw se_" + sid for sid in ids[:first_t])
     emit("strtab_gr:")
-    A.extend("    dw sg_" + sid for sid in ids)
+    A.extend("    dw sg_" + sid for sid in ids[:first_t])
+    assert len(ids) - first_t <= first_t
+    # in the overlay, as far apart as the resident tables (get_str)
+    OVL += ["tstrtab_en:"] + ["    dw se_" + sid for sid in ids[first_t:]]
+    OVL += ["    defs %d" % (2 * (2 * first_t - len(ids))), "tstrtab_gr:"]
+    OVL += ["    dw sg_" + sid for sid in ids[first_t:]]
     for lbl, target in alias:
         emit("%s equ %s" % (lbl, target))
     T = ["; generated by tools/gen_assets.py - do not edit",
@@ -2392,8 +3230,10 @@ def main():
     for lbl, en, gr in texts.TITLE_RAW:         # glyph codes, no string table entry
         T.append("%s_en: db %s" % (lbl, ",".join(map(str, font.encode(en) + [0xFF]))))
         T.append("%s_gr: db %s" % (lbl, ",".join(map(str, font.encode(gr) + [0xFF]))))
-    T.append("spr_lyra_t:")                    # for the defenders' page
-    T.extend(db_lines(sprite_bytes(art.LYRA), 16))
+    for name, rows in (("spr_lyra_t", art.LYRA), ("spr_shepherd_t", art.SHEPHERD_T),
+                       ("spr_priest_t", art.PRIEST_T)):  # for the defenders' pages
+        T.append("%s:" % name)
+        T.extend(db_lines(sprite_bytes(rows), 16))
     T.append("name_chars: db %s" % ",".join(map(str, font.encode(texts.NAME_CHARS))))
     T.append("NAME_NCHARS equ %d" % len(texts.NAME_CHARS))
     hs = bytearray(b"VRV1")                     # build/HISCORE.BIN: magic, 8 x (3 glyphs, score)
@@ -2460,8 +3300,8 @@ def main():
         put("stage_flag", b_["flag"][::-1])     # y, x: LD DE,(nn) gives D = x
         types, ann = UNLOCKS[k]
         ann = [ids.index(l) for l in ann] if ann else [0xFF, 0xFF]
-        put("stage_unlock", [sum(1 << (t - 1) for t in types)] + ann +
-            [STAGES[k].toughness, b_["road2"]])
+        mask = sum(1 << (t - 1) for t in types)
+        put("stage_unlock", [mask & 255, mask >> 8] + ann + [STAGES[k].toughness, b_["road2"]])
         put("path_ground", b_["pg"])
         put("path_air", b_["pa"])
         ptrs, wd = [], []
@@ -2476,8 +3316,8 @@ def main():
         img += bytes(b_["tiles"])
         if 7 in types:      # room for the Lyra area, filled in by build.sh
             assert len(img) <= size - EXTRA_ROOM, ("stage %d: too many tiles" % (k + 1))
-            img += bytes(size - len(img))
             extra.append("STAGE%d.BIN" % (k + 1))
+        img += bytes(size - len(img))   # all as long: the loader works out where each is
         with open(os.path.join(ROOT, "build", "STAGE%d.BIN" % (k + 1)), "wb") as f:
             f.write(img)
     print("stage area #%04X, %d bytes" % (stage_area, size))

@@ -169,6 +169,39 @@ LYRA = [
     ".kk.kk..",
 ]
 
+# the shepherd: black sariki, brown cape, the sling whirling a stone
+SHEPHERD_T = [
+    "......e.",
+    "..kkk.o.",
+    ".kkkkko.",
+    "..sss.o.",
+    "..sks.s.",
+    ".rrrrrr.",
+    "rrrrrrr.",
+    "rrrrrr..",
+    "rrrrrr..",
+    ".hhhh...",
+    ".hh.hh..",
+    ".kk.kk..",
+]
+
+# the priest: kalimafki, grey beard, cassock and a bell in his hand
+PRIEST_T = [
+    "..kkk...",
+    ".kkkkk..",
+    ".kkkkk..",
+    "..sss...",
+    "..eee...",
+    ".keeek..",
+    "kkkekkky",
+    "kkkykkyy",
+    "kkyyykyy",
+    "kkkykk..",
+    ".kkkkk..",
+    ".kk.kk..",
+]
+STONE = ["ee", "ek"]
+
 # ---------------------------------------------------------------- enemies
 DRONE_A = [
     "cc....cc",
@@ -563,6 +596,9 @@ EXTRA_SPRITES = [
     ("spr_lyra", LYRA),
     ("spr_note_a", NOTE_A),
     ("spr_note_b", NOTE_B),
+    ("spr_shepherd", SHEPHERD_T),
+    ("spr_priest", PRIEST_T),
+    ("spr_stone", STONE),
 ]
 
 

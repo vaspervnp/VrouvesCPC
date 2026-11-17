@@ -19,6 +19,8 @@ STRINGS = [
     ("S_NAME5", "CAULDRON", "ΚΑΖΑΝΙ"),
     ("S_NAME6", "BAKER", "ΦΟΥΡΝΑΡΗΣ"),
     ("S_NAME7", "LYRA PLAYER", "ΛΥΡΑΡΗΣ"),
+    ("S_NAME8", "SHEPHERD", "ΒΟΣΚΟΣ"),
+    ("S_NAME9", "PRIEST", "ΠΑΠΑΣ"),
     ("S_INFO1", "[1] CRETAN 35: HUNTING RIFLE, AIR+GND",
                 "[1] ΚΡΗΤΙΚΟΣ 35: ΤΟΥΦΕΚΙ, ΑΕΡΑΣ+ΓΗ"),
     ("S_INFO2", "[2] YIAYIA 50: STAFF+POT, SLOWS",
@@ -33,6 +35,10 @@ STRINGS = [
                 "[6] ΦΟΥΡΝΑΡΗΣ 60: ΠΕΤΑΕΙ ΝΤΑΚΟΥΣ!"),
     ("S_INFO7", "[7] LYRA 90: ALL IN REACH, AIR+GND",
                 "[7] ΛΥΡΑΡΗΣ 90: ΣΕ ΟΛΟΥΣ, ΑΕΡΑΣ+ΓΗ"),
+    ("S_INFO8", "[8] SHEPHERD 70: SLING, LONG REACH",
+                "[8] ΒΟΣΚΟΣ 70: ΣΦΕΝΤΟΝΑ ΜΑΚΡΙΑ"),
+    ("S_INFO9", "[9] PRIEST 60: BLESSES, BELL STOPS",
+                "[9] ΠΑΠΑΣ 60: ΕΥΛΟΓΙΑ, ΚΑΜΠΑΝΑ"),
     ("B_CALL", "BUILD, THEN PRESS N FOR THE WAVE",
                "ΧΤΙΣΕ ΚΑΙ ΠΑΤΑ N ΓΙΑ ΤΟ ΚΥΜΑ"),
     ("B_CLEAR", "WAVE CLEARED!  BONUS VROUVES!",
@@ -41,7 +47,7 @@ STRINGS = [
     ("B_FINAL", "FINAL WAVE! HERE COME THE TANKS!",
                 "ΤΕΛΙΚΟ ΚΥΜΑ! ΕΡΧΟΝΤΑΙ ΤΑ ΤΑΝΚΣ!"),
     ("B_NEWDEF", "A NEW DEFENDER JOINS THE VILLAGE!", "ΝΕΟΣ ΑΜΥΝΤΙΚΟΣ ΣΤΟ ΧΩΡΙΟ!"),
-    ("B_BRIDE", "THE BRIDE IS AT THE ALTAR!", "Η ΝΥΦΗ ΣΤΕΦΑΝΩΝΕΤΑΙ!"),
+    ("B_BRIDE", "THE BRIDE AND THE PRIEST AT THE ALTAR!", "Η ΝΥΦΗ ΚΑΙ Ο ΠΑΠΑΣ ΣΤΗΝ ΕΚΚΛΗΣΙΑ!"),
     ("B_BRIDE2", "HOLD THEM OFF WITHOUT HER!", "ΚΡΑΤΗΣΤΕ ΤΟΥΣ ΜΑΚΡΙΑ ΧΩΡΙΣ ΑΥΤΗ!"),
     ("B_QUIT", "QUIT THIS GAME?", "ΕΞΟΔΟΣ ΑΠΟ ΤΟ ΠΑΙΧΝΙΔΙ;"),
     ("B_SPACE", "PRESS SPACE / FIRE", "ΠΑΤΗΣΤΕ SPACE / FIRE"),
@@ -66,6 +72,10 @@ STRINGS = [
                 "ΦΟΥΡΝΑΡΗΣ - 60\nΠΕΤΑΕΙ ΚΡΙΘΑΡΟΚΟΥΛΟΥΡΑ. ΠΙΤΣΙΛΙΑ."),
     ("T_CAST7", "LYRA PLAYER - 90\nHIS TUNE HITS ALL, CHARMS DRONES.",
                 "ΛΥΡΑΡΗΣ - 90\nΜΑΝΤΙΝΑΔΑ ΣΕ ΟΛΟΥΣ, ΜΑΓΕΥΕΙ ΝΤΡΟΝ."),
+    ("T_CAST8", "SHEPHERD - 70\nSLING, FAR. THROWS GUARDS BACK.",
+                "ΒΟΣΚΟΣ - 70\nΣΦΕΝΤΟΝΑ. ΠΕΤΑΕΙ ΠΙΣΩ ΤΟΥΣ ΦΥΛΑΚΕΣ."),
+    ("T_CAST9", "PRIEST - 60\nBLESSES HIS NEIGHBOURS. BELL STOPS.",
+                "ΠΑΠΑΣ - 60\nΕΥΛΟΓΕΙ ΤΟΥΣ ΓΕΙΤΟΝΕΣ. ΚΑΜΠΑΝΑ."),
     ("T_ENE1", "BIO-DRONE\nFAST, FRAGILE. FLIES OVER WALLS.",
                "ΒΙΟ-ΝΤΡΟΝ\nΓΡΗΓΟΡΟ, ΕΥΘΡΑΥΣΤΟ. ΠΕΤΑΕΙ ΠΑΝΩ."),
     ("T_ENE2", "COMPLIANCE GUARD\nARMOURED. WEED-WHACKER, HERBICIDE.",
@@ -81,7 +91,8 @@ STRINGS = [
 
 # strings that only the stages with the Lyra player use: they travel in
 # those stage files (main.asm, the Lyra area), not in the resident code
-EXTRA_STRINGS = {"S_NAME7", "S_INFO7", "B_BRIDE", "B_BRIDE2"}
+EXTRA_STRINGS = {"S_NAME7", "S_INFO7", "S_NAME8", "S_INFO8", "S_NAME9", "S_INFO9",
+                 "B_BRIDE", "B_BRIDE2"}
 
 # texts printed straight from glyph codes, with no entry in the string
 # tables (which take room in the resident code): label -> (english, greek)

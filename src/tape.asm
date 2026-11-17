@@ -18,23 +18,16 @@ disk_title:
 disk_ending:
         db NUM_STAGES+2,0,0
         dw #C000
-disk_stages:
-        repeat NUM_STAGES,tp_k
-        db tp_k+1,0,0
-        dw STAGE_AREA
-        rend
 
-; A = stage (0..)
+; A = stage (0..): block id 2 onwards
 stage_load:
-        ld l,a
-        add a,a
-        add a,a
-        add a,l
-        ld l,a
-        ld h,0
-        ld de,disk_stages
-        add hl,de
-        ; fall through
+        add a,2
+        ld (stage_desc),a
+        ld hl,stage_desc
+        jr disk_load
+stage_desc:
+        db 0,0,0
+        dw STAGE_AREA
 
 ; HL = descriptor.  The screen is blacked out and the music stopped while
 ; the block loads, with interrupts off.

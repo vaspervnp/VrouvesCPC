@@ -142,12 +142,16 @@ def main():
             key = name.split('.')[0].upper()
             lines.append("DISK_%s_TRACK equ %d" % (key, t))
             lines.append("DISK_%s_SECTOR equ #%02X" % (key, s))
+        # the stages one after the other, each as long: the loader works out where
+        # stage k is (disk.asm, stage_load) from the first one's logical sector
         stages = [n for n in sys.argv[4:] if n.startswith("STAGE")]
-        lines.append("disk_stages:")
-        for name in stages:
-            key = name.split('.')[0].upper()
-            lines.append("        db DISK_%s_TRACK,DISK_%s_SECTOR,STAGE_SECTORS" % (key, key))
-            lines.append("        dw STAGE_AREA")
+        first = files[stages[0]][0]
+        stride = len(files[stages[0]])
+        for k, name in enumerate(stages):
+            assert files[name] == list(range(first + k * stride, first + (k + 1) * stride)), name
+        assert 2 * (first + (len(stages) - 1) * stride) < 256
+        lines.append("DISK_STAGE_LSECTOR equ %d" % (2 * first))
+        lines.append("DISK_STAGE_STRIDE equ %d" % (2 * stride))
         nxt = max(used | {1}) + 1
         t, s = dsk.block_pos(nxt)
         lines.append("DISK_NEXT_BLOCK equ %d" % nxt)

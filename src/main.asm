@@ -90,6 +90,8 @@ K_5         equ 49
 K_4         equ 56
 K_3         equ 57
 K_7         equ 41
+K_8         equ 40
+K_9         equ 33
 K_S         equ 60
 K_D         equ 61
 K_1         equ 64
@@ -342,10 +344,12 @@ title_end:
 ;------------------------------------------------------------------------------
         org EXTRA_AREA
         include "lyra.asm"
+        include "shepherd.asm"
+        include "priest.asm"
         include "gen/extra.asm"
 extra_end:
-        assert extra_end <= #4000
         print "lyra area: ",extra_end-EXTRA_AREA," of ",#4000-EXTRA_AREA," bytes"
+        assert extra_end <= #4000
         SAVE 'LYRA.BIN',EXTRA_AREA,extra_end-EXTRA_AREA
 
 ;------------------------------------------------------------------------------

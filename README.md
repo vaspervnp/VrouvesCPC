@@ -51,7 +51,7 @@ back a little and press PLAY: the loader waits for the block it wants.
 | Key | Action |
 | --- | --- |
 | Cursor keys / Q A O P / joystick | Move the build cursor |
-| 1 – 7 | Choose a defender |
+| 1 – 9 | Choose a defender |
 | SPACE / RETURN / ENTER / COPY / FIRE | Build on the cursor tile |
 | S / DEL | Sell the defender under the cursor (half price back) |
 | N | Call the next wave now (half the seconds left on the countdown are paid as a bonus) |
@@ -89,11 +89,14 @@ write routine). The cassette version counts the score but keeps no table.
 | 6 | Baker | 60 | 4 | Hurls dakos (barley rusks) with splash damage |
 | 5 | Cauldron | 110 | 5 | Toxic "unlicensed lipids and ascorbic acids": area damage that ignores armour, slows walkers |
 | 7 | Lyra player | 90 | 8 | His tune hits every invader around him, walkers and drones, and charms the drones into slowing down; small damage, armour counts |
+| 8 | Shepherd | 70 | 10 | Sling with a long reach; his stones throw the guards back along the road |
+| 9 | Priest | 60 | 13 | Blesses his neighbours (they reload twice as fast) and rings his bell, which holds the drones and guards around him still for a moment; tanks pay no heed |
 
 The village joins the fight bit by bit: the Kafenio is held by the Cretan and Psssst, every
 following stage up to the school brings one more defender, and the Lyra player comes at the
-sheepfold (stage 8), each announced when the stage begins. At the wedding (stage 10) the Bride
-is at the altar and cannot be built.
+sheepfold (stage 8), the Shepherd at the dairy (stage 10) and the Priest at the monastery
+(stage 13), each announced when the stage begins. At the wedding (stage 20) the Bride and the
+Priest are at the altar and cannot be built.
 
 Neighbours matter. A defender right next to its partner (left, right, above or below, not
 diagonally) hits harder or softer; the bonus shows on the info line, green or red, before
@@ -107,6 +110,10 @@ it is built:
 | Psssst | a Cretan | -20% |
 | Lyra player | another Lyra player | -50% |
 | Lyra player | a Yiayia | +50% |
+| Shepherd | a Lyra player | +50% |
+
+The Priest's blessing is not part of this list: every defender next to a Priest reloads twice
+as fast, however many there are (`bless` in `priest.asm`).
 
 At most three defenders have a bonus at a time: those that have one keep it while their
 partner stays, and when one is lost it passes to the next in line (`syn_update`). Penalties
@@ -145,9 +152,32 @@ counts: a Lyra player next to both another one and a Yiayia gets the -50%.
 9. **The olive press** – by the millstone and the storage jars. The walkers come along two
    roads, one from each side, every other one taking the second; the roads meet below the
    yard. Each road is short, so the waves are smaller.
-10. **The Bride's wedding** – the last stand, in the church courtyard of stage 2 decked out for
+10. **The cheese dairy** – the whitewashed dairy with milk churns and cheeses in the yard; the
+    road takes a long way round between dry-stone walls and sheep. The Shepherd joins in.
+11. **The watermill** – the stone mill with its wheel, by a stream. Two roads, which meet in
+    the middle of the map.
+12. **The Sfendoni cave** – the dark mouth of the cave in the rock face, rocks everywhere.
+    Two roads, one from each side, which become one.
+13. **The monastery** – the dome, the cells and the abbot in the court; the road goes round
+    the monastery. The Priest joins in.
+14. **The beehives** – the beekeeper's hut with its jars of honey, the road up and down in
+    narrow lanes between the hives.
+15. **The raki still** – the copper still on its fire under a reed roof; the road comes down
+    in three long hairpins.
+16. **The windmills** – one big white windmill and small ones all over the map; the longest,
+    most winding road of the game.
+17. **The threshing floor** – the round stone floor, the granary and the haystacks; the road
+    spirals in to the middle.
+18. **The vineyard** – the winery with its barrels and vines between the roads. Two roads,
+    one from above and one from below.
+19. **The summit chapel** – the little stone chapel on the top of Psiloritis, among the
+    rocks; the road climbs in tight hairpins.
+20. **The Bride's wedding** – the last stand, in the church courtyard of stage 2 decked out for
     the wedding, the groom at the door, the road winding between the guests' tables. No Bride
-    here, and a column of tanks in the last wave.
+    and no Priest here, they are at the altar, and a column of tanks in the last wave.
+
+Stages 10 to 19 come from the Android version (VrouvesAndroid 1.1), with their maps, roads and
+waves.
 
 Each stage has ten waves and starts with fresh funds. Every invader that reaches the building
 steals greens; the sacks disappear as its HP drops. Survive all ten waves to move on to the
@@ -167,17 +197,19 @@ Requirements: `python3` with Pillow, [rasm](https://github.com/EdouardBERGE/rasm
   sprites (`tools/art.py`), all English/Greek text (`tools/texts.py`, byte-pair compressed),
   the music and sound effects; `src/gen/title_text.asm` and `src/gen/title_art.asm`, the texts and the packed
   first-page picture only the title screen needs;
-  and one file per stage, `build/STAGE1.BIN` to `STAGE10.BIN`: the map rendered to 8×12
+  and one file per stage, `build/STAGE1.BIN` to `STAGE20.BIN`, all padded to the same length: the map rendered to 8×12
   tiles, the cell types, the enemy paths, the sacks, the flag position, the waves and the
   stage's own texts, the defenders it has, how tough its invaders are and where its second
   road starts, in a fixed layout. Preview PNGs go to `build/preview/`. The stages with the
-  Lyra player keep the top of the stage area free for him: `src/gen/extra.asm` has his
-  picture, sound and texts.
+  Lyra player (8 to 20) keep the top of the stage area free for him, the Shepherd and the
+  Priest: `src/gen/extra.asm` has their pictures, sounds and texts.
 * `build.sh` puts the stage files on a fresh disk first, asks `tools/diskmap.py` where they
-  landed (`src/gen/diskmap.asm`), assembles, adds the title overlay `TITLE.BIN` and
+  landed (`src/gen/diskmap.asm`: the first stage's sector and the stride, since the stage
+  files lie one after the other and the loader computes where each one is), assembles, adds the title overlay `TITLE.BIN` and
   `VROUVES.BIN`, and checks that every file is where the loader will look for it. The
-  assembly also gives `LYRA.BIN`, the Lyra player's code and data (`src/lyra.asm`), which
-  `tools/put_extra.py` writes into the top of stages 8–10 before the disk is made again with
+  assembly also gives `LYRA.BIN`, the code and data of the later defenders (`src/lyra.asm`,
+  `src/shepherd.asm`, `src/priest.asm`), which `tools/put_extra.py` writes into the top of
+  stages 8–20 before the disk is made again with
   the same files in the same places. Then it assembles again with `-DTAPE=1` (its own
   `LYRA.BIN`, in the tape copies of the stages) and has `tools/make_cdt.py` write the
   cassette image.
@@ -203,8 +235,9 @@ memory wait states), `tools/costs.py <wave>` the time per game activity,
 `tools/enemycheck.py [stress]` checks at every flip that every enemy is fully drawn, and
 `tools/scenario.py full` plays a whole game, all stages, with a build order per stage,
 printing progress per wave — handy for balancing, and `tools/scenario.py stage <n> [-v]` plays
-just stage n. `tools/lyracheck.py` checks the Lyra player, the two roads of the olive press and
-the wedding without the Bride, `tools/syncheck.py` the neighbour bonus and
+just stage n. `tools/lyracheck.py` checks the Lyra player, the two roads of the olive press, the
+Shepherd's knockback, the Priest's bell and blessing and the wedding without the Bride and
+the Priest, `tools/endcheck.py` the ending after the last stage, `tools/syncheck.py` the neighbour bonus and
 `tools/scorecheck.py` the score and the lives. The tools work on whichever stage the build
 starts at.
 

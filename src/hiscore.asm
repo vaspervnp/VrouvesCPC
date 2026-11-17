@@ -8,7 +8,7 @@
 HS_BUF  equ #B000               ; the sector, in the background buffer (free here)
 HS_ENT  equ HS_BUF+4
 HS_N    equ 8
-HS_PAGE equ 4                   ; its title page
+HS_PAGE equ 5                   ; its title page
 
 hs_desc:
         db DISK_HISCORE_TRACK,DISK_HISCORE_SECTOR,1

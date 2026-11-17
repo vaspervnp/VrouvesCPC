@@ -68,8 +68,16 @@ TT_PSSSST equ 4
 TT_CAULDRON equ 5
 TT_BAKER  equ 6
 TT_LYRA   equ 7
+TT_SHEPHERD equ 8
+TT_PRIEST equ 9
 
-stage_road2 equ stage_unlock+4  ; first segment of the second road, 0 for none
+; E_SLOW above BELL_STILL: standing still (the Priest's bell sets BELL_STUN)
+BELL_STILL equ 40
+BELL_STUN equ BELL_STILL+20
+
+; stage_unlock: the defenders it has (2 bytes, bit 0 the Cretan), the two lines
+; announcing a new one, how tough its invaders are, and its second road
+stage_road2 equ stage_unlock+5  ; first segment of the second road, 0 for none
 
 ; projectile record (10 bytes)
 P_TYPE  equ 0
@@ -88,6 +96,7 @@ PT_BULLET equ 1
 PT_PISTOL equ 2
 PT_LASER  equ 3
 PT_DAKOS  equ 4
+PT_STONE  equ 5
 
 ; effect record (4 bytes)
 F_TYPE  equ 0
@@ -146,16 +155,19 @@ ttype_tab:
         db 110,22,32,8,0,0,SFX_PUFF,55                  ; cauldron
         db 60,34,36,16,1,PT_DAKOS,SFX_THROW,30          ; baker
         db 90,26,26,4,1,0,SFX_LYRA,45                   ; lyra player (lyra.asm)
+        db 70,44,26,14,1,PT_STONE,SFX_SLING,35          ; shepherd (shepherd.asm)
+        db 60,30,75,0,1,0,SFX_BELL,30                   ; priest (priest.asm)
 
 tower_sprites:
         dw spr_cretan,spr_yiayia,spr_bride,spr_psssst,spr_cauldron,spr_baker,spr_lyra
+        dw spr_shepherd,spr_priest
 
 
 proj_sprites:
-        dw spr_bullet,spr_pistol,spr_laser,spr_dakos
+        dw spr_bullet,spr_pistol,spr_laser,spr_dakos,spr_stone
 ; x speed (pixels), y speed (lines)
 proj_speed:
-        db 6,9, 7,10, 10,15, 3,5
+        db 6,9, 7,10, 10,15, 3,5, 4,6
 
 ; effects: frame a, frame b, lifetime (8 bytes each)
 fx_tab:
@@ -175,7 +187,7 @@ fx_tab:
         db 10,0,0,0
 
 sel_keys:
-        db K_1,K_2,K_3,K_4,K_5,K_6,K_7
+        db K_1,K_2,K_3,K_4,K_5,K_6,K_7,K_8,K_9
 ; cursor_input: bit 0 up, 1 down, 2 left, 3 right, in turn
 dir_keys:
         db K_UP,K_DOWN,K_LEFT,K_RIGHT,J_UP,J_DOWN,J_LEFT,J_RIGHT,K_Q,K_A,K_O,K_P
@@ -316,10 +328,10 @@ game_init:
         if DEBUG
         ld a,DEBUG-1            ; -DDEBUG=n starts at wave n
         ld (wave_num),a
-        ld a,#7f                ; and has every defender
-        ld (stage_unlock),a
+        ld hl,#1ff              ; and has every defender
+        ld (stage_unlock),hl
         else
-        ld hl,(stage_unlock+1)  ; the defenders this stage brings
+        ld hl,(stage_unlock+2)  ; the defenders this stage brings
         ld a,l
         cp #ff
         jr z,.na
@@ -430,15 +442,18 @@ handle_input:
         ret nz
         call cursor_input
         ld hl,sel_keys
-        ld bc,#0701
+        ld bc,#0901
 .sk:    ld a,(hl)
         call key_hit
         jr nc,.nk
         push bc                 ; only defenders this stage has
+        push hl
         ld b,c
-        ld a,(stage_unlock)
-.ul:    rrca
+        ld hl,(stage_unlock)
+.ul:    srl h
+        rr l
         djnz .ul
+        pop hl
         pop bc
         jr nc,.nk
         ld a,c
@@ -1169,7 +1184,7 @@ spawn_enemy:
         call etype_ptr
         ld a,(wave_num)         ; hp: base + per wave * (wave + stage toughness)
         ld b,a
-        ld a,(stage_unlock+3)
+        ld a,(stage_unlock+4)
         add a,b
         ld b,a
         ld a,(hl)
@@ -1272,6 +1287,9 @@ enemy_move:
         jr z,.ns
         dec (ix+E_SLOW)
         srl c
+        cp BELL_STILL+1         ; the Priest's bell: standing still
+        jr c,.ns
+        ld c,0
 .ns:    ld a,(ix+E_ACC)
         add a,c
         ld c,a
@@ -1561,7 +1579,10 @@ tower_think:
         jr c,.fire
         ld (iy+T_CD),4          ; nobody in range: look again later
         ret
-.fire:  ld a,(tr_cd)
+.fire:  ld a,(stage_unlock+1)    ; a stage with the Priest: blessed, the wait halves
+        rrca
+        call c,bless
+        ld a,(tr_cd)
         ld (iy+T_CD),a
         ld a,(tr_sfx)
         call sfx_play
@@ -1572,6 +1593,8 @@ tower_think:
         jp z,fire_cauldron
         cp TT_LYRA
         jp z,fire_lyra
+        cp TT_PRIEST
+        jp z,fire_priest
         ld a,(tr_dmg)
         ld c,a
         ld b,0
@@ -1906,6 +1929,8 @@ proj_step:
         pop af
         bit 7,(iy+P_FLAG)
         ret nz
+        cp PT_STONE
+        call z,knockback        ; (preserves A)
         cp PT_LASER
         jr nz,.d
         ld a,(ix+E_ARM)
