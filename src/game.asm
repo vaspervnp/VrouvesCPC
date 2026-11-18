@@ -328,8 +328,10 @@ game_init:
         if DEBUG
         ld a,DEBUG-1            ; -DDEBUG=n starts at wave n
         ld (wave_num),a
-        ld hl,#1ff              ; and has every defender
-        ld (stage_unlock),hl
+        ld hl,stage_unlock      ; and has the first six defenders, besides
+        ld a,(hl)               ; the stage's own (the later ones run from
+        or #3f                  ; the Lyra area, only there in their stages)
+        ld (hl),a
         else
         ld hl,(stage_unlock+2)  ; the defenders this stage brings
         ld a,l
